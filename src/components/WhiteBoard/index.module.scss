@@ -1,0 +1,213 @@
+.whiteboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.whiteboard canvas {
+  border: 0px solid rgb(165, 165, 165);
+  border-radius: 3px;
+}
+
+.whiteboard button {
+  padding: 12px;
+  margin: 1px;
+  background-color: #7b7de0;
+  border-radius: 3px;
+  color: #fff;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.whiteboard button:hover {
+  background-color: #7173ee;
+}
+
+.canvas {
+  padding-bottom: 10px;
+}
+
+.toolbar {
+  position: fixed; /* Fixes the toolbar relative to the viewport */
+  bottom: 0;
+  display: flex;
+  gap: 8px; /* Adjust space between buttons */
+  padding: 16px; /* Padding inside the toolbar container */
+  align-items: center; /* Align items vertically */
+  justify-content: center; /* Center items horizontally */
+  flex-wrap: wrap; /* Allow toolbar items to wrap */
+  background-color: #3b3b3b; /* Grey background */
+  border-radius: 8px; /* Rounded corners for the toolbar container */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: add shadow for depth */
+  margin-bottom: 16px; /* Space below the toolbar */
+}
+
+/* Style for each button in the toolbar */
+.toolbar button {
+  padding: 6px; /* Padding inside each button */
+  min-width: 36px; /* Minimum width for buttons */
+  height: 36px; /* Fixed height for buttons */
+  background-color: #3b3b3b;
+  border-radius: 3px; /* Rounded corners for buttons */
+  color: black;
+  border: none;
+  cursor: pointer;
+  display: inline-flex; /* Inline-flex for buttons to not stretch */
+  justify-content: center; /* Center content horizontally */
+  align-items: center; /* Center content vertically */
+}
+
+/* Hover effect for buttons */
+.toolbar button:hover {
+  background-color: grey;
+}
+
+/* Adjust the size of images/icons inside the buttons if necessary */
+.toolbar button img {
+  
+  width: auto; /* Keep image aspect ratio */
+  height: auto; /* Keep image aspect ratio */
+  max-width: 100%; /* Ensure image doesn't overflow */
+  max-height: 100%; /* Ensure image doesn't overflow */
+}
+
+/* Style adjustments for input elements */
+.toolbar input[type="color"],
+.toolbar input[type="range"] {
+  margin: 0 4px; /* Margin to the left and right of the inputs */
+}
+
+.extendedToolbar {
+  display: none;
+  /* Your styles for the toolbar */
+}
+
+.extendedToolbar.show {
+  position: fixed; /* Fixes the toolbar relative to the viewport */
+  bottom: 70px;
+  display: flex;
+  gap: 8px; /* Adjust space between buttons */
+  padding: 16px; /* Padding inside the toolbar container */
+  align-items: center; /* Align items vertically */
+  justify-content: center; /* Center items horizontally */
+  flex-wrap: wrap; /* Allow toolbar items to wrap */
+  background-color: #dddddd; /* Grey background */
+  border-radius: 8px; /* Rounded corners for the toolbar container */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: add shadow for depth */
+  margin-bottom: 16px; /* Space below the toolbar */
+}
+
+/* Style for each button in the toolbar */
+.extendedToolbar.show button {
+  padding: 6px; /* Padding inside each button */
+  min-width: 36px; /* Minimum width for buttons */
+  height: 36px; /* Fixed height for buttons */
+  background-color: #dddddd;
+  border-radius: 3px; /* Rounded corners for buttons */
+  color: black;
+  border: none;
+  cursor: pointer;
+  display: inline-flex; /* Inline-flex for buttons to not stretch */
+  justify-content: center; /* Center content horizontally */
+  align-items: center; /* Center content vertically */
+}
+
+/* Hover effect for buttons */
+.extendedToolbar.show button:hover {
+  background-color: grey;
+}
+
+/* Adjust the size of images/icons inside the buttons if necessary */
+.extendedToolbar.show button img {
+  
+  width: auto; /* Keep image aspect ratio */
+  height: auto; /* Keep image aspect ratio */
+  max-width: 100%; /* Ensure image doesn't overflow */
+  max-height: 100%; /* Ensure image doesn't overflow */
+}
+
+/* Style adjustments for input elements */
+.extendedToolbar.show input[type="color"],
+.extendedToolbar.show input[type="range"] {
+  margin: 0 4px; /* Margin to the left and right of the inputs */
+}
+
+/* Define your CSS variables */
+:root {
+  --spc-small: 14px; /* Smaller space variable */
+  /* ... other variables */
+}
+
+
+.dropdownButton {
+  background-color: #7b7de0;
+  color: white;
+  padding: 11px 14px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+}
+
+.uploadDropdown {
+  position: relative;
+  display: inline-block;
+  color-scheme:  dark;
+  background-color: #3b3b3b;
+}
+
+.uploadDropdown input {
+  display: none;
+}
+
+.dropdownContent {
+  display: none;
+  color: white;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdownContent span {
+  color: black;
+  padding: 12px 16px;
+  text-align: left;
+  display: block;
+  cursor: pointer;
+}
+
+.dropdownContent span:hover {
+  background-color: #ddd;
+}
+
+.uploadDropdown:hover .dropdownContent {
+  display: block;
+  bottom: 100%;
+}
+
+.uploadDropdown:hover .dropdownButton {
+  background-color: grey;
+}
+
+.pickNumberDisplay {
+  display: inline-block; /* Or 'flex' depending on your layout */
+  background-color: white; /* Dark background */
+  color: #3b3b3b; /* White text */
+  font-size: 14px; /* Adjust the size as needed */
+  padding: 5px 12px; /* Vertical and horizontal padding */
+  margin-right: 16px; /* Space after the pick number display */
+  border-radius: 14px; /* Rounded corners */
+  display: inline-flex; /* Use flex to align text */
+  align-items: center; /* Center align the content */
+  height: 28px; /* Fixed height */
+  box-sizing: border-box; /* Border box sizing */
+  font-family: "Segoe UI", Arial, sans-serif; /* Font style */
+}
+
+.toolbar-text {
+  font-weight: normal; /* Make text not bold */
+  letter-spacing: 1.5px; /* Adjust spacing between characters */
+  /* Add any other styles that may be needed to match the design */
+}
