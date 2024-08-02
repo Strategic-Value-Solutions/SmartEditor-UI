@@ -1,12 +1,13 @@
 // @ts-nocheck
 
 import React from 'react'
-import { Document, Page } from 'react-pdf/dist/esm/entry.webpack'
-import { pdfjs } from 'react-pdf'
+import { Document, Page, pdfjs } from 'react-pdf'
 import styles from './index.module.scss'
 
-console.log(pdfjs.version)
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).toString()
 
 const PDFReader = ({ fileReaderInfo, updateFileReaderInfo, setTotalPages }) => {
   function onRenderSuccess() {
