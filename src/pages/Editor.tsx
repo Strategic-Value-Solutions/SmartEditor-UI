@@ -1,10 +1,10 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Box, IconButton } from '@mui/material';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import HeaderEditor from '../components/Editor/HeaderEditor';
-import VerticalSideBarEditorComponent from '../components/Editor/VerticalSideBarEditor';
-import Whiteboard from '../components/WhiteBoard/whiteboard';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import { Box, IconButton } from '@mui/material'
+import { useCallback, useState } from 'react'
+import HeaderEditor from '../components/Editor/HeaderEditor'
+import VerticalSideBarEditorComponent from '../components/Editor/VerticalSideBarEditor'
+import Whiteboard from '../components/WhiteBoard/whiteboard'
 
 const EditorPage = () => {
   const [fileReaderInfo, setFileReaderInfo] = useState({
@@ -12,38 +12,47 @@ const EditorPage = () => {
     totalPages: null,
     currentPageNumber: 1,
     currentPage: '',
-  });
+  })
 
-  const updateFileReaderInfo = useCallback((data) => {
-    setFileReaderInfo(prev => ({ ...prev, ...data }));
-  }, []);
+  const updateFileReaderInfo = useCallback((data: any) => {
+    setFileReaderInfo((prev) => ({ ...prev, ...data }))
+  }, [])
 
   const onClickNextPage = () => {
-    if (fileReaderInfo.totalPages && fileReaderInfo.currentPageNumber < fileReaderInfo.totalPages) {
-      updateFileReaderInfo({ currentPageNumber: fileReaderInfo.currentPageNumber + 1 });
+    if (
+      fileReaderInfo.totalPages &&
+      fileReaderInfo.currentPageNumber < fileReaderInfo.totalPages
+    ) {
+      updateFileReaderInfo({
+        currentPageNumber: fileReaderInfo.currentPageNumber + 1,
+      })
     }
-  };
+  }
 
   const onClickPreviousPage = () => {
     if (fileReaderInfo.currentPageNumber > 1) {
-      updateFileReaderInfo({ currentPageNumber: fileReaderInfo.currentPageNumber - 1 });
+      updateFileReaderInfo({
+        currentPageNumber: fileReaderInfo.currentPageNumber - 1,
+      })
     }
-  };
+  }
 
-  const sidebarWidth = '64px';
+  const sidebarWidth = '64px'
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <HeaderEditor />
       <Box sx={{ display: 'flex', flexGrow: 1, position: 'relative' }}>
         <VerticalSideBarEditorComponent />
-        <Box sx={{
-          position: 'absolute',
-          top: '38%',
-          left: sidebarWidth,
-          zIndex: 10,
-          pl: 8,
-        }}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '38%',
+            left: sidebarWidth,
+            zIndex: 10,
+            pl: 8,
+          }}
+        >
           <IconButton
             onClick={onClickPreviousPage}
             sx={{
@@ -62,15 +71,21 @@ const EditorPage = () => {
           </IconButton>
         </Box>
         <Box sx={{ flexGrow: 1, overflow: 'auto', mx: sidebarWidth }}>
-          <Whiteboard aspectRatio={16 / 8.5} fileReaderInfo={fileReaderInfo} updateFileReaderInfo={updateFileReaderInfo} />
+          <Whiteboard
+            aspectRatio={16 / 8.5}
+            fileReaderInfo={fileReaderInfo}
+            updateFileReaderInfo={updateFileReaderInfo}
+          />
         </Box>
-        <Box sx={{
-          position: 'absolute',
-          top: '38%',
-          right: sidebarWidth,
-          zIndex: 10,
-          pl: 2,
-        }}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '38%',
+            right: sidebarWidth,
+            zIndex: 10,
+            pl: 2,
+          }}
+        >
           <IconButton
             onClick={onClickNextPage}
             sx={{
@@ -90,7 +105,7 @@ const EditorPage = () => {
         </Box>
       </Box>
     </Box>
-  );
-};
+  )
+}
 
-export default EditorPage;
+export default EditorPage

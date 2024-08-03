@@ -1,35 +1,7 @@
-// import { Outlet } from 'react-router-dom'
 import useIsCollapsed from '@/hooks/use-is-collapsed'
 import { Layout } from './layout'
-import { Search } from './search'
 import Sidebar from './sidebar'
-import ThemeSwitch from './theme-switch'
-import { TopNav } from './top-nav'
 import { UserNav } from './user-nav'
-import CreateNewProject from '@/pages/createNewProject'
-
-const topNav = [
-  {
-    title: 'Overview',
-    href: 'dashboard/overview',
-    isActive: true,
-  },
-  {
-    title: 'Customers',
-    href: 'dashboard/customers',
-    isActive: false,
-  },
-  {
-    title: 'Products',
-    href: 'dashboard/products',
-    isActive: false,
-  },
-  {
-    title: 'Settings',
-    href: 'dashboard/settings',
-    isActive: false,
-  },
-]
 
 export default function AppShell({ children }: any) {
   const [isCollapsed, setIsCollapsed] = useIsCollapsed()
@@ -47,8 +19,9 @@ export default function AppShell({ children }: any) {
             <p className='text-2xl font-semibold'>Welcome back!</p>
             <div className='ml-auto flex items-center space-x-4'>
               {/* <Search />
-              <ThemeSwitch /> */}
-              <CreateNewProject />
+               */}
+              {/* <ThemeSwitch /> */}
+
               <UserNav />
             </div>
           </Layout.Header>

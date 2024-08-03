@@ -29,9 +29,15 @@ export const sideLinks: SideLink[] = [
     icon: <LayoutDashboardIcon size={18} />,
   },
   {
-    title: 'Settings',
+    title: 'Templates',
     label: '',
-    href: '/settings',
+    href: '/templates',
+    icon: <FileIcon size={18} />,
+  },
+  {
+    title: 'Configs',
+    label: '',
+    href: '/configs',
     icon: <SettingsIcon size={18} />,
   },
   {
@@ -57,12 +63,6 @@ export const sideLinks: SideLink[] = [
     label: '',
     href: '/info',
     icon: <InfoIcon size={18} />,
-  },
-  {
-    title: 'Your Files',
-    label: '',
-    href: '/your-files',
-    icon: <FileIcon size={18} />,
   },
   {
     title: 'Shared Files',

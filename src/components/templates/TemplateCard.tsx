@@ -1,16 +1,15 @@
-import React, { useState, useContext } from 'react'
 import {
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
-  Box,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
 } from '@mui/material'
-import SettingsIcon from '@mui/icons-material/Settings'
-import DeleteIcon from '@mui/icons-material/Delete'
+import { Package } from 'lucide-react'
+import { useContext, useState } from 'react'
 import { ProjectDataContext } from '../../store/ProjectDataContext' // Ensure the path is correct
+import { Card } from '../ui/card'
 
 const TemplateCard = ({ id, title }: any) => {
   const [openEditModal, setOpenEditModal] = useState(false)
@@ -31,60 +30,17 @@ const TemplateCard = ({ id, title }: any) => {
   }
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: 240,
-        height: 150,
-        m: 1,
-        bgcolor: 'background.paper',
-        boxShadow: 3,
-        borderRadius: '12px',
-        overflow: 'hidden',
-        '&:hover': {
-          boxShadow: 6,
-        },
-      }}
-    >
-      <Typography
-        variant='subtitle1'
-        component='div'
-        sx={{ fontWeight: 'bold', mt: 2, mx: 2 }}
-      >
-        {title}
-      </Typography>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          my: 1,
-        }}
-      >
-        <SettingsIcon sx={{ fontSize: 40 }} onClick={handleEditModalOpen} />
-      </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          width: '100%',
-          p: 1,
-        }}
-      >
-        <Button startIcon={<SettingsIcon />} onClick={handleEditModalOpen}>
-          Edit
-        </Button>
-        <Button
-          startIcon={<DeleteIcon />}
-          onClick={handleDeleteModalOpen}
-          color='error'
-        >
-          Delete
-        </Button>
-      </Box>
+    <>
+      <Card className='m-2 w-52'>
+        <div className='flex  cursor-pointer flex-col rounded-lg bg-white  p-4'>
+          <div className='flex h-36 items-center justify-center overflow-hidden rounded-md bg-gray-200'>
+            <Package className='text-9xl text-white' size={50} />
+          </div>
+          <div className='flex-grow px-2 pt-2 text-left font-light'>
+            {title}
+          </div>
+        </div>
+      </Card>
 
       {/* Edit Modal */}
       <Dialog open={openEditModal} onClose={handleEditModalClose}>
@@ -113,7 +69,7 @@ const TemplateCard = ({ id, title }: any) => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </>
   )
 }
 

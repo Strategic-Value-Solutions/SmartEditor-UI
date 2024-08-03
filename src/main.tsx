@@ -1,14 +1,15 @@
+import { Toaster } from '@/components/ui/toaster'
 import '@/global.css'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { ProjectDataContextProvider } from './store/ProjectDataContext'
-// import { createTheme, ThemeProvider } from '@mui/material/styles'
-import { Toaster } from '@/components/ui/toaster'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import AppShell from './components/custom/app-shell'
 import { ThemeProvider } from './components/custom/theme-provider'
-import HomePage from './pages/HomePage'
-import EditorPage from './pages/EditorPage'
+import { ProjectDataContextProvider } from './store/ProjectDataContext'
+
+import Editor from './pages/Editor'
+import Projects from './pages/Projects'
+import Templates from './pages/Templates'
 
 // const theme = createTheme({
 //   // your theme options
@@ -33,7 +34,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               path='/'
               element={
                 <Root>
-                  <HomePage />
+                  <Projects />
                 </Root>
               }
             />
@@ -41,7 +42,15 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               path='/editor'
               element={
                 <Root>
-                  <EditorPage />
+                  <Editor />
+                </Root>
+              }
+            />
+            <Route
+              path='/templates'
+              element={
+                <Root>
+                  <Templates />
                 </Root>
               }
             />

@@ -11,13 +11,13 @@ const router = createBrowserRouter([
   {
     path: '/',
     lazy: async () => ({
-      Component: (await import('./pages/HomePage')).default,
+      Component: (await import('./pages/Projects')).default,
     }),
   },
   {
     path: '/editor',
     lazy: async () => ({
-      Component: (await import('./pages/EditorPage')).default,
+      Component: (await import('./pages/Editor')).default,
     }),
   },
 
