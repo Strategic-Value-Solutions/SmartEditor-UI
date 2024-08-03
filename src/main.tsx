@@ -16,11 +16,7 @@ import Templates from './pages/Templates'
 // })
 
 const Root = ({ children }: any) => {
-  return (
-    <>
-      <AppShell>{children}</AppShell>
-    </>
-  )
+  return <AppShell>{children}</AppShell>
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

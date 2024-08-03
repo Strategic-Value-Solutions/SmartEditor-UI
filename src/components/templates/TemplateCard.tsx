@@ -1,15 +1,19 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material'
-import { Package } from 'lucide-react'
+import { Package, Pencil, Trash2 } from 'lucide-react'
 import { useContext, useState } from 'react'
 import { ProjectDataContext } from '../../store/ProjectDataContext' // Ensure the path is correct
 import { Card } from '../ui/card'
+import { Button } from '../ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../ui/dialog'
+import DeleteTemplate from './Dialog/DeleteTemplate'
+import NewTemplate from './Dialog/NewTemplate'
 
 const TemplateCard = ({ id, title }: any) => {
   const [openEditModal, setOpenEditModal] = useState(false)
@@ -18,7 +22,7 @@ const TemplateCard = ({ id, title }: any) => {
 
   const handleEditModalOpen = () => setOpenEditModal(true)
   const handleEditModalClose = () => setOpenEditModal(false)
-  const handleDeleteModalOpen = () => setOpenDeleteModal(true)
+  const handleDeleteModal = () => setOpenDeleteModal(!openDeleteModal)
   const handleDeleteModalClose = () => setOpenDeleteModal(false)
 
   const handleDelete = () => {
@@ -33,42 +37,38 @@ const TemplateCard = ({ id, title }: any) => {
     <>
       <Card className='m-2 w-52'>
         <div className='flex  cursor-pointer flex-col rounded-lg bg-white  p-4'>
-          <div className='flex h-36 items-center justify-center overflow-hidden rounded-md bg-gray-200'>
+          <div className='flex h-36 items-center justify-center overflow-hidden rounded-md bg-[#8892b3]'>
             <Package className='text-9xl text-white' size={50} />
           </div>
-          <div className='flex-grow px-2 pt-2 text-left font-light'>
-            {title}
+          <div className='flex justify-between pt-2'>
+            <div className='flex-grow text-left font-light'>{title}</div>
+            <div className='flex justify-between gap-1'>
+              <NewTemplate
+                isEdit
+                trigger={
+                  <Button variant='outline' className='h-6 rounded p-1'>
+                    <Pencil size={15} />
+                  </Button>
+                }
+              />
+
+              <DeleteTemplate
+                onDelete={handleDelete}
+                onClose={handleDeleteModal}
+                trigger={
+                  <Button
+                    onClick={handleDeleteModal}
+                    variant='destructive'
+                    className='h-6 rounded bg-red-400 p-1'
+                  >
+                    <Trash2 size={15} />
+                  </Button>
+                }
+              />
+            </div>
           </div>
         </div>
       </Card>
-
-      {/* Edit Modal */}
-      <Dialog open={openEditModal} onClose={handleEditModalClose}>
-        <DialogTitle>Edit Template</DialogTitle>
-        <DialogContent>{/* Form components here */}</DialogContent>
-        <DialogActions>
-          <Button onClick={handleEditModalClose}>Cancel</Button>
-          <Button onClick={handleEditModalClose} color='primary'>
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Modal */}
-      <Dialog open={openDeleteModal} onClose={handleDeleteModalClose}>
-        <DialogTitle>Delete Template</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete this template?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDeleteModalClose}>Cancel</Button>
-          <Button onClick={handleDelete} color='error'>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   )
 }

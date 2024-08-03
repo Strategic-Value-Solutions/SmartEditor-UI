@@ -1,8 +1,8 @@
-// import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 export default function useCheckActiveNav() {
-  // const { pathname } = useLocation()
-  const pathname = ''
+  const { pathname } = useLocation()
+
   const checkActiveNav = (nav: string) => {
     const pathArray = pathname.split('/').filter((item) => item !== '')
 

@@ -80,109 +80,109 @@ const NewProject = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create new</DialogTitle>
-            <DialogDescription>
-              <Form {...form}>
-                <form
-                  noValidate
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className='space-y-4'
-                >
-                  <FormField
-                    control={form.control}
-                    name='projectName'
-                    render={({ field }) => (
-                      <FormItem className='mt-2'>
-                        <FormLabel>Project name</FormLabel>
-                        <FormControl>
-                          <Input placeholder='Enter Project name' {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name='siteName'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Site name</FormLabel>
-                        <FormControl>
-                          <Input placeholder='Site name' {...field} />
-                        </FormControl>
-                        <FormDescription></FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name='superModel'
-                    render={() => (
-                      <FormItem>
-                        <FormLabel>Supermodel Type</FormLabel>
-                        <FormControl>
-                          <Select>
-                            <SelectTrigger>
-                              <SelectValue placeholder='Supermodel Type' />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value='Orthotropic'>
-                                Orthotropic
-                              </SelectItem>
-                              <SelectItem value='Multistory Building'>
-                                Multistory Building
-                              </SelectItem>
-                              <SelectItem value='Aviation Project'>
-                                Aviation Project
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormDescription />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name='config'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Configuration</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder='Select Configuration' />
-                            </SelectTrigger>
-                          </FormControl>
+          </DialogHeader>
+          <DialogDescription>
+            <Form {...form}>
+              <form
+                noValidate
+                onSubmit={form.handleSubmit(onSubmit)}
+                className='space-y-4'
+              >
+                <FormField
+                  control={form.control}
+                  name='projectName'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Project name</FormLabel>
+                      <FormControl>
+                        <Input placeholder='Enter Project name' {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name='siteName'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Site name</FormLabel>
+                      <FormControl>
+                        <Input placeholder='Site name' {...field} />
+                      </FormControl>
+                      <FormDescription></FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name='superModel'
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Supermodel Type</FormLabel>
+                      <FormControl>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder='Supermodel Type' />
+                          </SelectTrigger>
                           <SelectContent>
-                            {configs.map((config) => (
-                              <SelectItem
-                                key={Math.random().toString(36).substring(7)}
-                                value={config.mcc}
-                              >
-                                {config.model_name}
-                              </SelectItem>
-                            ))}
+                            <SelectItem value='Orthotropic'>
+                              Orthotropic
+                            </SelectItem>
+                            <SelectItem value='Multistory Building'>
+                              Multistory Building
+                            </SelectItem>
+                            <SelectItem value='Aviation Project'>
+                              Aviation Project
+                            </SelectItem>
                           </SelectContent>
                         </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />{' '}
-                  <Button
-                    type='submit'
-                    className='mt-2 flex h-8 w-fit items-center justify-center'
-                  >
-                    Create
-                  </Button>
-                </form>
-              </Form>
-            </DialogDescription>
-          </DialogHeader>
+                      </FormControl>
+                      <FormDescription />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name='config'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Configuration</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder='Select Configuration' />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {configs.map((config) => (
+                            <SelectItem
+                              key={Math.random().toString(36).substring(7)}
+                              value={config.mcc}
+                            >
+                              {config.model_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />{' '}
+                <Button
+                  type='submit'
+                  className='mt-2 flex h-8 w-fit items-center justify-center'
+                >
+                  Create
+                </Button>
+              </form>
+            </Form>
+          </DialogDescription>
         </DialogContent>
       </Dialog>
     </>

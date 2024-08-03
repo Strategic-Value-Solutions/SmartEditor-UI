@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react'
-// import { IconChevronsLeft, IconMenu2, IconX } from '@tabler/icons-react'
 import { sideLinks } from '@/data/sidelinks'
 import { cn } from '@/lib/utils'
 import { ChevronsLeft } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import Aeis from '../../assets/Aeis.png'
 import { Button } from '../ui/button'
 import { Layout } from './layout'
 import Nav from './nav'
-import Aeis from '../../assets/Aeis.png'
 
 interface SidebarProps extends React.HTMLAttributes<HTMLElement> {
   isCollapsed: boolean

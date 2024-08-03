@@ -1,5 +1,5 @@
 import Header from '@/components/Projects/Header'
-import ProjectFile from '@/components/Projects/ProjectFile'
+import ProjectCard from '@/components/Projects/ProjectCard'
 import { useContext } from 'react'
 import { ProjectDataContext } from '../store/ProjectDataContext'
 
@@ -12,35 +12,35 @@ const Projects = () => {
       <Header />
       <div className='mt-4 inline-flex flex-row flex-wrap gap-2 overflow-hidden'>
         {projectsData.map((project: any, index: any) => (
-          <ProjectFile
+          <ProjectCard
             filename={project.title}
             createdAt={project.edition}
             key={project.id || index}
           />
         ))}
         {projectsData.map((project: any, index: any) => (
-          <ProjectFile
+          <ProjectCard
             filename={project.title}
             createdAt={project.edition}
             key={project.id || index}
           />
         ))}
         {projectsData.map((project: any, index: any) => (
-          <ProjectFile
+          <ProjectCard
             filename={project.title}
             createdAt={project.edition}
             key={project.id || index}
           />
         ))}
         {projectsData.map((project: any, index: any) => (
-          <ProjectFile
+          <ProjectCard
             filename={project.title}
             createdAt={project.edition}
             key={project.id || index}
           />
         ))}
         {projectsData.map((project: any, index: any) => (
-          <ProjectFile
+          <ProjectCard
             filename={project.title}
             createdAt={project.edition}
             key={project.id || index}

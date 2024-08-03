@@ -79,6 +79,14 @@ const Template = () => {
             refreshConfigs={refreshConfigs}
           />
         ))}
+        {configsData.map((config: any) => (
+          <TemplateCard
+            key={config.mcc}
+            id={config.mcc}
+            title={`${config.model_name}`}
+            refreshConfigs={refreshConfigs}
+          />
+        ))}
       </div>
     </div>
   )
