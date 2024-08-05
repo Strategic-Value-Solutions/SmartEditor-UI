@@ -1,10 +1,7 @@
+import Whiteboard from '@/components/WhiteBoard/index.tsx'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import { Box, IconButton } from '@mui/material'
 import { useCallback, useState } from 'react'
-import HeaderEditor from './components/HeaderEditor'
-import VerticalSideBarEditorComponent from './components/VerticalSideBarEditor'
-import Whiteboard from '@/components/WhiteBoard/Whiteboard'
 
 const Editor = () => {
   const [fileReaderInfo, setFileReaderInfo] = useState({
@@ -37,74 +34,38 @@ const Editor = () => {
     }
   }
 
-  const sidebarWidth = '64px'
-
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <HeaderEditor />
-      <Box sx={{ display: 'flex', flexGrow: 1, position: 'relative' }}>
-        <VerticalSideBarEditorComponent />
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '38%',
-            left: sidebarWidth,
-            zIndex: 10,
-            pl: 8,
-          }}
+    <div className='flex h-screen flex-col'>
+      <div className='relative flex flex-grow'>
+        <div
+          className={`absolute top-1/2 z-10 -translate-y-1/2 transform pl-8`}
         >
-          <IconButton
+          <button
             onClick={onClickPreviousPage}
-            sx={{
-              borderRadius: '50%',
-              color: '#fff',
-              backgroundColor: 'darkgrey',
-              '&:hover': {
-                backgroundColor: '#a9a9a9',
-              },
-              '&.Mui-disabled': {
-                backgroundColor: 'rgba(169, 169, 169, 0.5)',
-              },
-            }}
+            className='rounded-full bg-gray-500 p-2 text-white hover:bg-gray-400 disabled:bg-gray-300'
           >
             <ChevronLeftIcon />
-          </IconButton>
-        </Box>
-        <Box sx={{ flexGrow: 1, overflow: 'auto', mx: sidebarWidth }}>
+          </button>
+        </div>
+        <div className={`flex-grow overflow-auto`}>
           <Whiteboard
             aspectRatio={16 / 8.5}
             fileReaderInfo={fileReaderInfo}
             updateFileReaderInfo={updateFileReaderInfo}
           />
-        </Box>
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '38%',
-            right: sidebarWidth,
-            zIndex: 10,
-            pl: 2,
-          }}
+        </div>
+        <div
+          className={`absolute top-1/2 z-10 -translate-y-1/2  transform pl-2`}
         >
-          <IconButton
+          <button
             onClick={onClickNextPage}
-            sx={{
-              borderRadius: '50%',
-              color: '#fff',
-              backgroundColor: 'darkgrey',
-              '&:hover': {
-                backgroundColor: '#a9a9a9',
-              },
-              '&.Mui-disabled': {
-                backgroundColor: 'rgba(169, 169, 169, 0.5)',
-              },
-            }}
+            className='rounded-full bg-gray-500 p-2 text-white hover:bg-gray-400 disabled:bg-gray-300'
           >
             <ChevronRightIcon />
-          </IconButton>
-        </Box>
-      </Box>
-    </Box>
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 

@@ -29,13 +29,18 @@ import { Cross, Plus } from 'lucide-react'
 import { useContext, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { ProjectDataContext } from '@/store/ProjectDataContext'
+import { useSelector } from 'react-redux'
 
 const NewTemplate = ({ trigger = null, isEdit = false }: any) => {
   const form = useForm()
-  const { configsData, setConfigsData } = useContext(ProjectDataContext)
+
   const [fields, setFields] = useState([])
   const [open, setOpen] = useState(false)
   const [selectedConfigs, setSelectedConfigs] = useState([])
+
+  const configsData = useSelector(
+    (state) => state.configurations.configsData || []
+  )
 
   const handleSelectConfig = (config) => {
     const isAlreadySelected = selectedConfigs.some(

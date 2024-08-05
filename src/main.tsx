@@ -2,10 +2,11 @@ import { Toaster } from '@/components/ui/toaster'
 import '@/global.css'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { Provider } from 'react-redux'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import AppShell from './components/custom/app-shell'
 import { ThemeProvider } from './components/custom/theme-provider'
-import { ProjectDataContextProvider } from './store/ProjectDataContext'
+import store from './store/index'
 
 import Editor from './pages/Editor/index'
 import Projects from './pages/Projects/index'
@@ -17,8 +18,7 @@ const Root = ({ children }: any) => {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ProjectDataContextProvider>
-      {/* <ThemeProvider theme={theme}> */}
+    <Provider store={store}>
       <ThemeProvider defaultTheme='light' storageKey='vite-ui-theme'>
         <BrowserRouter>
           <Routes>
@@ -51,7 +51,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         {/* <RouterProvider router={router} /> */}
         <Toaster />
       </ThemeProvider>
-      {/* </ThemeProvider> */}
-    </ProjectDataContextProvider>
+    </Provider>
   </React.StrictMode>
 )

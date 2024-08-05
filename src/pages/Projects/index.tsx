@@ -1,10 +1,9 @@
-import { ProjectDataContext } from '@/store/ProjectDataContext'
-import { useContext } from 'react'
-import ProjectCard from './components/ProjectCard'
+import { useSelector } from 'react-redux'
 import Header from './components/Header'
+import ProjectCard from './components/ProjectCard'
 
 const Projects = () => {
-  const { projectsData } = useContext(ProjectDataContext)
+  const projectsData = useSelector((state) => state.project.projectsData || [])
 
   return (
     <div className='flex flex-col'>

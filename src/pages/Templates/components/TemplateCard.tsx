@@ -1,26 +1,27 @@
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { ProjectDataContext } from '@/store/ProjectDataContext'
 import { Package, Pencil, Trash2 } from 'lucide-react'
-import { useContext, useState } from 'react'
+import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import DeleteTemplate from './Dialog/DeleteTemplate'
 import NewTemplate from './Dialog/NewTemplate'
 
 const TemplateCard = ({ id, title }: any) => {
   const [openEditModal, setOpenEditModal] = useState(false)
   const [openDeleteModal, setOpenDeleteModal] = useState(false)
-  const { configsData, setConfigsData } = useContext(ProjectDataContext)
-
+  const configsData = useSelector(
+    (state) => state.configurations.configsData || []
+  )
   const handleDeleteModal = () => setOpenDeleteModal(!openDeleteModal)
   const handleDeleteModalClose = () => setOpenDeleteModal(false)
 
-  const handleDelete = () => {
-    // Filter out the configuration that needs to be deleted
-    const updatedConfigs = configsData.filter((config: any) => config.id !== id)
-    setConfigsData(updatedConfigs)
-    console.log('Template deleted successfully')
-    handleDeleteModalClose()
-  }
+  // const handleDelete = () => {
+  //   // Filter out the configuration that needs to be deleted
+  //   const updatedConfigs = configsData.filter((config: any) => config.id !== id)
+  //   setConfigsData(updatedConfigs)
+  //   console.log('Template deleted successfully')
+  //   handleDeleteModalClose()
+  // }
 
   return (
     <>

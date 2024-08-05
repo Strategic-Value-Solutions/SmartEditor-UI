@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 
 export const client = ["Client 1", "Client 2", "Client 3", "Client 4", "Client 5"];
 export const project = ["Project 1", "Project 2", "Project 3", "Project 4", "Project 5"];

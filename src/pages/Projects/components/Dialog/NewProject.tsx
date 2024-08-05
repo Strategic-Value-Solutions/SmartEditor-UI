@@ -30,10 +30,12 @@ import { Plus } from 'lucide-react'
 import { useContext, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
-import { ProjectDataContext } from '@/store/ProjectDataContext'
+import { useDispatch, useSelector } from 'react-redux'
+import { setCurrentProject, addProject } from '@/store/slices/projectSlice'
 
 const NewProject = () => {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const [open, setOpen] = useState(false)
   const form = useForm({
@@ -45,8 +47,10 @@ const NewProject = () => {
     },
   })
   const [configs, setConfigs] = useState([])
-  const { setProjectsData, configsData, setProjectName } =
-    useContext(ProjectDataContext) // Get configsData and setProjectName from context
+
+  const configsData = useSelector(
+    (state) => state.configurations.configsData || []
+  )
 
   useEffect(() => {
     // Set configs from context data
@@ -59,7 +63,16 @@ const NewProject = () => {
 
   const onSubmit = async (data) => {
     // Store the project name in the context
-    setProjectName(data.projectName)
+    const projectData = {
+      projectName: data.projectName,
+      siteName: data.siteName,
+      supermodelType: data.supermodelType,
+      config: configs.find((config) => config._id === data.config),
+    }
+
+    // Store the project data in the Redux state
+    dispatch(setCurrentProject(projectData))
+    dispatch(addProject(projectData))
 
     reset() // Reset the form fields
     navigate('/editor') // Navigate to the editor route

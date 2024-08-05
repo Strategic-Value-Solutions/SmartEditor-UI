@@ -1,14 +1,14 @@
-
-import { ProjectDataContext } from '@/store/ProjectDataContext'
-import { useContext, useState } from 'react'
+import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import Header from './components/Header'
 import TemplateCard from './components/TemplateCard'
 
 const Templates = () => {
   const [openModal, setOpenModal] = useState(false)
 
-  const { configsData } = useContext(ProjectDataContext)
-
+  const configsData = useSelector(
+    (state) => state.configurations.configsData || []
+  )
   const handleNewButtonClick = () => {
     setOpenModal(true)
   }

@@ -1,4 +1,6 @@
 // @ts-nocheck
+// @ts-ignore
+
 (function () {
   var __setBgOverlayColor = fabric.StaticCanvas.prototype.__setBgOverlayColor;
   var ___setBgOverlay = fabric.StaticCanvas.prototype.__setBgOverlay;

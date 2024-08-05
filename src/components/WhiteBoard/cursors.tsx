@@ -1,9 +1,10 @@
-import removeCursor from './images/remove.svg'
+// @ts-nocheck
+import imageConstants from '@/constants/imageConstants'
 
-const getCursor = ({ type }: any) => {
+const getCursor = ({ type }): any => {
   switch (type) {
     case 'eraser': {
-      return removeCursor
+      return imageConstants.removeCursor
     }
 
     default: {
