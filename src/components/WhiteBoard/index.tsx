@@ -44,19 +44,6 @@ const modes = {
   ERASER: 'ERASER',
 }
 
-const initCanvas = (width: any, height: any) => {
-  const canvas = new fabric.Canvas('canvas', { height, width })
-  FabricObject.prototype.transparentCorners = false
-  FabricObject.prototype.cornerStyle = 'circle'
-  FabricObject.prototype.borderColor = '#4447A9'
-  FabricObject.prototype.cornerColor = '#4447A9'
-  FabricObject.prototype.cornerSize = 6
-  FabricObject.prototype.padding = 10
-  FabricObject.prototype.borderDashArray = [5, 5]
-
-  return canvas
-}
-
 function removeObject(canvas, dispatch, projectId, pageNumber) {
   return (e) => {
     if (options.currentMode === modes.ERASER) {
@@ -300,10 +287,15 @@ function resizeCanvas(canvas, whiteboard) {
 
     const scale = whiteboardWidth / canvas.getWidth()
     const zoom = canvas.getZoom() * scale
-    canvas.setDimensions({
+
+    console.log({
       width: whiteboardWidth,
       height: whiteboardWidth / ratio,
     })
+    // canvas.setDimensions({
+    //   width: whiteboardWidth,
+    //   height: whiteboardWidth / ratio,
+    // })
     canvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0])
   }
 }
@@ -366,20 +358,33 @@ const Whiteboard = ({
   const [isPdfLoaded, setIsPdfLoaded] = useState(false)
   const canvasInstance = useRef<fabric.Canvas | null>(null)
 
-  // useEffect(() => {
-  //   if (!canvas && canvasRef.current) {
-  //     const canvas = initCanvas(
-  //       whiteboardRef.current.clientWidth,
-  //       whiteboardRef.current.clientWidth / aspectRatio
-  //     )
-  //     setCanvas(() => canvas)
+  useEffect(() => {
+    if (!canvas && canvasRef.current) {
+      const canvas = new fabric.Canvas('canvas', {
+        height: whiteboardRef.current.clientWidth / aspectRatio,
+        width: whiteboardRef.current.clientWidth,
+      })
+      FabricObject.prototype.transparentCorners = false
+      FabricObject.prototype.cornerStyle = 'circle'
+      FabricObject.prototype.borderColor = '#4447A9'
+      FabricObject.prototype.cornerColor = '#4447A9'
+      FabricObject.prototype.cornerSize = 6
+      FabricObject.prototype.padding = 10
+      FabricObject.prototype.borderDashArray = [5, 5]
 
-  //     handleResize(resizeCanvas(canvas, whiteboardRef.current)).observe(
-  //       whiteboardRef.current
-  //     )
-  //     setIsOpen(true)
-  //   }
-  // }, [canvas, canvasRef])
+      setCanvas(() => canvas)
+
+      canvasRef.current = canvasRef
+      handleResize(resizeCanvas(canvas, whiteboardRef.current)).observe(
+        whiteboardRef.current
+      )
+      setIsOpen(true)
+
+      return () => {
+        canvas.dispose()
+      }
+    }
+  }, [canvas, canvasRef])
 
   useEffect(() => {
     if (
@@ -418,9 +423,9 @@ const Whiteboard = ({
     }
   }, [fileReaderInfo?.currentPage, currentProject])
 
-  function uploadImage(e) {
+  function uploadImage(file) {
     const reader = new FileReader()
-    const file = e.target.files[0]
+    // const file = e.target.files[0]
 
     reader.addEventListener('load', () => {
       fabric.Image.fromURL(reader.result, (img) => {

@@ -100,9 +100,8 @@ function UploadModal({
     setIsOpen(false)
   }
 
-  const handleUploadImage = (e: any) => {
-    uploadImage(e)
-    const file = e.target.files[0]
+  const handleUploadImage = (file: any) => {
+    uploadImage(file)
     const reader = new FileReader()
     reader.onload = () => {
       dispatch(
@@ -117,6 +116,11 @@ function UploadModal({
 
   const handleUploadPdf = (file: any) => {
     console.log(file)
+    if (file.type != 'application/pdf') {
+      handleUploadImage(file)
+      return
+    }
+
     onFileChange(file)
     // const file = e.target.files[0]
     const reader = new FileReader()
