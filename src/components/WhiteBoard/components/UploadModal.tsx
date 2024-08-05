@@ -33,6 +33,7 @@ import {
   FileUploaderItem,
 } from '@/components/ui/file-upload'
 import { Paperclip } from 'lucide-react'
+import { RootState } from '@/store'
 
 const FileSvgDraw = () => {
   return (
@@ -74,7 +75,7 @@ function UploadModal({
 }: any) {
   const dispatch = useDispatch()
   const projectSettings = useSelector(
-    (state) => state?.annotations?.projectSettings[projectId]
+    (state: RootState) => state?.annotations?.projectSettings[projectId]
   )
   const form = useForm({
     defaultValues: {
@@ -192,7 +193,7 @@ function UploadModal({
                     </FormControl>
                     <FormDescription />
                     <FormMessage>
-                      {form.formState.errors.pickNumber?.message}
+                      {form?.formState?.errors?.pickNumber?.message}
                     </FormMessage>
                   </FormItem>
                 )}
@@ -238,12 +239,7 @@ function UploadModal({
                             value={field.value}
                             dropzoneOptions={{
                               accept: {
-                                'image/*': [
-                                  '.jpg',
-                                  '.jpeg',
-                                  '.png',
-                                  '.pdf',
-                                ],
+                                'image/*': ['.jpg', '.jpeg', '.png', '.pdf'],
                               },
                             }}
                             className='relative rounded-lg bg-background p-2'
@@ -267,7 +263,7 @@ function UploadModal({
                     </FormControl>
                     <FormDescription />
                     <FormMessage>
-                      {form.formState.errors.pickNumber?.message}
+                      {form?.formState?.errors?.pickNumber?.message}
                     </FormMessage>
                   </FormItem>
                 )}

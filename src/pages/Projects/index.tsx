@@ -1,9 +1,12 @@
 import { useSelector } from 'react-redux'
 import Header from './components/Header'
 import ProjectCard from './components/ProjectCard'
+import { RootState } from '@/store'
 
 const Projects = () => {
-  const projectsData = useSelector((state) => state.project.projectsData || [])
+  const projectsData = useSelector(
+    (state: RootState) => state.project.projectsData || []
+  )
 
   return (
     <div className='flex flex-col'>
@@ -12,36 +15,7 @@ const Projects = () => {
       <div className='mt-4 inline-flex flex-row flex-wrap gap-2 overflow-hidden'>
         {projectsData.map((project: any, index: any) => (
           <ProjectCard
-            filename={project.title}
-            createdAt={project.edition}
-            key={project.id || index}
-          />
-        ))}
-        {projectsData.map((project: any, index: any) => (
-          <ProjectCard
-            filename={project.title}
-            createdAt={project.edition}
-            key={project.id || index}
-          />
-        ))}
-        {projectsData.map((project: any, index: any) => (
-          <ProjectCard
-            filename={project.title}
-            createdAt={project.edition}
-            key={project.id || index}
-          />
-        ))}
-        {projectsData.map((project: any, index: any) => (
-          <ProjectCard
-            filename={project.title}
-            createdAt={project.edition}
-            key={project.id || index}
-          />
-        ))}
-        {projectsData.map((project: any, index: any) => (
-          <ProjectCard
-            filename={project.title}
-            createdAt={project.edition}
+            title={project.projectName}
             key={project.id || index}
           />
         ))}

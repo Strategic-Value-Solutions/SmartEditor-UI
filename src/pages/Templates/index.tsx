@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import Header from './components/Header'
 import TemplateCard from './components/TemplateCard'
+import { RootState } from '@/store'
 
 const Templates = () => {
   const [openModal, setOpenModal] = useState(false)
 
-  const configsData = useSelector(
-    (state) => state.configurations.configsData || []
+  const templatesData = useSelector(
+    (state: RootState) => state.template.templatesData || []
   )
   const handleNewButtonClick = () => {
     setOpenModal(true)
@@ -32,55 +33,7 @@ const Templates = () => {
       <h3 className='flex h-8 flex-col pb-1 text-2xl'>Templates</h3>
       <Header />
       <div className='mt-4 inline-flex flex-row flex-wrap gap-2 overflow-hidden'>
-        {configsData.map((config: any) => (
-          <TemplateCard
-            key={config.mcc}
-            id={config.mcc}
-            title={`${config.model_name}`}
-            refreshConfigs={refreshConfigs}
-          />
-        ))}
-        {configsData.map((config: any) => (
-          <TemplateCard
-            key={config.mcc}
-            id={config.mcc}
-            title={`${config.model_name}`}
-            refreshConfigs={refreshConfigs}
-          />
-        ))}
-        {configsData.map((config: any) => (
-          <TemplateCard
-            key={config.mcc}
-            id={config.mcc}
-            title={`${config.model_name}`}
-            refreshConfigs={refreshConfigs}
-          />
-        ))}
-        {configsData.map((config: any) => (
-          <TemplateCard
-            key={config.mcc}
-            id={config.mcc}
-            title={`${config.model_name}`}
-            refreshConfigs={refreshConfigs}
-          />
-        ))}
-        {configsData.map((config: any) => (
-          <TemplateCard
-            key={config.mcc}
-            id={config.mcc}
-            title={`${config.model_name}`}
-            refreshConfigs={refreshConfigs}
-          />
-        ))}
-        {configsData.map((config: any) => (
-          <TemplateCard
-            key={config.mcc}
-            id={config.mcc}
-            title={`${config.model_name}`}
-            refreshConfigs={refreshConfigs}
-          />
-        ))}
-        {configsData.map((config: any) => (
+        {templatesData.map((config: any) => (
           <TemplateCard
             key={config.mcc}
             id={config.mcc}

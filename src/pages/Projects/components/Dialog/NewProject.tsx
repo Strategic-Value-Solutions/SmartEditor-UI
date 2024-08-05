@@ -32,6 +32,16 @@ import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { setCurrentProject, addProject } from '@/store/slices/projectSlice'
+import { RootState } from '@/store'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+
+const newProjectSchema = z.object({
+  projectName: z.string().nonempty('Project name is required'),
+  siteName: z.string().nonempty('Site name is required'),
+  superModel: z.string().nonempty('Supermodel Type is required'),
+  config: z.string().nonempty('Configuration is required'),
+})
 
 const NewProject = () => {
   const navigate = useNavigate()
@@ -39,6 +49,7 @@ const NewProject = () => {
 
   const [open, setOpen] = useState(false)
   const form = useForm({
+    resolver: zodResolver(newProjectSchema),
     defaultValues: {
       projectName: '',
       siteName: '',
@@ -49,13 +60,12 @@ const NewProject = () => {
   const [configs, setConfigs] = useState([])
 
   const configsData = useSelector(
-    (state) => state.configurations.configsData || []
+    (state: RootState) => state.configurations.configsData || []
   )
 
   useEffect(() => {
-    // Set configs from context data
     setConfigs(configsData)
-  }, [configsData]) // Update configs whenever configsData changes
+  }, [configsData])
 
   const handleModal = () => {
     setOpen(!open)
@@ -74,13 +84,14 @@ const NewProject = () => {
     dispatch(setCurrentProject(projectData))
     dispatch(addProject(projectData))
 
-    reset() // Reset the form fields
-    navigate('/editor') // Navigate to the editor route
+    form.reset() // Reset the form fields
+    handleModal() // Close the modal
+    // navigate('/editor') // Navigate to the editor route
   }
 
   return (
     <>
-      <Dialog>
+      <Dialog open={open}>
         <DialogTrigger>
           <Button
             onClick={handleModal}
@@ -104,7 +115,7 @@ const NewProject = () => {
                 <FormField
                   control={form.control}
                   name='projectName'
-                  render={({ field }) => (
+                  render={({ field, fieldState: { error } }) => (
                     <FormItem>
                       <FormLabel>Project name</FormLabel>
                       <FormControl>
@@ -117,7 +128,7 @@ const NewProject = () => {
                 <FormField
                   control={form.control}
                   name='siteName'
-                  render={({ field }) => (
+                  render={({ field, fieldState: { error } }) => (
                     <FormItem>
                       <FormLabel>Site name</FormLabel>
                       <FormControl>
@@ -131,11 +142,14 @@ const NewProject = () => {
                 <FormField
                   control={form.control}
                   name='superModel'
-                  render={() => (
+                  render={({ field, fieldState: { error } }) => (
                     <FormItem>
                       <FormLabel>Supermodel Type</FormLabel>
                       <FormControl>
-                        <Select>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder='Supermodel Type' />
                           </SelectTrigger>
@@ -160,7 +174,7 @@ const NewProject = () => {
                 <FormField
                   control={form.control}
                   name='config'
-                  render={({ field }) => (
+                  render={({ field, fieldState: { error } }) => (
                     <FormItem>
                       <FormLabel>Configuration</FormLabel>
                       <Select
@@ -178,7 +192,7 @@ const NewProject = () => {
                               key={Math.random().toString(36).substring(7)}
                               value={config.mcc}
                             >
-                              {config.model_name}
+                              {config.modelName}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -186,7 +200,7 @@ const NewProject = () => {
                       <FormMessage />
                     </FormItem>
                   )}
-                />{' '}
+                />
                 <Button
                   type='submit'
                   className='mt-2 flex h-8 w-fit items-center justify-center'

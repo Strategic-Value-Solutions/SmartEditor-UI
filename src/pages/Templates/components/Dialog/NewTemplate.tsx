@@ -30,6 +30,7 @@ import { useContext, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { ProjectDataContext } from '@/store/ProjectDataContext'
 import { useSelector } from 'react-redux'
+import { RootState } from '@/store'
 
 const NewTemplate = ({ trigger = null, isEdit = false }: any) => {
   const form = useForm()
@@ -39,7 +40,7 @@ const NewTemplate = ({ trigger = null, isEdit = false }: any) => {
   const [selectedConfigs, setSelectedConfigs] = useState([])
 
   const configsData = useSelector(
-    (state) => state.configurations.configsData || []
+    (state: RootState) => state.configurations.configsData || []
   )
 
   const handleSelectConfig = (config) => {

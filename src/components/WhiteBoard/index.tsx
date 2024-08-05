@@ -20,6 +20,7 @@ import UploadModal from './components/UploadModal.tsx'
 import getCursor from './cursors.tsx'
 // import './eraserBrush.jsx'
 import styles from './index.module.scss'
+import { RootState } from '@/store/index.ts'
 
 let drawInstance = null
 let origX
@@ -339,12 +340,14 @@ const Whiteboard = ({
 }) => {
   const dispatch = useDispatch()
   const projectAnnotations = useSelector(
-    (state) => state.annotations.projectAnnotations
+    (state: RootState) => state.annotations.projectAnnotations
   )
   const projectSettings = useSelector(
-    (state) => state.annotations.projectSettings
+    (state: RootState) => state.annotations.projectSettings
   )
-  const currentProject = useSelector((state) => state.project.currentProject)
+  const currentProject = useSelector(
+    (state: RootState) => state.project.currentProject
+  )
 
   console.log(projectAnnotations, 'projectAnnotations')
   console.log(projectSettings, 'projectSettings')

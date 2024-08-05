@@ -6,7 +6,16 @@ const loadState = () => {
     const serializedState = localStorage.getItem('configsData')
     if (serializedState === null) {
       return {
-        configsData: [],
+        configsData: [
+          {
+            mcc: 'Model 1',
+            modelName: 'Model 1',
+          },
+          {
+            mcc: 'Model 2',
+            modelName: 'Model 2',
+          },
+        ],
       }
     }
     const parsedState = JSON.parse(serializedState)
@@ -18,7 +27,16 @@ const loadState = () => {
   } catch (err) {
     console.error('Could not load state from localStorage', err)
     return {
-      configsData: [],
+      configsData: [
+        {
+          mcc: 'Model 1',
+          modelName: 'Model 1',
+        },
+        {
+          mcc: 'Model 2',
+          modelName: 'Model 2',
+        },
+      ],
     }
   }
 }

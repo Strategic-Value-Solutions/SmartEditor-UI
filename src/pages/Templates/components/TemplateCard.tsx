@@ -5,12 +5,13 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import DeleteTemplate from './Dialog/DeleteTemplate'
 import NewTemplate from './Dialog/NewTemplate'
+import { RootState } from '@/store'
 
 const TemplateCard = ({ id, title }: any) => {
   const [openEditModal, setOpenEditModal] = useState(false)
   const [openDeleteModal, setOpenDeleteModal] = useState(false)
   const configsData = useSelector(
-    (state) => state.configurations.configsData || []
+    (state: RootState) => state.configurations.configsData || []
   )
   const handleDeleteModal = () => setOpenDeleteModal(!openDeleteModal)
   const handleDeleteModalClose = () => setOpenDeleteModal(false)
@@ -43,7 +44,7 @@ const TemplateCard = ({ id, title }: any) => {
               />
 
               <DeleteTemplate
-                onDelete={handleDelete}
+                // onDelete={handleDelete}
                 onClose={handleDeleteModal}
                 trigger={
                   <Button

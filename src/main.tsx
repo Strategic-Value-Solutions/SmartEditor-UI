@@ -6,11 +6,11 @@ import { Provider } from 'react-redux'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import AppShell from './components/custom/app-shell'
 import { ThemeProvider } from './components/custom/theme-provider'
-import store from './store/index'
 
 import Editor from './pages/Editor/index'
 import Projects from './pages/Projects/index'
 import Templates from './pages/Templates/index'
+import { store } from './store'
 
 const Root = ({ children }: any) => {
   return <AppShell>{children}</AppShell>
