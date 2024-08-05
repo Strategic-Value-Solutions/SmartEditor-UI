@@ -28,7 +28,7 @@ import {
 import { Cross, Plus } from 'lucide-react'
 import { useContext, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { ProjectDataContext } from '../../../store/ProjectDataContext'
+import { ProjectDataContext } from '@/store/ProjectDataContext'
 
 const NewTemplate = ({ trigger = null, isEdit = false }: any) => {
   const form = useForm()
@@ -95,7 +95,7 @@ const NewTemplate = ({ trigger = null, isEdit = false }: any) => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{!isEdit? 'Create': 'Update'}</DialogTitle>
+          <DialogTitle>{!isEdit ? 'Create' : 'Update'}</DialogTitle>
         </DialogHeader>
         <DialogDescription>
           <Form {...form}>
@@ -259,7 +259,7 @@ const NewTemplate = ({ trigger = null, isEdit = false }: any) => {
                 type='submit'
                 className='mt-2 flex h-8 w-fit items-center justify-center'
               >
-                {!isEdit? 'Create': 'Update'}
+                {!isEdit ? 'Create' : 'Update'}
               </Button>
             </form>
           </Form>

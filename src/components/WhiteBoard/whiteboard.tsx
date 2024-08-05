@@ -22,7 +22,7 @@ import { FabricObject } from 'fabric' // migration path
 
 import { saveAs } from 'file-saver'
 import PdfReader from '../PdfReader/PdfReader.js'
-import getCursor from './cursors.js'
+import getCursor from './Cursors.js'
 import close from './images/bridge/close.svg'
 import floorbeam from './images/bridge/ExistingFloorBeam.svg'
 import diaphragms from './images/bridge/IntermediateDiaphragms.svg'

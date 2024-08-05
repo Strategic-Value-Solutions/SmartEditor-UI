@@ -1,6 +1,6 @@
 import { Grid2X2, List } from 'lucide-react'
-import { Input } from '../ui/input'
-import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
+import { Input } from '@/components/ui/input'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import NewTemplate from './Dialog/NewTemplate'
 
 const Header = () => {

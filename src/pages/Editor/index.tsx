@@ -2,11 +2,11 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { Box, IconButton } from '@mui/material'
 import { useCallback, useState } from 'react'
-import HeaderEditor from '../components/Editor/HeaderEditor'
-import VerticalSideBarEditorComponent from '../components/Editor/VerticalSideBarEditor'
-import Whiteboard from '../components/WhiteBoard/whiteboard'
+import HeaderEditor from './components/HeaderEditor'
+import VerticalSideBarEditorComponent from './components/VerticalSideBarEditor'
+import Whiteboard from '@/components/WhiteBoard/Whiteboard'
 
-const EditorPage = () => {
+const Editor = () => {
   const [fileReaderInfo, setFileReaderInfo] = useState({
     file: '',
     totalPages: null,
@@ -108,4 +108,4 @@ const EditorPage = () => {
   )
 }
 
-export default EditorPage
+export default Editor

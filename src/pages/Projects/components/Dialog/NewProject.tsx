@@ -30,7 +30,7 @@ import { Plus } from 'lucide-react'
 import { useContext, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
-import { ProjectDataContext } from '../../../store/ProjectDataContext'
+import { ProjectDataContext } from '@/store/ProjectDataContext'
 
 const NewProject = () => {
   const navigate = useNavigate()

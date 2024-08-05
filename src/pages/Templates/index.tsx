@@ -1,9 +1,10 @@
-import { useContext, useState } from 'react'
-import TemplateCard from '../components/Templates/TemplateCard'
-import { ProjectDataContext } from '../store/ProjectDataContext'
-import Header from '@/components/Templates/Header'
 
-const Template = () => {
+import { ProjectDataContext } from '@/store/ProjectDataContext'
+import { useContext, useState } from 'react'
+import Header from './components/Header'
+import TemplateCard from './components/TemplateCard'
+
+const Templates = () => {
   const [openModal, setOpenModal] = useState(false)
 
   const { configsData } = useContext(ProjectDataContext)
@@ -92,4 +93,4 @@ const Template = () => {
   )
 }
 
-export default Template
+export default Templates

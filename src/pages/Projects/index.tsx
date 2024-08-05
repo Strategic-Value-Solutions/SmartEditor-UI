@@ -1,7 +1,7 @@
-import Header from '@/components/Projects/Header'
-import ProjectCard from '@/components/Projects/ProjectCard'
+import { ProjectDataContext } from '@/store/ProjectDataContext'
 import { useContext } from 'react'
-import { ProjectDataContext } from '../store/ProjectDataContext'
+import ProjectCard from './components/ProjectCard'
+import Header from './components/Header'
 
 const Projects = () => {
   const { projectsData } = useContext(ProjectDataContext)

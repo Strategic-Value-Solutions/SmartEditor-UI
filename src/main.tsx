@@ -7,13 +7,9 @@ import AppShell from './components/custom/app-shell'
 import { ThemeProvider } from './components/custom/theme-provider'
 import { ProjectDataContextProvider } from './store/ProjectDataContext'
 
-import Editor from './pages/Editor'
-import Projects from './pages/Projects'
-import Templates from './pages/Templates'
-
-// const theme = createTheme({
-//   // your theme options
-// })
+import Editor from './pages/Editor/index'
+import Projects from './pages/Projects/index'
+import Templates from './pages/Templates/index'
 
 const Root = ({ children }: any) => {
   return <AppShell>{children}</AppShell>

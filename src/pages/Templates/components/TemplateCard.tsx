@@ -1,17 +1,8 @@
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { ProjectDataContext } from '@/store/ProjectDataContext'
 import { Package, Pencil, Trash2 } from 'lucide-react'
 import { useContext, useState } from 'react'
-import { ProjectDataContext } from '../../store/ProjectDataContext' // Ensure the path is correct
-import { Card } from '../ui/card'
-import { Button } from '../ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../ui/dialog'
 import DeleteTemplate from './Dialog/DeleteTemplate'
 import NewTemplate from './Dialog/NewTemplate'
 
@@ -20,8 +11,6 @@ const TemplateCard = ({ id, title }: any) => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false)
   const { configsData, setConfigsData } = useContext(ProjectDataContext)
 
-  const handleEditModalOpen = () => setOpenEditModal(true)
-  const handleEditModalClose = () => setOpenEditModal(false)
   const handleDeleteModal = () => setOpenDeleteModal(!openDeleteModal)
   const handleDeleteModalClose = () => setOpenDeleteModal(false)
 
