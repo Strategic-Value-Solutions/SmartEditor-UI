@@ -1,19 +1,23 @@
-import React, { useContext } from "react";
-import { Box, Divider, IconButton } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import imageConstants from "../../Constants/imageConstants";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+// src/components/HeaderEditor/HeaderEditor.js
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import HomeIcon from "@mui/icons-material/Home";
-// import { ProjectDataContext } from '../../ProjectDataContext'; // Import the ProjectDataContext
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import { Box, Divider, IconButton } from "@mui/material";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import imageConstants from "../../Constants/imageConstants";
 
 const HeaderEditor = () => {
-  // const { projectData } = useContext(ProjectDataContext);
-  let navigate = useNavigate();
-  // const projectTitle = projectData.projectName;
+  const navigate = useNavigate();
+  const currentProject = useSelector((state) => state.project.currentProject);
 
   function handleClose() {
     navigate("/");
+  }
+
+  if (!currentProject) {
+    return null; // Or show a loading indicator or a placeholder
   }
 
   return (
@@ -77,9 +81,8 @@ const HeaderEditor = () => {
                 color: "#000",
               }}
             >
-              Project 1
+              {currentProject.projectName}
             </Box>
-            {/* Remove projectData.siteName as it's not stored */}
           </Box>
           <Box
             display="flex"

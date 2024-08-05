@@ -1,27 +1,27 @@
-import {
-  Box,
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Modal,
-  Select,
-  Typography,
-} from "@mui/material";
 import { fabric } from "fabric";
 import { saveAs } from "file-saver";
 import PropTypes from "prop-types";
 import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addAnnotation,
+  removeAnnotation,
+  setAnnotationsForPage,
+  setProjectSettings,
+  clearAnnotations,
+} from "../../redux/slices/annotationSlice";
 import PdfReader from "../PdfReader/PdfReader";
 import ExtendedToolbar from "./components/ExtendedToolbar.jsx";
 import Toolbar from "./components/Toolbar.jsx";
+import UploadModal from "./components/UploadModal.jsx";
 import getCursor from "./cursors.jsx";
 import "./eraserBrush.jsx";
 import styles from "./index.module.scss";
+import { v4 as uuidv4 } from "uuid";
 
 let drawInstance = null;
 let origX;
-let origY;
+let origY = 0;
 let mouseDown = false;
 
 const options = {
@@ -41,8 +41,6 @@ const modes = {
   ERASER: "ERASER",
 };
 
-const pageObjects = {}; // Mapping of page numbers to objects
-
 const initCanvas = (width, height) => {
   const canvas = new fabric.Canvas("canvas", { height, width });
   fabric.Object.prototype.transparentCorners = false;
@@ -53,20 +51,21 @@ const initCanvas = (width, height) => {
   fabric.Object.prototype.padding = 10;
   fabric.Object.prototype.borderDashArray = [5, 5];
 
-  canvas.on("object:added", (e) => {
-    e.target.on("mousedown", removeObject(canvas));
-  });
-  canvas.on("path:created", (e) => {
-    e.path.on("mousedown", removeObject(canvas));
-  });
-
   return canvas;
 };
 
-function removeObject(canvas) {
+function removeObject(canvas, dispatch, projectId, pageNumber) {
   return (e) => {
     if (options.currentMode === modes.ERASER) {
-      canvas.remove(e.target);
+      const target = e.target;
+      canvas.remove(target);
+      dispatch(
+        removeAnnotation({
+          projectId,
+          pageNumber,
+          objectId: target._id,
+        })
+      );
     }
   };
 }
@@ -82,10 +81,13 @@ function removeCanvasListener(canvas) {
 }
 
 /* ==== rectangle ==== */
-function createRect(canvas, icn,fileReaderInfo) {
+function createRect(canvas, icn, fileReaderInfo, dispatch, projectId) {
   removeCanvasListener(canvas);
-
-  canvas.on("mouse:down", startAddRect(canvas, icn, fileReaderInfo));
+  console.log(projectId, "projectId");
+  canvas.on(
+    "mouse:down",
+    startAddRect(canvas, icn, fileReaderInfo, dispatch, projectId)
+  );
   canvas.on("mouse:move", startDrawingRect(canvas));
   canvas.on("mouse:up", stopDrawing);
 
@@ -96,7 +98,7 @@ function createRect(canvas, icn,fileReaderInfo) {
   canvas.discardActiveObject().requestRenderAll();
 }
 
-function startAddRect(canvas, icn, fileReaderInfo) {
+function startAddRect(canvas, icn, fileReaderInfo, dispatch, projectId) {
   return ({ e }) => {
     mouseDown = true;
 
@@ -113,15 +115,27 @@ function startAddRect(canvas, icn, fileReaderInfo) {
         scaleY: 1,
       });
 
+      img._id = uuidv4(); // Set a unique id for the object
+
       canvas.add(img);
 
-      img.on("mousedown", (e) => {
-        if (options.currentMode === modes.ERASER) {
-          canvas.remove(e.target);
-        }
-      });
+      img.on(
+        "mousedown",
+        removeObject(
+          canvas,
+          dispatch,
+          projectId,
+          fileReaderInfo.currentPageNumber
+        )
+      );
 
-      addPageObject(fileReaderInfo.currentPageNumber, img);
+      dispatch(
+        addAnnotation({
+          projectId,
+          pageNumber: fileReaderInfo.currentPageNumber,
+          object: img.toObject(), // Convert to plain object before dispatching
+        })
+      );
     });
 
     drawInstance = new fabric.Rect({
@@ -135,16 +149,27 @@ function startAddRect(canvas, icn, fileReaderInfo) {
       selectable: false,
     });
 
+    drawInstance._id = uuidv4(); // Set a unique id for the object
+
     canvas.add(drawInstance);
 
-    drawInstance.on("mousedown", (e) => {
-      if (options.currentMode === modes.ERASER) {
-        console.log("pointer", e);
-        canvas.remove(e.target);
-      }
-    });
+    drawInstance.on(
+      "mousedown",
+      removeObject(
+        canvas,
+        dispatch,
+        projectId,
+        fileReaderInfo.currentPageNumber
+      )
+    );
 
-    addPageObject(fileReaderInfo.currentPageNumber, drawInstance);
+    dispatch(
+      addAnnotation({
+        projectId,
+        pageNumber: fileReaderInfo.currentPageNumber,
+        object: drawInstance.toObject(), // Convert to plain object before dispatching
+      })
+    );
   };
 }
 
@@ -169,7 +194,7 @@ function startDrawingRect(canvas) {
   };
 }
 
-function createText(canvas) {
+function createText(canvas, fileReaderInfo, dispatch, projectId) {
   removeCanvasListener(canvas);
 
   canvas.isDrawingMode = false;
@@ -181,41 +206,69 @@ function createText(canvas) {
     editable: true,
   });
 
+  text._id = uuidv4(); // Set a unique id for the object
+
   canvas.add(text);
   canvas.renderAll();
 
-  addPageObject(fileReaderInfo.currentPageNumber, text);
+  text.on(
+    "mousedown",
+    removeObject(canvas, dispatch, projectId, fileReaderInfo.currentPageNumber)
+  );
+
+  dispatch(
+    addAnnotation({
+      projectId,
+      pageNumber: fileReaderInfo.currentPageNumber,
+      object: text.toObject(), // Convert to plain object before dispatching
+    })
+  );
 }
 
-function changeToErasingMode(canvas) {
+function changeToErasingMode(canvas, dispatch, projectId, pageNumber) {
   console.log("changeToErasingMode", options.currentMode);
-  // if (options.currentMode !== modes.ERASER) {
-  console.log("if condition");
   removeCanvasListener(canvas);
 
   canvas.isDrawingMode = false;
 
   options.currentMode = modes.ERASER;
   canvas.hoverCursor = `url(${getCursor({ type: "eraser" })}), default`;
-  // }
+
+  canvas.getObjects().forEach((obj) => {
+    obj.on("mousedown", removeObject(canvas, dispatch, projectId, pageNumber));
+  });
 }
 
-function onSelectMode(canvas) {
+function onSelectMode(canvas, dispatch, projectId, pageNumber) {
   options.currentMode = "";
   canvas.isDrawingMode = false;
 
   removeCanvasListener(canvas);
 
-  canvas.getObjects().map((item) => item.set({ selectable: true }));
+  canvas.getObjects().forEach((item) => {
+    item.set({ selectable: true });
+  });
+
+  // Dispatch an action to update all objects in the state
+  dispatch(
+    setAnnotationsForPage({
+      projectId,
+      pageNumber,
+      objects: canvas.getObjects().map((obj) => obj.toObject()),
+    })
+  );
+
   canvas.hoverCursor = "all-scroll";
 }
 
-function clearCanvas(canvas) {
+function clearCanvas(canvas, dispatch, projectId, pageNumber) {
   canvas.getObjects().forEach((item) => {
-    if (item !== canvas.backgroundImage) {
-      canvas.remove(item);
-    }
+    dispatch(removeAnnotation({ projectId, pageNumber, objectId: item._id }));
+    canvas.remove(item);
   });
+
+  // Dispatch an action to clear all annotations for the page
+  dispatch(clearAnnotations({ projectId, pageNumber }));
 }
 
 function canvasToJson(canvas) {
@@ -229,16 +282,6 @@ function canvasToJson(canvas) {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
-}
-
-function draw(canvas) {
-  if (options.currentMode !== modes.PENCIL) {
-    removeCanvasListener(canvas);
-
-    options.currentMode = modes.PENCIL;
-    canvas.freeDrawingBrush.width = parseInt(options.currentWidth, 10) || 1;
-    canvas.isDrawingMode = true;
-  }
 }
 
 function handleResize(callback) {
@@ -262,172 +305,29 @@ function resizeCanvas(canvas, whiteboard) {
   };
 }
 
-function addPageObject(pageNumber, object) {
-  if (!pageObjects[pageNumber]) {
-    pageObjects[pageNumber] = [];
-  }
-  pageObjects[pageNumber].push(object);
-}
-
-function filterObjectsByPage(canvas, pageNumber) {
+function filterObjectsByPage(
+  canvas,
+  pageNumber,
+  projectAnnotations,
+  projectId
+) {
   canvas.getObjects().forEach((obj) => {
     obj.set({ visible: false });
   });
 
-  if (pageObjects[pageNumber]) {
-    pageObjects[pageNumber].forEach((obj) => {
-      obj.set({ visible: true });
+  if (
+    projectAnnotations[projectId] &&
+    projectAnnotations[projectId][pageNumber]
+  ) {
+    const objects = projectAnnotations[projectId][pageNumber];
+    fabric.util.enlivenObjects(objects, (enlivenedObjects) => {
+      enlivenedObjects.forEach((enlivenedObj) => {
+        enlivenedObj.set({ visible: true });
+        canvas.add(enlivenedObj);
+      });
+      canvas.renderAll();
     });
   }
-
-  canvas.renderAll();
-}
-
-function UploadModal({
-  uploadImageRef,
-  uploadPdfRef,
-  isOpen,
-  setIsOpen,
-  pickNumber,
-  setPickNumber,
-  uploadImage,
-  onFileChange,
-}) {
-  return (
-    <Modal open={isOpen} onClose={() => setIsOpen(false)}>
-      <Box
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          bgcolor: "background.paper",
-          boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
-          p: 4,
-          borderRadius: 4,
-          minWidth: 300,
-          maxWidth: "90vw",
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h6" color="text.primary" gutterBottom>
-          Upload File and Select Type
-        </Typography>
-        <FormControl
-          fullWidth
-          sx={{
-            mb: 2,
-          }}
-        >
-          <InputLabel id="pick-number-label">Selections</InputLabel>
-          <Select
-            labelId="pick-number-label"
-            value={pickNumber}
-            onChange={(e) => setPickNumber(e.target.value)}
-            label="Selections"
-            defaultValue=""
-          >
-            <MenuItem value="Master Structure">Master Structure</MenuItem>
-            <MenuItem value="Project Area">Project Area</MenuItem>
-            <MenuItem value="Inspection Area">Inspection Area</MenuItem>
-            <MenuItem value="Inspection Type">Inspection Type</MenuItem>
-            <MenuItem value="Component">Component</MenuItem>
-          </Select>
-        </FormControl>
-        <Box
-          sx={{
-            display: "flex",
-            width: "100%",
-            justifyContent: "space-around",
-            mb: 2,
-          }}
-        >
-          <Button
-            variant="contained"
-            component="label"
-            sx={{
-              backgroundColor: "#2979ff",
-              ":hover": {
-                backgroundColor: "#5393ff",
-              },
-              borderRadius: 2,
-              textTransform: "none",
-            }}
-          >
-            Upload Image
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              ref={uploadImageRef}
-              onChange={uploadImage}
-            />
-          </Button>
-          <Button
-            variant="contained"
-            component="label"
-            sx={{
-              backgroundColor: "#ff5722",
-              ":hover": {
-                backgroundColor: "#ff8a50",
-              },
-              borderRadius: 2,
-              textTransform: "none",
-            }}
-          >
-            Upload PDF
-            <input
-              type="file"
-              hidden
-              accept=".pdf"
-              ref={uploadPdfRef}
-              onChange={onFileChange}
-            />
-          </Button>
-        </Box>
-        <Box
-          sx={{
-            mt: 2,
-            display: "flex",
-            gap: 1,
-          }}
-        >
-          <Button
-            onClick={() => setIsOpen(false)}
-            variant="contained"
-            sx={{
-              backgroundColor: "#00e676",
-              color: "white",
-              ":hover": {
-                backgroundColor: "#33eb91",
-              },
-            }}
-            color="primary"
-          >
-            Submit
-          </Button>
-          <Button
-            onClick={() => setIsOpen(false)}
-            variant="outlined"
-            sx={{
-              borderColor: "#00e676",
-              color: "#00e676",
-              ":hover": {
-                borderColor: "#00e676",
-                color: "#00e676",
-              },
-            }}
-            color="secondary"
-          >
-            Cancel
-          </Button>
-        </Box>
-      </Box>
-    </Modal>
-  );
 }
 
 const Whiteboard = ({
@@ -435,6 +335,19 @@ const Whiteboard = ({
   fileReaderInfo,
   updateFileReaderInfo,
 }) => {
+  const dispatch = useDispatch();
+  const projectAnnotations = useSelector(
+    (state) => state.annotations.projectAnnotations
+  );
+  const projectSettings = useSelector(
+    (state) => state.annotations.projectSettings
+  );
+  const currentProject = useSelector((state) => state.project.currentProject);
+
+  console.log(projectAnnotations, "projectAnnotations");
+  console.log(projectSettings, "projectSettings");
+  console.log(currentProject, "currentProject");
+
   const [canvas, setCanvas] = useState(null);
   const [brushWidth, setBrushWidth] = useState(1);
   const [isFill, setIsFill] = useState(false);
@@ -463,19 +376,27 @@ const Whiteboard = ({
   }, [canvas, canvasRef]);
 
   useEffect(() => {
-    if (isPdfLoaded) {
-      setIsOpen(false);
+    if (
+      canvas &&
+      fileReaderInfo.currentPageNumber !== undefined &&
+      currentProject
+    ) {
+      filterObjectsByPage(
+        canvas,
+        fileReaderInfo.currentPageNumber,
+        projectAnnotations,
+        currentProject._id
+      );
     }
-  }, [isPdfLoaded]);
+  }, [
+    fileReaderInfo.currentPageNumber,
+    canvas,
+    projectAnnotations,
+    currentProject,
+  ]);
 
   useEffect(() => {
-    if (canvas && fileReaderInfo.currentPageNumber !== undefined) {
-      filterObjectsByPage(canvas, fileReaderInfo.currentPageNumber);
-    }
-  }, [fileReaderInfo.currentPageNumber, canvas]);
-
-  useEffect(() => {
-    if (canvas) {
+    if (canvas && fileReaderInfo.currentPage && currentProject) {
       const center = canvas.getCenter();
       fabric.Image.fromURL(fileReaderInfo?.currentPage, (img) => {
         img.scaleToHeight(canvas.height);
@@ -489,7 +410,7 @@ const Whiteboard = ({
         canvas.renderAll();
       });
     }
-  }, [fileReaderInfo?.currentPage]);
+  }, [fileReaderInfo?.currentPage, currentProject]);
 
   function uploadImage(e) {
     const reader = new FileReader();
@@ -499,7 +420,13 @@ const Whiteboard = ({
       fabric.Image.fromURL(reader.result, (img) => {
         img.scaleToHeight(canvas.height);
         canvas.add(img);
-        addPageObject(fileReaderInfo.currentPageNumber, img);
+        dispatch(
+          addAnnotation({
+            projectId: currentProject._id,
+            pageNumber: fileReaderInfo.currentPageNumber,
+            object: img.toObject(), // Convert to plain object before dispatching
+          })
+        );
       });
     });
 
@@ -547,6 +474,7 @@ const Whiteboard = ({
         uploadPdfRef={uploadPdfRef}
         isOpen={isOpen}
         setIsOpen={setIsOpen}
+        projectId={currentProject?._id}
         pickNumber={pickNumber}
         setPickNumber={setPickNumber}
         uploadImage={uploadImage}
@@ -557,7 +485,9 @@ const Whiteboard = ({
         canvas={canvas}
         showExtendedToolbar={showExtendedToolbar}
         toggleExtendedToolbar={toggleExtendedToolbar}
-        createRect={createRect}
+        createRect={(canvas, icn, fileReaderInfo) =>
+          createRect(canvas, icn, fileReaderInfo, dispatch, currentProject?._id)
+        }
         fileReaderInfo={fileReaderInfo}
       />
       <Toolbar
@@ -569,10 +499,33 @@ const Whiteboard = ({
         onFileChange={onFileChange}
         onSaveCanvasAsImage={onSaveCanvasAsImage}
         toggleExtendedToolbar={toggleExtendedToolbar}
-        onSelectMode={onSelectMode}
-        createText={createText}
-        changeToErasingMode={changeToErasingMode}
-        clearCanvas={clearCanvas}
+        onSelectMode={(canvas) =>
+          onSelectMode(
+            canvas,
+            dispatch,
+            currentProject?._id,
+            fileReaderInfo.currentPageNumber
+          )
+        }
+        createText={(canvas) =>
+          createText(canvas, fileReaderInfo, dispatch, currentProject?._id)
+        }
+        changeToErasingMode={(canvas) =>
+          changeToErasingMode(
+            canvas,
+            dispatch,
+            currentProject?._id,
+            fileReaderInfo.currentPageNumber
+          )
+        }
+        clearCanvas={(canvas) =>
+          clearCanvas(
+            canvas,
+            dispatch,
+            currentProject?._id,
+            fileReaderInfo.currentPageNumber
+          )
+        }
         canvasToJson={canvasToJson}
       />
 
