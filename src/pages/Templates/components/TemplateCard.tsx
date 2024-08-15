@@ -17,7 +17,10 @@ const TemplateCard = ({ configuration, onEdit, onConfirm }: any) => {
             <button onClick={onEdit} className='h-6 rounded p-1'>
               <Pencil size={15} />
             </button>
-            <button onClick={onConfirm} className='h-6 rounded bg-red-400 p-1 text-white'>
+            <button
+              onClick={onConfirm}
+              className='h-6 rounded bg-red-400 p-1 text-white'
+            >
               <Trash2 size={15} />
             </button>
           </div>

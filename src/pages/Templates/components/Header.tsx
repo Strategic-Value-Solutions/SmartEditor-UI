@@ -1,9 +1,9 @@
 //@ts-nocheck
-import { Grid2X2, List, Plus } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import NewTemplate from './Dialog/NewTemplate'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Grid2X2, List, Plus } from 'lucide-react'
 
 const Header = ({
   setViewType,

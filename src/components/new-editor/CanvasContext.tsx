@@ -3,13 +3,9 @@ import imageConstants from '@/constants/imageConstants'
 import * as fabric from 'fabric'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import { PDFDocument, rgb, degrees } from 'pdf-lib'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
 const editorFunctions = createContext()
@@ -26,17 +22,18 @@ export const CanvasProvider = ({ children }) => {
   const [hideCanvas, setHiddenCanvas] = useState(false)
   const [canvas, setCanvas] = useState<fabric.Canvas>(null)
   const [borderColor] = useState('#f4a261')
-  const [color] = useState('#f4a261')
+  const [color] = useState('#000000')
   const [mode, setMode] = useState('select')
   const [activeIcon, setActiveIcon] = useState(null)
   const activeIconRef = useRef(activeIcon)
-  const exportPage = useRef(null)
   const [exportPages, setExportPages] = useState([])
-
+  const [pdfDimensions, setPdfDimensions] = useState({ width: 0, height: 0 })
   const [edits, setEdits] = useState({})
+  const [isSelectFilePDF, setIsSelectFilePDF] = useState(false)
 
   useEffect(() => {
     activeIconRef.current = activeIcon
+    updateCursorStyle()
   }, [activeIcon])
 
   const saveCanvasState = (pageNumber) => {
@@ -58,9 +55,16 @@ export const CanvasProvider = ({ children }) => {
     }
   }
 
-  console.log(mode)
+  const addPdfDimensions = (dimensions) => {
+    if (!dimensions.width || !dimensions.height) {
+      toast.error('Invalid dimensions')
+      return
+    }
+    setPdfDimensions(dimensions)
+  }
+
   const handleCanvasClick = async (event) => {
-    if (!canvas) return
+    if (!canvas || mode === 'erase') return
     const pointer = canvas.getPointer(event.e)
 
     if (mode === 'create-rect') {
@@ -86,16 +90,17 @@ export const CanvasProvider = ({ children }) => {
       })
       canvas.add(circle)
     } else if (mode === 'create-text') {
-      const text = new fabric.Textbox('Type Here ...', {
+      const text = new fabric.Textbox('', {
         left: pointer.x,
         top: pointer.y,
         fill: color,
         fontFamily: 'roboto',
-        selectable: false,
+        selectable: true,
+        editable: true, // Make the textbox editable
       })
       canvas.add(text)
-    } else if (mode === 'erase') {
-      removeObject(event)
+      canvas.setActiveObject(text) // Automatically select the text box so the user can start typing
+      text.enterEditing() // Put the text box into editing mode
     } else if (mode === 'addIcon' && activeIconRef.current) {
       const imgElement = document.createElement('img')
       imgElement.crossOrigin = 'anonymous'
@@ -117,19 +122,47 @@ export const CanvasProvider = ({ children }) => {
 
     canvas.renderAll()
   }
-  React.useEffect(() => {
-    if (document.getElementById('canvasWrapper'))
-      document.getElementById('canvasWrapper').style.visibility =
-        document.getElementById('canvasWrapper').style.visibility == 'hidden'
-          ? 'visible'
-          : 'hidden'
+
+  useEffect(() => {
+    const canvasWrapper = document.getElementById('canvasWrapper')
+    if (canvasWrapper) {
+      canvasWrapper.style.visibility = hideCanvas ? 'hidden' : 'visible'
+    }
   }, [hideCanvas])
 
   const resetCanvasListeners = () => {
     if (canvas) {
       canvas.off('mouse:down', handleCanvasClick)
+      canvas.off('mouse:down', removeObject)
       canvas.selection = true
       canvas.forEachObject((obj) => (obj.selectable = true))
+    }
+  }
+
+  const removeObject = (event) => {
+    if (mode === 'erase' && canvas) {
+      const target = canvas.findTarget(event.e)
+      if (target) {
+        canvas.remove(target)
+        canvas.renderAll()
+      }
+    }
+  }
+
+  const updateCursorStyle = () => {
+    if (!canvas) return
+    if (mode === 'erase') {
+      canvas.defaultCursor = `url(${imageConstants.removeCursor}) 12 12, auto`
+      canvas.hoverCursor = `url(${imageConstants.removeCursor}) 12 12, auto`
+    }
+    // else if (mode === 'addIcon') {
+    //   canvas.defaultCursor = `url(${activeIconRef.current}) 12 12, auto`
+    // }
+    else if (mode === 'select' || mode === 'move') {
+      canvas.defaultCursor = `url(${imageConstants.SelectIcon}) 12 12, auto`
+    } else {
+      canvas.defaultCursor = 'default'
+      canvas.hoverCursor = 'pointer'
     }
   }
 
@@ -151,6 +184,8 @@ export const CanvasProvider = ({ children }) => {
       canvas.forEachObject((obj) => (obj.selectable = true))
     }
 
+    updateCursorStyle()
+
     canvas.renderAll()
 
     return () => {
@@ -163,32 +198,115 @@ export const CanvasProvider = ({ children }) => {
       saveCanvasState(currPage)
       loadCanvasState(currPage)
     }
-  }, [currPage])
+  }, [currPage, canvas])
 
-  // Various functionalities for the editor
-  const downloadPage = () => {
+  const downloadPageAsImage = () => {
+    if (!canvas || !pdfDimensions.width || !pdfDimensions.height) {
+      toast.error('Canvas or PDF dimensions are not available.')
+      return
+    }
+
     setExporting(true)
-    canvas.renderAll() // Ensure the canvas is fully rendered
 
     const doc = document.querySelector('#singlePageExport')
-    html2canvas(doc).then((canvasEl) => {
-      const imgData = canvasEl.toDataURL('image/png')
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'px',
-        format: [canvasEl.width, canvasEl.height],
-      })
-      pdf.addImage(imgData, 'PNG', 0, 0)
-      pdf.save('edited.pdf')
-      setExporting(false)
+
+    // Use html2canvas to capture the canvas, which includes both PDF content and annotations
+    html2canvas(doc, {
+      scale: 2, // Improve quality
+      useCORS: true,
+      allowTaint: true,
     })
+      .then((canvasEl) => {
+        const imgData = canvasEl.toDataURL('image/png')
+
+        // Create a download link and trigger the download
+        const link = document.createElement('a')
+        link.href = imgData
+        link.download = `annotated_page_${currPage}.png`
+        link.click()
+
+        setExporting(false)
+      })
+      .catch((error) => {
+        toast.error('Failed to download the image.')
+        setExporting(false)
+      })
   }
 
-  const addImage = (e, canvas) => {
-    var file = e.target.files[0]
-    var reader = new FileReader()
+  // Various functionalities for the editor
+  const downloadPageAsPDF = () => {
+    if (!canvas || !pdfDimensions.width || !pdfDimensions.height) {
+      toast.error('Canvas or PDF dimensions are not available.')
+      return
+    }
+
+    setExporting(true)
+
+    // Render the canvas to ensure all elements are drawn
+    canvas.renderAll()
+    const doc = document.querySelector('#singlePageExport')
+    // Use html2canvas to capture the canvas, which includes both PDF content and annotations
+    html2canvas(doc, {
+      scale: 2, // Improve quality
+      useCORS: true,
+      allowTaint: true,
+    })
+      .then((canvasEl) => {
+        const imgData = canvasEl.toDataURL('image/png')
+
+        // Create a new jsPDF instance with the PDF's dimensions
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'px',
+          format: [pdfDimensions.width, pdfDimensions.height],
+        })
+
+        // Add the captured image to the PDF
+        pdf.addImage(
+          imgData,
+          'PNG',
+          0,
+          0,
+          pdfDimensions.width,
+          pdfDimensions.height
+        )
+
+        // Save the PDF with annotations
+        pdf.save(`annotated_page_${currPage}.pdf`)
+
+        setExporting(false)
+      })
+      .catch((error) => {
+        toast.error('Failed to download the PDF.')
+        setExporting(false)
+      })
+  }
+
+  const downloadCanvasAsImage = () => {
+    if (canvas) {
+      // Render the canvas to ensure all elements are drawn
+      canvas.renderAll()
+
+      // Convert the canvas to a data URL
+      const dataURL = canvas.toDataURL({
+        format: 'png',
+        quality: 1.0,
+        multiplier: 2, // Increase the resolution by setting a higher multiplier
+      })
+
+      // Create a download link and trigger the download
+      const link = document.createElement('a')
+      link.href = dataURL
+      link.download = `canvas_${currPage}.png`
+      link.click()
+    }
+  }
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0]
+    const reader = new FileReader()
     reader.onload = function (f) {
-      var data = f.target.result
+      const data = f.target.result
       fabric.Image.fromURL(data, function (img) {
         img.scaleToWidth(300)
         canvas.add(img).renderAll()
@@ -198,17 +316,51 @@ export const CanvasProvider = ({ children }) => {
     canvas.isDrawingMode = false
   }
 
-  const removeObject = (e) => {
-    const activeObject = canvas.getActiveObject()
-    if (activeObject) {
-      canvas.remove(activeObject)
+  const handlePdfUpload = (e) => {
+    const file = e.target.files[0]
+    const reader = new FileReader()
+
+    reader.onload = function () {
+      const loadingTask = window.pdfjsLib.getDocument({ data: reader.result })
+      loadingTask.promise.then((pdf) => {
+        const numPages = pdf.numPages
+        setNumPages(numPages)
+
+        // Load the first page as an example
+        pdf.getPage(1).then((page) => {
+          const viewport = page.getViewport({ scale: 1.5 })
+          const canvasElement = document.createElement('canvas')
+          const context = canvasElement.getContext('2d')
+
+          canvasElement.height = viewport.height
+          canvasElement.width = viewport.width
+
+          const renderContext = {
+            canvasContext: context,
+            viewport: viewport,
+          }
+
+          page.render(renderContext).promise.then(() => {
+            const imgData = canvasElement.toDataURL('image/png')
+            fabric.Image.fromURL(imgData, function (img) {
+              img.scaleToWidth(600)
+              canvas.add(img).renderAll()
+            })
+          })
+        })
+      })
     }
+    reader.readAsArrayBuffer(file)
+    canvas.isDrawingMode = false
+  }
+
+  const clearCanvas = () => {
+    canvas.clear()
+    canvas.renderAll()
   }
 
   const eraseMode = () => {
     setMode('erase')
-    canvas.isDrawingMode = false
-    canvas.hoverCursor = `url(${imageConstants.removeCursor}) 12 12, auto`
   }
 
   const addRect = () => {
@@ -229,6 +381,156 @@ export const CanvasProvider = ({ children }) => {
 
   const moveMode = () => {
     setMode('move')
+  }
+
+  const downloadPDFWithAnnotations = async () => {
+    if (
+      !canvas ||
+      !pdfDimensions.width ||
+      !pdfDimensions.height ||
+      !numPages ||
+      !selectedFile
+    ) {
+      toast.error('Canvas, PDF dimensions, or pages not available.')
+      return
+    }
+
+    const json = canvas.toJSON()
+
+    // Read the selected PDF file
+    const fileReader = new FileReader()
+    fileReader.readAsArrayBuffer(selectedFile)
+
+    fileReader.onload = async function () {
+      const originalPdfBytes = fileReader.result
+      const originalPdfDoc = await PDFDocument.load(originalPdfBytes)
+      const pdfDoc = await PDFDocument.create()
+
+      for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+        // Copy the original page from the original PDF
+        const [originalPage] = await pdfDoc.copyPages(originalPdfDoc, [
+          pageNum - 1,
+        ])
+        const page = pdfDoc.addPage(originalPage)
+
+        // Load the canvas state for the current page
+        setCurrPage(pageNum)
+        loadCanvasState(pageNum) // Ensure this loads the correct state without resetting
+        await new Promise((resolve) => setTimeout(resolve, 500)) // Wait for the content to render
+
+        // Ensure all objects are loaded and rendered
+        canvas.renderAll()
+
+        if (!json.objects || json.objects.length === 0) {
+          toast.error('No objects found on the canvas for page ' + pageNum)
+          return
+        }
+
+        // Iterate over the canvas objects and apply them to the PDF
+        for (const obj of json.objects) {
+          const type = obj.type.toLowerCase()
+
+          switch (type) {
+            case 'rect':
+              page.drawRectangle({
+                x: obj.left,
+                y: pdfDimensions.height - obj.top - obj.height,
+                width: obj.width,
+                height: obj.height,
+                borderColor: rgb(
+                  obj.stroke ? obj.stroke.r / 255 : 0,
+                  obj.stroke ? obj.stroke.g / 255 : 0,
+                  obj.stroke ? obj.stroke.b / 255 : 0
+                ),
+                borderWidth: obj.strokeWidth || 1,
+                color: rgb(
+                  obj.fill ? obj.fill.r / 255 : 0,
+                  obj.fill ? obj.fill.g / 255 : 0,
+                  obj.fill ? obj.fill.b / 255 : 0
+                ),
+              })
+              break
+
+            case 'circle':
+              page.drawEllipse({
+                x: obj.left + obj.radius,
+                y: pdfDimensions.height - obj.top - obj.radius,
+                xScale: obj.radius,
+                yScale: obj.radius,
+                borderColor: rgb(
+                  obj.stroke ? obj.stroke.r / 255 : 0,
+                  obj.stroke ? obj.stroke.g / 255 : 0,
+                  obj.stroke ? obj.stroke.b / 255 : 0
+                ),
+                borderWidth: obj.strokeWidth || 1,
+                color: rgb(
+                  obj.fill ? obj.fill.r / 255 : 0,
+                  obj.fill ? obj.fill.g / 255 : 0,
+                  obj.fill ? obj.fill.b / 255 : 0
+                ),
+              })
+              break
+
+            case 'textbox':
+            case 'text':
+              page.drawText(obj.text, {
+                x: obj.left,
+                y: pdfDimensions.height - obj.top - obj.fontSize,
+                size: obj.fontSize || 16,
+              })
+              break
+
+            case 'image':
+              // Handle SVG conversion to PNG for embedding
+              const svgToPng = async (svgData) => {
+                const img = new Image()
+                img.src = svgData
+                await new Promise((resolve) => (img.onload = resolve))
+
+                const canvas = document.createElement('canvas')
+                canvas.width = img.width
+                canvas.height = img.height
+
+                const ctx = canvas.getContext('2d')
+                ctx.drawImage(img, 0, 0)
+
+                return canvas.toDataURL('image/png')
+              }
+
+              const pngDataUrl = await svgToPng(obj.src)
+              const pngBytes = await fetch(pngDataUrl).then((res) =>
+                res.arrayBuffer()
+              )
+              const pngImage = await pdfDoc.embedPng(pngBytes)
+
+              // Calculate transformation matrix
+              const { left, top, width, height, scaleX, scaleY, angle } = obj
+
+              // Apply the transformation directly when drawing the image
+              page.drawImage(pngImage, {
+                x: left,
+                y: pdfDimensions.height - top - height * scaleY,
+                width: width * scaleX,
+                height: height * scaleY,
+                rotate: degrees(angle), // Rotation using degrees
+              })
+              break
+
+            default:
+              console.warn('Unhandled type:', type)
+              break
+          }
+        }
+      }
+
+      canvas.renderAll()
+      const pdfBytes = await pdfDoc.save()
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = 'annotated_document.pdf'
+      link.click()
+    }
   }
 
   let drawInstance = null
@@ -334,10 +636,6 @@ export const CanvasProvider = ({ children }) => {
     setActiveIcon(icon)
   }
 
-  const exportPdf = () => {
-    setExportPages((prev) => [...prev, exportPage.current])
-  }
-
   const downloadJSON = () => {
     var json = canvas.toJSON()
 
@@ -384,14 +682,19 @@ export const CanvasProvider = ({ children }) => {
         setFile,
         edits,
         setEdits,
-        exportPage,
-        exportPdf,
-        downloadPage,
-        isExporting,
-        hideCanvas,
+        downloadPageAsPDF,
+        addPdfDimensions,
         setHiddenCanvas,
         downloadJSON,
-        loadNewPDF, //
+        loadNewPDF,
+        clearCanvas,
+        handlePdfUpload, // Function to load a new PDF
+        handleImageUpload, // Function to load an image
+        downloadCanvasAsImage, // Function to download canvas as an image
+        downloadPageAsImage,
+        setIsSelectFilePDF,
+        isSelectFilePDF,
+        downloadPDFWithAnnotations,
       }}
     >
       {children}

@@ -1,10 +1,4 @@
 //@ts-nocheck
-import ConfirmationDialog from '@/components/ui/confirmation-dialog'
-import { RootState } from '@/store'
-import { deleteProject, setCurrentProject } from '@/store/slices/projectSlice'
-import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
 import {
   Table,
   TableBody,
@@ -13,12 +7,18 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/table'
+import NewProject from './components/Dialog/NewProject'
 import Header from './components/Header'
 import ProjectCard from './components/ProjectCard'
-import { toast } from 'sonner'
-import { Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import NewProject from './components/Dialog/NewProject'
+import ConfirmationDialog from '@/components/ui/confirmation-dialog'
+import { RootState } from '@/store'
+import { deleteProject, setCurrentProject } from '@/store/slices/projectSlice'
+import { Pencil, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 const Projects = () => {
   const projectsData = useSelector(

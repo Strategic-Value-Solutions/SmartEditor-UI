@@ -1,12 +1,4 @@
 // @ts-nocheck
-
-import * as fabric from 'fabric'
-import { FabricObject } from 'fabric'
-import { saveAs } from 'file-saver'
-import PropTypes from 'prop-types'
-import { useEffect, useRef, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { v4 as uuidv4 } from 'uuid'
 import {
   addAnnotation,
   clearAnnotations,
@@ -21,6 +13,13 @@ import getCursor from './cursors.tsx'
 // import './eraserBrush.jsx'
 import styles from './index.module.scss'
 import { RootState } from '@/store/index.ts'
+import * as fabric from 'fabric'
+import { FabricObject } from 'fabric'
+import { saveAs } from 'file-saver'
+import PropTypes from 'prop-types'
+import { useEffect, useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { v4 as uuidv4 } from 'uuid'
 
 let drawInstance = null
 let origX

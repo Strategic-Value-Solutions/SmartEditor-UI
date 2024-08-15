@@ -1,7 +1,7 @@
 // @ts-nocheck
-import React, { useEffect, useRef } from 'react'
 import styles from '../index.module.scss'
 import imageConstants from '@/constants/imageConstants'
+import React, { useEffect, useRef } from 'react'
 
 const Toolbar = ({
   canvas,

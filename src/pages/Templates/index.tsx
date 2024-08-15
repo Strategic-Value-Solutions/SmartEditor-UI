@@ -1,8 +1,4 @@
 // @ts-nocheck
-import { RootState } from '@/store'
-import { deleteConfig } from '@/store/slices/configurationSlice'
-import { useEffect, useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
 import {
   Table,
   TableBody,
@@ -11,12 +7,16 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/table'
+import NewTemplate from './components/Dialog/NewTemplate'
 import Header from './components/Header'
 import TemplateCard from './components/TemplateCard'
-import { Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import NewTemplate from './components/Dialog/NewTemplate'
 import ConfirmationDialog from '@/components/ui/confirmation-dialog'
+import { RootState } from '@/store'
+import { deleteConfig } from '@/store/slices/configurationSlice'
+import { Pencil, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'sonner'
 
 const Templates = () => {

@@ -22,7 +22,11 @@ const DeleteTemplate = ({ trigger, onConfirm, onClose }: any) => {
         </DialogDescription>
         <DialogFooter>
           <Button onClick={onClose}>Cancel</Button>
-          <Button onClick={onConfirm} color='destructive' className='bg-red-500'>
+          <Button
+            onClick={onConfirm}
+            color='destructive'
+            className='bg-red-500'
+          >
             Confirm
           </Button>
         </DialogFooter>

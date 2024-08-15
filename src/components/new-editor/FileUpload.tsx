@@ -2,9 +2,10 @@
 import ExtendedToolbar from '../WhiteBoard/components/ExtendedToolbar'
 import { useEditor } from './CanvasContext'
 import Components from './Components'
+import ImageCanvas from './ImageCanvas'
 import Loader from './Loader'
+import PdfCanvas from './PdfCanvas'
 import * as fabric from 'fabric'
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Document, Page, pdfjs } from 'react-pdf'
@@ -29,21 +30,25 @@ export default function FileUpload() {
   const { getRootProps, getInputProps } = useDropzone({
     onDrop: (files) => {
       setIsDocLoading(true)
-      editor.setFile(files[0])
+      const file = files[0]
+      const fileType = file.type
+
+      if (fileType.includes('pdf')) {
+        // Handle PDF file
+        editor.setFile(file)
+        editor.setIsSelectFilePDF(true)
+      } else {
+        editor.setIsSelectFilePDF(false)
+        initCanvas(1000, 820)
+        editor.setFile(file)
+        setIsDocLoading(false)
+      }
+    },
+    accept: {
+      'application/pdf': ['.pdf'],
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif'],
     },
   })
-
-  function onDocumentLoadSuccess({ numPages, originalHeight, originalWidth }) {
-    editor.setEdits({})
-    editor.setNumPages(numPages)
-    editor.setCurrPage(1)
-
-    // Set page dimensions for canvas
-    setPageDimensions({ width: originalWidth, height: originalHeight })
-
-    editor.setCanvas(initCanvas(originalWidth, originalHeight))
-    setTimeout(() => setIsDocLoading(false), 2000)
-  }
 
   function changePage(offset) {
     const page = editor.currPage
@@ -73,99 +78,29 @@ export default function FileUpload() {
   return (
     <div className='flex w-full justify-center'>
       {editor.selectedFile && (
-        <Components toggleExtendedToolbar={toggleExtendedToolbar} />
+        <Components
+          toggleExtendedToolbar={toggleExtendedToolbar}
+          getInputProps={getInputProps}
+        />
       )}
       {editor.selectedFile ? (
-        <div
-          className={`flex flex-col items-center justify-center w-full ${
-            editor.theme
-              ? 'bg-[rgb(20,20,20)] text-white'
-              : 'bg-white text-black'
-          }`}
-        >
-          <div
-            className={`flex items-center justify-center ${
-              editor.theme
-                ? 'bg-[rgb(20,20,20)] text-white'
-                : 'bg-white text-black'
-            }`}
-          >
-            <div
-              id='singlePageExport'
-              className={`relative flex items-center justify-center ${
-                editor.theme
-                  ? 'bg-[rgb(20,20,20)] text-white'
-                  : 'bg-white text-black'
-              }`}
-            >
-              {isDocLoading && (
-                <>
-                  <div className='fixed top-0 z-[1001] h-full w-full bg-[rgba(50,50,50,0.2)] backdrop-blur-sm'></div>
-                  <div className='fixed top-0 z-[1100] flex h-full w-full items-center justify-center'>
-                    <Loader color={'#606060'} size={120} stokeWidth={'5'} />
-                  </div>
-                </>
-              )}
-              <Document
-                file={editor.selectedFile}
-                onLoadSuccess={(pdf) =>
-                  pdf.getPage(editor.currPage).then((page) =>
-                    onDocumentLoadSuccess({
-                      numPages: pdf.numPages,
-                      originalHeight: page.view[3],
-                      originalWidth: page.view[2],
-                    })
-                  )
-                }
-                className='flex justify-center'
-                id='doc'
-              >
-                <div
-                  className='absolute z-[9] px-4 py-4'
-                  id='canvasWrapper'
-                  style={{ visibility: 'visible' }}
-                >
-                  <canvas id='canvas' />
-                </div>
-                <div
-                  className={`px-4 py-4 ${
-                    !editor.isExporting && editor.theme
-                      ? 'border-none bg-[rgb(25,25,25)] shadow-[0px_0px_16px_rgb(0,0,0)]'
-                      : 'border shadow-lg'
-                  }`}
-                >
-                  <Page
-                    pageNumber={editor.currPage}
-                    id='docPage'
-                    width={pageDimensions.width}
-                    height={pageDimensions.height}
-                  />
-                </div>
-              </Document>
-            </div>
-          </div>
-          <div className='fixed bottom-2 z-50 flex w-full items-center justify-center gap-3'>
-            {editor.currPage > 1 && (
-              <button
-                onClick={() => changePage(-1)}
-                className='rounded-md bg-gray-800 px-4 py-2 text-white'
-              >
-                <ChevronLeft />
-              </button>
-            )}
-            <div className='rounded-md bg-gray-800 px-4 py-2 text-white'>
-              Page {editor.currPage} of {editor.numPages}
-            </div>
-            {editor.currPage < editor.numPages && (
-              <button
-                onClick={() => changePage(1)}
-                className='rounded-md bg-gray-800 px-4 py-2 text-white'
-              >
-                <ChevronRight />
-              </button>
-            )}
-          </div>
-        </div>
+        editor.isSelectFilePDF ? (
+          <PdfCanvas
+            editor={editor}
+            isDocLoading={isDocLoading}
+            pageDimensions={pageDimensions}
+            changePage={changePage}
+            setPageDimensions={setPageDimensions}
+            initCanvas={initCanvas}
+            setIsDocLoading={setIsDocLoading}
+          />
+        ) : (
+          <ImageCanvas
+            selectedFile={editor.selectedFile}
+            isDocLoading={isDocLoading}
+            initCanvas={initCanvas}
+          />
+        )
       ) : (
         <div
           className='flex h-full w-full items-center justify-center py-8'
@@ -184,12 +119,12 @@ export default function FileUpload() {
                 <input
                   type='file'
                   className='sr-only'
-                  accept='application/pdf'
+                  accept='application/pdf,image/*'
                   {...getInputProps()}
                 />
                 <p className='pl-1'>or drag and drop</p>
               </div>
-              <p className='text-sm'>PDF</p>
+              <p className='text-sm'>PDF or Image</p>
             </div>
           </div>
         </div>

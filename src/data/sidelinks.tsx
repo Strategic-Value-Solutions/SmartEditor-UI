@@ -8,7 +8,9 @@ import {
   FileIcon,
   UsersIcon,
   TrashIcon,
-} from 'lucide-react' // Ensure you have installed lucide-react and are importing the correct icons
+} from 'lucide-react'
+
+// Ensure you have installed lucide-react and are importing the correct icons
 
 export interface NavLink {
   title: string

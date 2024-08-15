@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 // import { IconChevronDown } from '@tabler/icons-react'
 import { Button, buttonVariants } from '../ui/button'
 import {
@@ -20,9 +19,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '../ui/tooltip'
-import { cn } from '@/lib/utils'
-import useCheckActiveNav from '@/hooks/use-check-active-nav'
 import { SideLink } from '@/data/sidelinks'
+import useCheckActiveNav from '@/hooks/use-check-active-nav'
+import { cn } from '@/lib/utils'
+import { Link } from 'react-router-dom'
 
 interface NavProps extends React.HTMLAttributes<HTMLDivElement> {
   isCollapsed: boolean

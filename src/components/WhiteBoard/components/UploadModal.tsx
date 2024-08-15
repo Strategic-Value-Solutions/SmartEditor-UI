@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -5,6 +6,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  FileInput,
+  FileUploader,
+  FileUploaderContent,
+  FileUploaderItem,
+} from '@/components/ui/file-upload'
 import {
   Form,
   FormControl,
@@ -21,19 +28,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { setProjectSettings } from '@/store/slices/annotationSlice'
-import { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { useForm, Controller } from 'react-hook-form'
-import { Button } from '@/components/ui/button'
-import {
-  FileInput,
-  FileUploader,
-  FileUploaderContent,
-  FileUploaderItem,
-} from '@/components/ui/file-upload'
-import { Paperclip } from 'lucide-react'
 import { RootState } from '@/store'
+import { setProjectSettings } from '@/store/slices/annotationSlice'
+import { Paperclip } from 'lucide-react'
+import { useEffect } from 'react'
+import { useForm, Controller } from 'react-hook-form'
+import { useDispatch, useSelector } from 'react-redux'
 
 const FileSvgDraw = () => {
   return (

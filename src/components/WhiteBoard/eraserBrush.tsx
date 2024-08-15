@@ -1,9 +1,9 @@
 // @ts-nocheck
 // @ts-ignore
 
-(function () {
-  var __setBgOverlayColor = fabric.StaticCanvas.prototype.__setBgOverlayColor;
-  var ___setBgOverlay = fabric.StaticCanvas.prototype.__setBgOverlay;
+;(function () {
+  var __setBgOverlayColor = fabric.StaticCanvas.prototype.__setBgOverlayColor
+  var ___setBgOverlay = fabric.StaticCanvas.prototype.__setBgOverlay
   fabric.util.object.extend(fabric.StaticCanvas.prototype, {
     backgroundColor: undefined,
     overlayColor: undefined,
@@ -19,7 +19,7 @@
      * @chainable true
      */
     __setBgOverlayColor: function (property, color, callback, options) {
-      var _this = this;
+      var _this = this
       var cb = function () {
         _this[property] = new fabric.Rect(
           fabric.util.object.extend(
@@ -30,17 +30,17 @@
             },
             options
           )
-        );
-        callback && callback(_this[property]);
-      };
+        )
+        callback && callback(_this[property])
+      }
 
-      __setBgOverlayColor.call(this, property, color, cb);
+      __setBgOverlayColor.call(this, property, color, cb)
       //  invoke cb in case of gradient
       //  see {@link CommonMethods#_initGradient}
       if (color && color.colorStops && !(color instanceof fabric.Gradient)) {
-        cb();
+        cb()
       }
-      return this;
+      return this
     },
 
     /**
@@ -53,21 +53,21 @@
      * @param {Object} callback Callback function to invoke after property is set
      */
     __setBgOverlay: function (property, value, loaded, callback) {
-      var _this = this;
+      var _this = this
 
       if (
-        (property === "backgroundColor" || property === "overlayColor") &&
+        (property === 'backgroundColor' || property === 'overlayColor') &&
         value &&
-        typeof value === "object" &&
-        value.type === "rect"
+        typeof value === 'object' &&
+        value.type === 'rect'
       ) {
         fabric.util.enlivenObjects([value], function (enlivedObject) {
-          _this[property] = enlivedObject[0];
-          loaded[property] = true;
-          callback && callback();
-        });
+          _this[property] = enlivedObject[0]
+          loaded[property] = true
+          callback && callback()
+        })
       } else {
-        ___setBgOverlay.call(this, property, value, loaded, callback);
+        ___setBgOverlay.call(this, property, value, loaded, callback)
       }
     },
 
@@ -77,26 +77,26 @@
      * @param {string} property 'background' or 'overlay'
      */
     _renderBackgroundOrOverlay: function (ctx, property) {
-      var fill = this[property + "Color"],
-        object = this[property + "Image"],
+      var fill = this[property + 'Color'],
+        object = this[property + 'Image'],
         v = this.viewportTransform,
-        needsVpt = this[property + "Vpt"];
+        needsVpt = this[property + 'Vpt']
       if (!fill && !object) {
-        return;
+        return
       }
       if (fill || object) {
-        ctx.save();
+        ctx.save()
         if (needsVpt) {
-          ctx.transform(v[0], v[1], v[2], v[3], v[4], v[5]);
+          ctx.transform(v[0], v[1], v[2], v[3], v[4], v[5])
         }
-        fill && fill.render(ctx);
-        object && object.render(ctx);
-        ctx.restore();
+        fill && fill.render(ctx)
+        object && object.render(ctx)
+        ctx.restore()
       }
     },
-  });
+  })
 
-  var toObject = fabric.Object.prototype.toObject;
+  var toObject = fabric.Object.prototype.toObject
   fabric.util.object.extend(fabric.Object.prototype, {
     /**
      * Indicates whether this object can be erased by {@link fabric.EraserBrush}
@@ -110,7 +110,7 @@
      * @returns {fabric.Group | null}
      */
     getEraser: function () {
-      return this.clipPath && this.clipPath.eraser ? this.clipPath : null;
+      return this.clipPath && this.clipPath.eraser ? this.clipPath : null
     },
 
     /**
@@ -119,11 +119,11 @@
      * @return {Object} Object representation of an instance
      */
     toObject: function (additionalProperties) {
-      return toObject.call(this, ["erasable"].concat(additionalProperties));
+      return toObject.call(this, ['erasable'].concat(additionalProperties))
     },
-  });
+  })
 
-  var groupToObject = fabric.Group.prototype.toObject;
+  var groupToObject = fabric.Group.prototype.toObject
   fabric.util.object.extend(fabric.Group.prototype, {
     /**
      * Returns an object representation of an instance
@@ -131,9 +131,9 @@
      * @return {Object} Object representation of an instance
      */
     toObject: function (additionalProperties) {
-      return groupToObject.call(this, ["eraser"].concat(additionalProperties));
+      return groupToObject.call(this, ['eraser'].concat(additionalProperties))
     },
-  });
+  })
 
   fabric.util.object.extend(fabric.Canvas.prototype, {
     /**
@@ -144,9 +144,9 @@
       return (
         this.isDrawingMode &&
         this.freeDrawingBrush &&
-        this.freeDrawingBrush.type === "eraser" &&
+        this.freeDrawingBrush.type === 'eraser' &&
         this.freeDrawingBrush._isErasing
-      );
+      )
     },
 
     /**
@@ -157,22 +157,22 @@
      */
     renderAll: function () {
       if (this.contextTopDirty && !this._groupSelector && !this.isDrawingMode) {
-        this.clearContext(this.contextTop);
-        this.contextTopDirty = false;
+        this.clearContext(this.contextTop)
+        this.contextTopDirty = false
       }
       // while erasing the brush is in charge of rendering the canvas so we return
       if (this.isErasing()) {
-        this.freeDrawingBrush._render();
-        return;
+        this.freeDrawingBrush._render()
+        return
       }
       if (this.hasLostContext) {
-        this.renderTopLayer(this.contextTop);
+        this.renderTopLayer(this.contextTop)
       }
-      var canvasToDrawOn = this.contextContainer;
-      this.renderCanvas(canvasToDrawOn, this._chooseObjectsToRender());
-      return this;
+      var canvasToDrawOn = this.contextContainer
+      this.renderCanvas(canvasToDrawOn, this._chooseObjectsToRender())
+      return this
     },
-  });
+  })
 
   /**
    * EraserBrush class
@@ -191,7 +191,7 @@
   fabric.EraserBrush = fabric.util.createClass(
     fabric.PencilBrush,
     /** @lends fabric.EraserBrush.prototype */ {
-      type: "eraser",
+      type: 'eraser',
 
       /**
        * Indicates that the ctx is ready and rendering can begin.
@@ -212,9 +212,9 @@
       _isErasing: false,
 
       initialize: function (canvas) {
-        this.callSuper("initialize", canvas);
-        this._renderBound = this._render.bind(this);
-        this.render = this.render.bind(this);
+        this.callSuper('initialize', canvas)
+        this._renderBound = this._render.bind(this)
+        this.render = this.render.bind(this)
       },
 
       /**
@@ -223,23 +223,23 @@
        * @returns
        */
       forCanvasDrawables: function (callback) {
-        var _this = this;
+        var _this = this
         callback.call(
           _this,
-          "background",
-          "backgroundImage",
-          "setBackgroundImage",
-          "backgroundColor",
-          "setBackgroundColor"
-        );
+          'background',
+          'backgroundImage',
+          'setBackgroundImage',
+          'backgroundColor',
+          'setBackgroundColor'
+        )
         callback.call(
           _this,
-          "overlay",
-          "overlayImage",
-          "setOverlayImage",
-          "overlayColor",
-          "setOverlayColor"
-        );
+          'overlay',
+          'overlayImage',
+          'setOverlayImage',
+          'overlayColor',
+          'setOverlayColor'
+        )
       },
 
       /**
@@ -248,8 +248,8 @@
        */
       hideObject: function (object) {
         if (object) {
-          object._originalOpacity = object.opacity;
-          object.set({ opacity: 0 });
+          object._originalOpacity = object.opacity
+          object.set({ opacity: 0 })
         }
       },
 
@@ -260,8 +260,8 @@
        */
       restoreObjectVisibility: function (object) {
         if (object && object._originalOpacity) {
-          object.set({ opacity: object._originalOpacity });
-          object._originalOpacity = undefined;
+          object.set({ opacity: object._originalOpacity })
+          object._originalOpacity = undefined
         }
       },
 
@@ -274,18 +274,18 @@
        * @param {'bottom' | 'top' | 'overlay'} layer
        */
       prepareCanvasBackgroundForLayer: function (layer) {
-        if (layer === "overlay") {
-          return;
+        if (layer === 'overlay') {
+          return
         }
-        var canvas = this.canvas;
-        var image = canvas.get("backgroundImage");
-        var color = canvas.get("backgroundColor");
-        var erasablesOnLayer = layer === "top";
+        var canvas = this.canvas
+        var image = canvas.get('backgroundImage')
+        var color = canvas.get('backgroundColor')
+        var erasablesOnLayer = layer === 'top'
         if (image && image.erasable === !erasablesOnLayer) {
-          this.hideObject(image);
+          this.hideObject(image)
         }
         if (color && color.erasable === !erasablesOnLayer) {
-          this.hideObject(color);
+          this.hideObject(color)
         }
       },
 
@@ -302,35 +302,35 @@
        * @returns boolean render overlay above brush
        */
       prepareCanvasOverlayForLayer: function (layer) {
-        var canvas = this.canvas;
-        var image = canvas.get("overlayImage");
-        var color = canvas.get("overlayColor");
-        if (layer === "bottom") {
-          this.hideObject(image);
-          this.hideObject(color);
-          return false;
+        var canvas = this.canvas
+        var image = canvas.get('overlayImage')
+        var color = canvas.get('overlayColor')
+        if (layer === 'bottom') {
+          this.hideObject(image)
+          this.hideObject(color)
+          return false
         }
-        var erasablesOnLayer = layer === "top";
+        var erasablesOnLayer = layer === 'top'
         var renderOverlayOnTop =
-          (image && !image.erasable) || (color && !color.erasable);
+          (image && !image.erasable) || (color && !color.erasable)
         if (image && image.erasable === !erasablesOnLayer) {
-          this.hideObject(image);
+          this.hideObject(image)
         }
         if (color && color.erasable === !erasablesOnLayer) {
-          this.hideObject(color);
+          this.hideObject(color)
         }
-        return renderOverlayOnTop;
+        return renderOverlayOnTop
       },
 
       /**
        * @private
        */
       restoreCanvasDrawables: function () {
-        var canvas = this.canvas;
-        this.restoreObjectVisibility(canvas.get("backgroundImage"));
-        this.restoreObjectVisibility(canvas.get("backgroundColor"));
-        this.restoreObjectVisibility(canvas.get("overlayImage"));
-        this.restoreObjectVisibility(canvas.get("overlayColor"));
+        var canvas = this.canvas
+        this.restoreObjectVisibility(canvas.get('backgroundImage'))
+        this.restoreObjectVisibility(canvas.get('backgroundColor'))
+        this.restoreObjectVisibility(canvas.get('overlayImage'))
+        this.restoreObjectVisibility(canvas.get('overlayColor'))
       },
 
       /**
@@ -343,16 +343,16 @@
        * @param {fabric.Collection} collection
        */
       prepareCollectionTraversal: function (collection) {
-        var _this = this;
+        var _this = this
         collection.forEachObject(function (obj) {
           if (obj.forEachObject) {
-            _this.prepareCollectionTraversal(obj);
+            _this.prepareCollectionTraversal(obj)
           } else {
             if (obj.erasable) {
-              _this.hideObject(obj);
+              _this.hideObject(obj)
             }
           }
-        });
+        })
       },
 
       /**
@@ -363,14 +363,14 @@
        * @param {fabric.Collection} collection
        */
       restoreCollectionTraversal: function (collection) {
-        var _this = this;
+        var _this = this
         collection.forEachObject(function (obj) {
           if (obj.forEachObject) {
-            _this.restoreCollectionTraversal(obj);
+            _this.restoreCollectionTraversal(obj)
           } else {
-            _this.restoreObjectVisibility(obj);
+            _this.restoreObjectVisibility(obj)
           }
-        });
+        })
       },
 
       /**
@@ -380,8 +380,8 @@
        * @param {'bottom' | 'top' | 'overlay'} layer
        */
       prepareCanvasObjectsForLayer: function (layer) {
-        if (layer !== "bottom") return;
-        this.prepareCollectionTraversal(this.canvas);
+        if (layer !== 'bottom') return
+        this.prepareCollectionTraversal(this.canvas)
       },
 
       /**
@@ -389,8 +389,8 @@
        * @param {'bottom' | 'top' | 'overlay'} layer
        */
       restoreCanvasObjectsFromLayer: function (layer) {
-        if (layer !== "bottom") return;
-        this.restoreCollectionTraversal(this.canvas);
+        if (layer !== 'bottom') return
+        this.restoreCollectionTraversal(this.canvas)
       },
 
       /**
@@ -399,9 +399,9 @@
        * @returns boolean render overlay above brush
        */
       prepareCanvasForLayer: function (layer) {
-        this.prepareCanvasBackgroundForLayer(layer);
-        this.prepareCanvasObjectsForLayer(layer);
-        return this.prepareCanvasOverlayForLayer(layer);
+        this.prepareCanvasBackgroundForLayer(layer)
+        this.prepareCanvasObjectsForLayer(layer)
+        return this.prepareCanvasOverlayForLayer(layer)
       },
 
       /**
@@ -409,8 +409,8 @@
        * @param {'bottom' | 'top' | 'overlay'} layer
        */
       restoreCanvasFromLayer: function (layer) {
-        this.restoreCanvasDrawables();
-        this.restoreCanvasObjectsFromLayer(layer);
+        this.restoreCanvasDrawables()
+        this.restoreCanvasObjectsFromLayer(layer)
       },
 
       /**
@@ -418,15 +418,15 @@
        * Groups are rendered for nested selective erasing, non-erasable objects are visible while erasable objects are not.
        */
       renderBottomLayer: function () {
-        var canvas = this.canvas;
-        this.prepareCanvasForLayer("bottom");
+        var canvas = this.canvas
+        this.prepareCanvasForLayer('bottom')
         canvas.renderCanvas(
           canvas.getContext(),
           canvas.getObjects().filter(function (obj) {
-            return !obj.erasable || obj.isType("group");
+            return !obj.erasable || obj.isType('group')
           })
-        );
-        this.restoreCanvasFromLayer("bottom");
+        )
+        this.restoreCanvasFromLayer('bottom')
       },
 
       /**
@@ -435,24 +435,24 @@
        * 2. Render the brush
        */
       renderTopLayer: function () {
-        var canvas = this.canvas;
-        this._drawOverlayOnTop = this.prepareCanvasForLayer("top");
-        canvas.renderCanvas(canvas.contextTop, canvas.getObjects());
-        this.callSuper("_render");
-        this.restoreCanvasFromLayer("top");
+        var canvas = this.canvas
+        this._drawOverlayOnTop = this.prepareCanvasForLayer('top')
+        canvas.renderCanvas(canvas.contextTop, canvas.getObjects())
+        this.callSuper('_render')
+        this.restoreCanvasFromLayer('top')
       },
 
       /**
        * Render all non-erasable overlays on top of the brush so that they won't get erased
        */
       renderOverlay: function () {
-        this.prepareCanvasForLayer("overlay");
-        var canvas = this.canvas;
-        var ctx = canvas.contextTop;
-        this._saveAndTransform(ctx);
-        canvas._renderOverlay(ctx);
-        ctx.restore();
-        this.restoreCanvasFromLayer("overlay");
+        this.prepareCanvasForLayer('overlay')
+        var canvas = this.canvas
+        var ctx = canvas.contextTop
+        this._saveAndTransform(ctx)
+        canvas._renderOverlay(ctx)
+        ctx.restore()
+        this.restoreCanvasFromLayer('overlay')
       },
 
       /**
@@ -460,8 +460,8 @@
        * @param {CanvasRenderingContext2D} ctx
        */
       _saveAndTransform: function (ctx) {
-        this.callSuper("_saveAndTransform", ctx);
-        ctx.globalCompositeOperation = "destination-out";
+        this.callSuper('_saveAndTransform', ctx)
+        ctx.globalCompositeOperation = 'destination-out'
       },
 
       /**
@@ -469,7 +469,7 @@
        * @returns
        */
       needsFullRender: function () {
-        return this.callSuper("needsFullRender") || this._drawOverlayOnTop;
+        return this.callSuper('needsFullRender') || this._drawOverlayOnTop
       },
 
       /**
@@ -480,17 +480,17 @@
        */
       onMouseDown: function (pointer, options) {
         if (!this.canvas._isMainEvent(options.e)) {
-          return;
+          return
         }
-        this._prepareForDrawing(pointer);
+        this._prepareForDrawing(pointer)
         // capture coordinates immediately
         // this allows to draw dots (when movement never occurs)
-        this._captureDrawingPath(pointer);
+        this._captureDrawingPath(pointer)
 
-        this._isErasing = true;
-        this.canvas.fire("erasing:start");
-        this._ready = true;
-        this._render();
+        this._isErasing = true
+        this.canvas.fire('erasing:start')
+        this._ready = true
+        this._render()
       },
 
       /**
@@ -504,13 +504,13 @@
        */
       _render: function () {
         if (!this._ready) {
-          return;
+          return
         }
-        this.isRendering = 1;
-        this.renderBottomLayer();
-        this.renderTopLayer();
-        this.renderOverlay();
-        this.isRendering = 0;
+        this.isRendering = 1
+        this.renderBottomLayer()
+        this.renderTopLayer()
+        this.renderOverlay()
+        this.isRendering = 0
       },
 
       /**
@@ -519,13 +519,13 @@
       render: function () {
         if (this._isErasing) {
           if (this.isRendering) {
-            this.isRendering = fabric.util.requestAnimFrame(this._renderBound);
+            this.isRendering = fabric.util.requestAnimFrame(this._renderBound)
           } else {
-            this._render();
+            this._render()
           }
-          return true;
+          return true
         }
-        return false;
+        return false
       },
 
       /**
@@ -535,48 +535,48 @@
        * @param {fabric.Path} path
        */
       _addPathToObjectEraser: function (obj, path) {
-        var clipObject;
-        var _this = this;
+        var clipObject
+        var _this = this
         //  object is collection, i.e group
         if (obj.forEachObject) {
           obj.forEachObject(function (_obj) {
             if (_obj.erasable) {
-              _this._addPathToObjectEraser(_obj, path);
+              _this._addPathToObjectEraser(_obj, path)
             }
-          });
-          return;
+          })
+          return
         }
         if (!obj.getEraser()) {
           var rect = new fabric.Rect({
             width: obj.width,
             height: obj.height,
             clipPath: obj.clipPath,
-            originX: "center",
-            originY: "center",
-          });
-          var objects = [rect];
+            originX: 'center',
+            originY: 'center',
+          })
+          var objects = [rect]
           clipObject = new fabric.Group(objects, {
             boundingObjects: objects,
             eraser: true,
-          });
+          })
         } else {
-          clipObject = obj.clipPath;
+          clipObject = obj.clipPath
         }
 
         path.clone(function (path) {
-          path.globalCompositeOperation = "destination-out";
+          path.globalCompositeOperation = 'destination-out'
           // http://fabricjs.com/using-transformations
           var desiredTransform = fabric.util.multiplyTransformMatrices(
             fabric.util.invertTransform(obj.calcTransformMatrix()),
             path.calcTransformMatrix()
-          );
-          fabric.util.applyTransformToObject(path, desiredTransform);
-          clipObject.addWithUpdate(path);
+          )
+          fabric.util.applyTransformToObject(path, desiredTransform)
+          clipObject.addWithUpdate(path)
           obj.set({
             clipPath: clipObject,
             dirty: true,
-          });
-        });
+          })
+        })
       },
 
       /**
@@ -586,17 +586,17 @@
        * @param {fabric.Canvas} path
        */
       applyEraserToCanvas: function (path) {
-        var canvas = this.canvas;
+        var canvas = this.canvas
         this.forCanvasDrawables(function (drawable, imgProp, _, colorProp) {
-          var sourceImage = canvas.get(imgProp);
-          var sourceColor = canvas.get(colorProp);
+          var sourceImage = canvas.get(imgProp)
+          var sourceColor = canvas.get(colorProp)
           if (sourceImage && sourceImage.erasable) {
-            this._addPathToObjectEraser(sourceImage, path);
+            this._addPathToObjectEraser(sourceImage, path)
           }
           if (sourceColor && sourceColor.erasable) {
-            this._addPathToObjectEraser(sourceColor, path);
+            this._addPathToObjectEraser(sourceColor, path)
           }
-        });
+        })
       },
 
       /**
@@ -606,51 +606,51 @@
        */
       _finalizeAndAddPath: function () {
         var ctx = this.canvas.contextTop,
-          canvas = this.canvas;
-        ctx.closePath();
+          canvas = this.canvas
+        ctx.closePath()
         if (this.decimate) {
-          this._points = this.decimatePoints(this._points, this.decimate);
+          this._points = this.decimatePoints(this._points, this.decimate)
         }
 
         // clear
-        canvas.clearContext(canvas.contextTop);
-        this._isErasing = false;
+        canvas.clearContext(canvas.contextTop)
+        this._isErasing = false
 
         var pathData =
           this._points && this._points.length > 1
-            ? this.convertPointsToSVGPath(this._points).join("")
-            : "M 0 0 Q 0 0 0 0 L 0 0";
-        if (pathData === "M 0 0 Q 0 0 0 0 L 0 0") {
-          canvas.fire("erasing:end");
+            ? this.convertPointsToSVGPath(this._points).join('')
+            : 'M 0 0 Q 0 0 0 0 L 0 0'
+        if (pathData === 'M 0 0 Q 0 0 0 0 L 0 0') {
+          canvas.fire('erasing:end')
           // do not create 0 width/height paths, as they are
           // rendered inconsistently across browsers
           // Firefox 4, for example, renders a dot,
           // whereas Chrome 10 renders nothing
-          canvas.requestRenderAll();
-          return;
+          canvas.requestRenderAll()
+          return
         }
 
-        var path = this.createPath(pathData);
-        canvas.fire("before:path:created", { path: path });
+        var path = this.createPath(pathData)
+        canvas.fire('before:path:created', { path: path })
 
         // finalize erasing
-        this.applyEraserToCanvas(path);
-        var _this = this;
+        this.applyEraserToCanvas(path)
+        var _this = this
         canvas.forEachObject(function (obj) {
           if (obj.erasable && obj.intersectsWithObject(path)) {
-            _this._addPathToObjectEraser(obj, path);
+            _this._addPathToObjectEraser(obj, path)
           }
-        });
+        })
 
-        canvas.fire("erasing:end");
+        canvas.fire('erasing:end')
 
-        canvas.requestRenderAll();
-        path.setCoords();
-        this._resetShadow();
+        canvas.requestRenderAll()
+        path.setCoords()
+        this._resetShadow()
 
         // fire event 'path' created
-        canvas.fire("path:created", { path: path });
+        canvas.fire('path:created', { path: path })
       },
     }
-  );
-})();
+  )
+})()
