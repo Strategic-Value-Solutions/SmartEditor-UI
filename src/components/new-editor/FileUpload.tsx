@@ -1,15 +1,15 @@
 // @ts-nocheck
-
+import ExtendedToolbar from '../WhiteBoard/components/ExtendedToolbar'
+import { useEditor } from './CanvasContext'
+import Components from './Components'
+import Loader from './Loader'
 import * as fabric from 'fabric'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
-import React from 'react'
+import React, { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Document, Page, pdfjs } from 'react-pdf'
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css'
 import 'react-pdf/dist/esm/Page/TextLayer.css'
-import { useEditor } from './CanvasContext'
-import Components from './Components'
-import Loader from './Loader'
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -19,7 +19,12 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 export default function FileUpload() {
   const editor = useEditor()
 
-  const [isDocLoading, setIsDocLoading] = React.useState(false)
+  const [isDocLoading, setIsDocLoading] = useState(false)
+  const [showExtendedToolbar, setShowExtendedToolbar] = useState(true)
+  const [pageDimensions, setPageDimensions] = useState({
+    width: 1000,
+    height: 820,
+  })
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop: (files) => {
@@ -28,11 +33,15 @@ export default function FileUpload() {
     },
   })
 
-  function onDocumentLoadSuccess({ numPages }) {
+  function onDocumentLoadSuccess({ numPages, originalHeight, originalWidth }) {
     editor.setEdits({})
     editor.setNumPages(numPages)
     editor.setCurrPage(1)
-    editor.setCanvas(initCanvas())
+
+    // Set page dimensions for canvas
+    setPageDimensions({ width: originalWidth, height: originalHeight })
+
+    editor.setCanvas(initCanvas(originalWidth, originalHeight))
     setTimeout(() => setIsDocLoading(false), 2000)
   }
 
@@ -47,50 +56,67 @@ export default function FileUpload() {
     editor.canvas.renderAll()
   }
 
-  const initCanvas = () => {
+  const initCanvas = (width, height) => {
     return new fabric.Canvas('canvas', {
       isDrawingMode: false,
-      height: 842,
-      width: 1200,
+      height: height,
+      width: width,
       backgroundColor: 'rgba(0,0,0,0)',
       selectionBorderColor: 'black',
     })
   }
 
+  const toggleExtendedToolbar = () => {
+    setShowExtendedToolbar((prev) => !prev)
+  }
+
   return (
-    <div className={`flex  w-full flex-row-reverse justify-center`}>
-      {editor.selectedFile && <Components />}
+    <div className='flex w-full justify-center'>
+      {editor.selectedFile && (
+        <Components toggleExtendedToolbar={toggleExtendedToolbar} />
+      )}
       {editor.selectedFile ? (
         <div
-          className={`w-full py-8 ${editor.theme ? 'bg-[rgb(20,20,20)] text-white' : 'bg-white text-black'}`}
+          className={`flex flex-col items-center justify-center w-full ${
+            editor.theme
+              ? 'bg-[rgb(20,20,20)] text-white'
+              : 'bg-white text-black'
+          }`}
         >
-          <div className='flex w-full justify-end px-36 py-2'>
-            <div
-              className='flex w-[50px] cursor-pointer items-center justify-center rounded-md bg-red-500 p-2 text-white shadow-sm'
-              onClick={() => editor.setFile(null)}
-            >
-              <X className='text-xl text-white' />
-            </div>
-          </div>
-
           <div
-            className={`flex items-center justify-center ${editor.theme ? 'bg-[rgb(20,20,20)] text-white' : 'bg-white text-black'}`}
+            className={`flex items-center justify-center ${
+              editor.theme
+                ? 'bg-[rgb(20,20,20)] text-white'
+                : 'bg-white text-black'
+            }`}
           >
             <div
               id='singlePageExport'
-              className={`${editor.theme ? 'bg-[rgb(20,20,20)] text-white' : 'bg-white text-black'} flex items-center justify-center`}
+              className={`relative flex items-center justify-center ${
+                editor.theme
+                  ? 'bg-[rgb(20,20,20)] text-white'
+                  : 'bg-white text-black'
+              }`}
             >
               {isDocLoading && (
                 <>
-                  <div className='fixed top-[0] z-[1001] h-[100%] w-[100%] bg-[rgba(50,50,50,0.2)] backdrop-blur-sm'></div>
-                  <div className='fixed top-[0] z-[1100] flex h-[100%] w-[100%] items-center justify-center'>
+                  <div className='fixed top-0 z-[1001] h-full w-full bg-[rgba(50,50,50,0.2)] backdrop-blur-sm'></div>
+                  <div className='fixed top-0 z-[1100] flex h-full w-full items-center justify-center'>
                     <Loader color={'#606060'} size={120} stokeWidth={'5'} />
                   </div>
                 </>
               )}
               <Document
                 file={editor.selectedFile}
-                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadSuccess={(pdf) =>
+                  pdf.getPage(editor.currPage).then((page) =>
+                    onDocumentLoadSuccess({
+                      numPages: pdf.numPages,
+                      originalHeight: page.view[3],
+                      originalWidth: page.view[2],
+                    })
+                  )
+                }
                 className='flex justify-center'
                 id='doc'
               >
@@ -102,13 +128,17 @@ export default function FileUpload() {
                   <canvas id='canvas' />
                 </div>
                 <div
-                  className={`px-4 py-4 ${!editor.isExporting && editor.theme ? 'border-none bg-[rgb(25,25,25)] shadow-[0px_0px_16px_rgb(0,0,0)]' : 'border shadow-lg'}`}
+                  className={`px-4 py-4 ${
+                    !editor.isExporting && editor.theme
+                      ? 'border-none bg-[rgb(25,25,25)] shadow-[0px_0px_16px_rgb(0,0,0)]'
+                      : 'border shadow-lg'
+                  }`}
                 >
                   <Page
                     pageNumber={editor.currPage}
                     id='docPage'
-                    width={1000}
-                    height={820}
+                    width={pageDimensions.width}
+                    height={pageDimensions.height}
                   />
                 </div>
               </Document>
@@ -118,7 +148,7 @@ export default function FileUpload() {
             {editor.currPage > 1 && (
               <button
                 onClick={() => changePage(-1)}
-                className='rounded-md bg-gray-800  px-4 py-2 text-white'
+                className='rounded-md bg-gray-800 px-4 py-2 text-white'
               >
                 <ChevronLeft />
               </button>
@@ -144,7 +174,9 @@ export default function FileUpload() {
           <div className='flex h-[40vh] w-[40vw] items-center justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5'>
             <div className='space-y-1 text-center'>
               <div
-                className={`text-md flex ${editor.theme ? 'text-gray-400' : 'text-gray-600'}`}
+                className={`text-md flex ${
+                  editor.theme ? 'text-gray-400' : 'text-gray-600'
+                }`}
               >
                 <label className='relative cursor-pointer rounded-md bg-transparent font-medium text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:text-indigo-500'>
                   <span>Upload a file</span>
@@ -161,6 +193,9 @@ export default function FileUpload() {
             </div>
           </div>
         </div>
+      )}
+      {editor.selectedFile && showExtendedToolbar && (
+        <ExtendedToolbar toggleExtendedToolbar={toggleExtendedToolbar} />
       )}
     </div>
   )

@@ -1,14 +1,17 @@
-import useIsCollapsed from '@/hooks/use-is-collapsed'
+import { ScrollArea } from '../ui/scroll-area'
 import { Layout } from './layout'
 import Sidebar from './sidebar'
 import { UserNav } from './user-nav'
-import { ScrollArea } from '../ui/scroll-area'
+import { RootState } from '@/store'
+import { useSelector } from 'react-redux'
 
 export default function AppShell({ children }: any) {
-  const [isCollapsed, setIsCollapsed] = useIsCollapsed()
+  const isCollapsed = useSelector(
+    (state: RootState) => state.sidebar.isCollapsed
+  )
   return (
     <div className='relative h-full overflow-hidden bg-background'>
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      <Sidebar isCollapsed={isCollapsed} />
 
       <main
         id='content'

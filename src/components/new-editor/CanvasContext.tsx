@@ -1,39 +1,44 @@
 // @ts-nocheck
+import imageConstants from '@/constants/imageConstants'
 import * as fabric from 'fabric'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
-import React, { useRef } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
-const editorFunctions = React.createContext()
+const editorFunctions = createContext()
 
 export const useEditor = () => {
-  return React.useContext(editorFunctions)
+  return useContext(editorFunctions)
 }
 
 export const CanvasProvider = ({ children }) => {
-  const [currPage, setCurrPage] = React.useState(1)
-  const [numPages, setNumPages] = React.useState(null)
-  const [selectedFile, setFile] = React.useState(null)
-  const [isExporting, setExporting] = React.useState(false)
-  const [hideCanvas, setHiddenCanvas] = React.useState(false)
-  const [canvas, setCanvas] = React.useState<fabric.Canvas>(null)
-  const [borderColor] = React.useState('#f4a261')
-  const [color] = React.useState('#f4a261')
-  const [mode, setMode] = React.useState('select') // Modes: 'create-rect', 'create-circle', 'create-text', 'select', 'erase', 'addIcon'
-  const [activeIcon, setActiveIcon] = React.useState(null)
-  const activeIconRef = useRef(activeIcon) // Use ref to hold the current active icon
+  const [currPage, setCurrPage] = useState(1)
+  const [numPages, setNumPages] = useState(null)
+  const [selectedFile, setFile] = useState(null)
+  const [isExporting, setExporting] = useState(false)
+  const [hideCanvas, setHiddenCanvas] = useState(false)
+  const [canvas, setCanvas] = useState<fabric.Canvas>(null)
+  const [borderColor] = useState('#f4a261')
+  const [color] = useState('#f4a261')
+  const [mode, setMode] = useState('select')
+  const [activeIcon, setActiveIcon] = useState(null)
+  const activeIconRef = useRef(activeIcon)
   const exportPage = useRef(null)
-  const [exportPages, setExportPages] = React.useState([])
+  const [exportPages, setExportPages] = useState([])
 
-  const [edits, setEdits] = React.useState({}) // { 1: <page1_json>, 2: <page2_json>, ... }
+  const [edits, setEdits] = useState({})
 
-  // Sync the activeIconRef with the activeIcon state
-  React.useEffect(() => {
+  useEffect(() => {
     activeIconRef.current = activeIcon
   }, [activeIcon])
 
-  // Save the current canvas state before switching pages
   const saveCanvasState = (pageNumber) => {
     if (canvas) {
       const canvasJson = canvas.toJSON()
@@ -44,7 +49,6 @@ export const CanvasProvider = ({ children }) => {
     }
   }
 
-  // Load the canvas state when a new page is selected
   const loadCanvasState = (pageNumber) => {
     const canvasJson = edits[pageNumber]
     if (canvas && canvasJson) {
@@ -54,10 +58,9 @@ export const CanvasProvider = ({ children }) => {
     }
   }
 
-  // Handle canvas interactions based on mode
+  console.log(mode)
   const handleCanvasClick = async (event) => {
     if (!canvas) return
-
     const pointer = canvas.getPointer(event.e)
 
     if (mode === 'create-rect') {
@@ -68,7 +71,7 @@ export const CanvasProvider = ({ children }) => {
         stroke: borderColor,
         left: pointer.x,
         top: pointer.y,
-        selectable: false, // Disable selection by default
+        selectable: false,
       })
       canvas.add(rect)
     } else if (mode === 'create-circle') {
@@ -79,7 +82,7 @@ export const CanvasProvider = ({ children }) => {
         strokeWidth: 2,
         left: pointer.x,
         top: pointer.y,
-        selectable: false, // Disable selection by default
+        selectable: false,
       })
       canvas.add(circle)
     } else if (mode === 'create-text') {
@@ -88,22 +91,16 @@ export const CanvasProvider = ({ children }) => {
         top: pointer.y,
         fill: color,
         fontFamily: 'roboto',
-        selectable: false, // Disable selection by default
+        selectable: false,
       })
       canvas.add(text)
     } else if (mode === 'erase') {
-      const activeObject = canvas.getActiveObject()
-      if (activeObject) {
-        canvas.remove(activeObject)
-      }
+      removeObject(event)
     } else if (mode === 'addIcon' && activeIconRef.current) {
-      const pointer = canvas.getPointer(event.e)
-      // Create a new Image element for each click
       const imgElement = document.createElement('img')
-      imgElement.crossOrigin = 'anonymous' // Handle cross-origin if necessary
+      imgElement.crossOrigin = 'anonymous'
 
       imgElement.onload = function () {
-        // Create a fabric.Image from the loaded Image element
         const img = new fabric.Image(imgElement, {
           left: pointer.x,
           top: pointer.y,
@@ -111,26 +108,15 @@ export const CanvasProvider = ({ children }) => {
           scaleX: 1,
           scaleY: 1,
         })
-        // Add the new image to the canvas
         canvas.add(img)
         canvas.renderAll()
       }
 
-      imgElement.onerror = function (error) {
-        console.error('Error loading image:', error)
-      }
-
-      // Set the source of the image element after everything is set up
       imgElement.src = activeIconRef.current
-
-      // Force the image element to update with a new src
-      imgElement.src = activeIconRef.current + '?_=' + new Date().getTime()
     }
 
-    // Re-render the canvas
     canvas.renderAll()
   }
-
   React.useEffect(() => {
     if (document.getElementById('canvasWrapper'))
       document.getElementById('canvasWrapper').style.visibility =
@@ -139,42 +125,40 @@ export const CanvasProvider = ({ children }) => {
           : 'hidden'
   }, [hideCanvas])
 
-  React.useEffect(() => {
-    if (!canvas) return
-
-    if (mode.startsWith('create')) {
-      // Disable selection in create modes
-      canvas.selection = false
-      canvas.forEachObject((obj) => (obj.selectable = false))
+  const resetCanvasListeners = () => {
+    if (canvas) {
       canvas.off('mouse:down', handleCanvasClick)
-      canvas.on('mouse:down', handleCanvasClick)
-    } else if (mode === 'select' || mode === 'move') {
-      // Enable selection in select/move modes
       canvas.selection = true
       canvas.forEachObject((obj) => (obj.selectable = true))
-      canvas.off('mouse:down', handleCanvasClick) // Disable creating shapes in select/move mode
+    }
+  }
+
+  useEffect(() => {
+    if (!canvas) return
+
+    resetCanvasListeners()
+
+    if (mode.startsWith('create') || mode === 'addIcon') {
+      canvas.selection = false
+      canvas.forEachObject((obj) => (obj.selectable = false))
+      canvas.on('mouse:down', handleCanvasClick)
     } else if (mode === 'erase') {
       canvas.selection = false
       canvas.forEachObject((obj) => (obj.selectable = false))
-      canvas.on('mouse:down', (event) => {
-        const activeObject = canvas.getActiveObject()
-        if (activeObject) {
-          canvas.remove(activeObject)
-        }
-      })
-    } else if (mode === 'addIcon') {
-      // This mode will allow adding icons when the canvas is clicked
-      canvas.selection = false
-      canvas.forEachObject((obj) => (obj.selectable = false))
-      canvas.off('mouse:down', handleCanvasClick)
-      canvas.on('mouse:down', handleCanvasClick)
+      canvas.on('mouse:down', removeObject)
+    } else if (mode === 'select' || mode === 'move') {
+      canvas.selection = true
+      canvas.forEachObject((obj) => (obj.selectable = true))
     }
 
     canvas.renderAll()
+
+    return () => {
+      resetCanvasListeners()
+    }
   }, [canvas, mode])
 
-  // Handle page change - save the current page's state and load the new one
-  React.useEffect(() => {
+  useEffect(() => {
     if (currPage && canvas) {
       saveCanvasState(currPage)
       loadCanvasState(currPage)
@@ -214,13 +198,17 @@ export const CanvasProvider = ({ children }) => {
     canvas.isDrawingMode = false
   }
 
-  const deleteBtn = () => {
-    if (mode === 'select' || mode === 'move') {
-      var activeObject = canvas.getActiveObject()
-      if (activeObject) {
-        canvas.remove(activeObject)
-      }
+  const removeObject = (e) => {
+    const activeObject = canvas.getActiveObject()
+    if (activeObject) {
+      canvas.remove(activeObject)
     }
+  }
+
+  const eraseMode = () => {
+    setMode('erase')
+    canvas.isDrawingMode = false
+    canvas.hoverCursor = `url(${imageConstants.removeCursor}) 12 12, auto`
   }
 
   const addRect = () => {
@@ -253,10 +241,6 @@ export const CanvasProvider = ({ children }) => {
     currentWidth: 1,
     fill: false,
     group: {},
-  }
-
-  const eraseMode = () => {
-    setMode('erase')
   }
 
   function stopDrawing() {
@@ -389,10 +373,9 @@ export const CanvasProvider = ({ children }) => {
         addIcon,
         addCircle,
         addText,
-        addImage,
-        selectMode, // Function to switch to select mode
-        moveMode, // Function to switch to move mode
-        eraseMode, // Function to switch to erase mode
+        selectMode,
+        moveMode,
+        eraseMode,
         numPages,
         setNumPages,
         currPage,
@@ -401,7 +384,6 @@ export const CanvasProvider = ({ children }) => {
         setFile,
         edits,
         setEdits,
-        deleteBtn,
         exportPage,
         exportPdf,
         downloadPage,
@@ -409,7 +391,7 @@ export const CanvasProvider = ({ children }) => {
         hideCanvas,
         setHiddenCanvas,
         downloadJSON,
-        loadNewPDF, // Function to load new PDF
+        loadNewPDF, //
       }}
     >
       {children}
