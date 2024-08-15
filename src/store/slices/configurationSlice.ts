@@ -6,16 +6,7 @@ const loadState = () => {
     const serializedState = localStorage.getItem('configsData')
     if (serializedState === null) {
       return {
-        configsData: [
-          {
-            mcc: 'Model 1',
-            modelName: 'Model 1',
-          },
-          {
-            mcc: 'Model 2',
-            modelName: 'Model 2',
-          },
-        ],
+        configsData: [],
       }
     }
     const parsedState = JSON.parse(serializedState)
@@ -27,16 +18,7 @@ const loadState = () => {
   } catch (err) {
     console.error('Could not load state from localStorage', err)
     return {
-      configsData: [
-        {
-          mcc: 'Model 1',
-          modelName: 'Model 1',
-        },
-        {
-          mcc: 'Model 2',
-          modelName: 'Model 2',
-        },
-      ],
+      configsData: [],
     }
   }
 }
@@ -67,16 +49,16 @@ const configurationSlice = createSlice({
     },
     updateConfig: (state, action) => {
       const index = state.configsData.findIndex(
-        (config: any) => config._id === action.payload._id
+        (config: any) => config.id === action.payload.id
       )
       if (index !== -1) {
         state.configsData[index] = action.payload
+        saveState(state)
       }
-      saveState(state)
     },
     deleteConfig: (state, action) => {
       state.configsData = state.configsData.filter(
-        (config: any) => config._id !== action.payload
+        (config: any) => config.id !== action.payload
       )
       saveState(state)
     },

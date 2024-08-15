@@ -1,27 +1,49 @@
-import { Grid2X2, List } from 'lucide-react'
+//@ts-nocheck
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import NewProject from './Dialog/NewProject'
+import { Grid2X2, List, Plus } from 'lucide-react'
+import { useState } from 'react'
 
-const Header = () => {
+const Header = ({
+  setViewType,
+  viewType,
+  setSearch,
+  search,
+  onHandleAddProject,
+}) => {
+  const handleViewChange = (value) => {
+    setViewType(value)
+  }
+
   return (
-    <div className='ml-3 mt-4 flex w-full flex-row justify-between'>
-      <Input placeholder='Search project...' className='w-[20vw]' />
+    <div className='p-y-3 mt-4 flex w-full flex-row justify-between'>
+      <Input
+        placeholder='Search project...'
+        className='w-[20vw]'
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
       <div className='flex flex-row items-center justify-end gap-2'>
-        <NewProject />
+        <Button
+          onClick={onHandleAddProject}
+          className='flex h-8 items-center justify-center gap-2 p-2'
+        >
+          New Project
+          <Plus size={20} />
+        </Button>
         <Tabs
           orientation='vertical'
-          defaultValue='overview'
+          defaultValue={viewType}
+          onValueChange={handleViewChange}
           className='space-y-4'
         >
           <div className='w-full overflow-x-auto'>
             <TabsList>
               <TabsTrigger value='list'>
-                {' '}
                 <List />
               </TabsTrigger>
               <TabsTrigger value='grid'>
-                {' '}
                 <Grid2X2 />
               </TabsTrigger>
             </TabsList>

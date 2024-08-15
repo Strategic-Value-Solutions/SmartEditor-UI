@@ -115,7 +115,6 @@ function UploadModal({
   }
 
   const handleUploadPdf = (file: any) => {
-    console.log(file)
     if (file.type != 'application/pdf') {
       handleUploadImage(file)
       return
@@ -235,7 +234,6 @@ function UploadModal({
                         render={({ field }) => (
                           <FileUploader
                             onValueChange={(value: any) => {
-                              console.log(value)
                               field.onChange(value[0])
                               handleUploadPdf(value[0])
                             }}

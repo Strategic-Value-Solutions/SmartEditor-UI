@@ -16,15 +16,15 @@ interface Project {
 
 interface Config {
   id: number;
-  model_name: string;
+  modelName: string;
   mcc: string;
-  fields_data: {
+  fieldsData: {
     field1: string;
     field2: string;
     field3: string;
   };
-  last_update: string;
-  associated_configs: any[];
+  lastUpdate: string;
+  associatedConfigs: any[];
 }
 
 interface ProjectDataContextProps {
@@ -87,27 +87,27 @@ const ProjectDataContextProvider = ({ children }: ProviderProps) => {
       : [
           {
             id: 1,
-            model_name: 'Model 1',
+            modelName: 'Model 1',
             mcc: 'MCC1',
-            fields_data: {
+            fieldsData: {
               field1: 'value1',
               field2: 'value2',
               field3: 'value3',
             },
-            last_update: '2024-05-03T12:00:00Z',
-            associated_configs: [],
+            lastUpdate: '2024-05-03T12:00:00Z',
+            associatedConfigs: [],
           },
           {
             id: 2,
-            model_name: 'Model 2',
+            modelName: 'Model 2',
             mcc: 'MCC2',
-            fields_data: {
+            fieldsData: {
               field1: 'value4',
               field2: 'value5',
               field3: 'value6',
             },
-            last_update: '2024-05-03T12:00:00Z',
-            associated_configs: [],
+            lastUpdate: '2024-05-03T12:00:00Z',
+            associatedConfigs: [],
           },
         ];
   });

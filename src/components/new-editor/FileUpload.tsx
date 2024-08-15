@@ -16,8 +16,6 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).toString()
 
-// pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-
 export default function FileUpload() {
   const editor = useEditor()
 
@@ -60,17 +58,19 @@ export default function FileUpload() {
   }
 
   return (
-    <div className={`flex h-full w-full justify-center`}>
+    <div className={`flex  w-full flex-row-reverse justify-center`}>
       {editor.selectedFile && <Components />}
       {editor.selectedFile ? (
         <div
           className={`w-full py-8 ${editor.theme ? 'bg-[rgb(20,20,20)] text-white' : 'bg-white text-black'}`}
         >
-          <div
-            className='flex w-[50px] cursor-pointer items-center justify-center rounded-md bg-red-500 p-2 text-white shadow-sm'
-            onClick={() => editor.setFile(null)}
-          >
-            <X className='text-xl text-white' />
+          <div className='flex w-full justify-end px-36 py-2'>
+            <div
+              className='flex w-[50px] cursor-pointer items-center justify-center rounded-md bg-red-500 p-2 text-white shadow-sm'
+              onClick={() => editor.setFile(null)}
+            >
+              <X className='text-xl text-white' />
+            </div>
           </div>
 
           <div

@@ -9,16 +9,16 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 
-const DeleteTemplate = ({ trigger, onConfirm, onClose }: any) => {
+const DeleteTemplate = ({ open,onClose, onConfirm, trigger ,title,message}: any) => {
   return (
-    <Dialog>
+    <Dialog open={open}>
       <DialogTrigger>{trigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete Template</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <DialogDescription>
-          Are you sure you want to delete this template?
+            {message}
         </DialogDescription>
         <DialogFooter>
           <Button onClick={onClose}>Cancel</Button>

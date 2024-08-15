@@ -38,8 +38,8 @@ const templateSlice = createSlice({
   reducers: {
     addTemplate: (state, action) => {
       const template = { ...action.payload } // Create a new object from the payload
-      if (!template._id) {
-        template._id = uuidv4() // Generate a unique ID if not present
+      if (!template.id) {
+        template.id = uuidv4() // Generate a unique ID if not present
       }
       state.templatesData.push(template)
       saveState(state)
@@ -47,7 +47,7 @@ const templateSlice = createSlice({
     setTemplatesData: (state, action) => {
       state.templatesData = action.payload.map((template: any) => ({
         ...template,
-        _id: template._id || uuidv4(), // Ensure each template has a unique ID
+        id: template.id || uuidv4(), // Ensure each template has a unique ID
       }))
       saveState(state)
     },

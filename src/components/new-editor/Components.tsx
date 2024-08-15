@@ -1,5 +1,4 @@
 // @ts-nocheck
-
 import {
   Ban,
   Braces,
@@ -20,6 +19,9 @@ import {
   TooltipTrigger,
 } from '../ui/tooltip'
 import { useEditor } from './CanvasContext'
+import ExtendedToolbar from '../WhiteBoard/components/ExtendedToolbar'
+import { tools } from '@/constants/constants'
+import imageConstants from '@/constants/imageConstants'
 
 export default function Components() {
   const editor = useEditor()
@@ -30,13 +32,46 @@ export default function Components() {
   const [openExporter, setOpenExporter] = React.useState(false)
 
   return (
-    <div className={`flex flex-col items-center justify-center gap-8 p-2`}>
+    <div className={`flex flex-col items-center justify-center gap-8 p-2 fixed right-10 bottom-10 z-50`}>
+      {/* {tools.map((button, index) => {
+        return (
+          <TooltipProvider key={index}>
+            <Tooltip>
+              <TooltipTrigger>
+                <button
+                  type='button'
+                  title={button.title}
+                  onClick={() => editor.addIcon(button.imgSrc)}
+                >
+                  <img src={button.imgSrc} alt={button.title} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{button.title}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )
+      })} */}
+
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <div
+              className='cursor-pointer text-[1.3rem]'
+              onClick={() => editor.moveMode()}
+            >
+              Move
+            </div>
+          </TooltipTrigger>
+        </Tooltip>
+      </TooltipProvider>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>
             <Square
               className='cursor-pointer text-[1.3rem]'
-              onClick={() => editor.addRect(editor.canvas)}
+              onClick={() => editor.addRect()}
             />
           </TooltipTrigger>
           <TooltipContent>
@@ -50,7 +85,7 @@ export default function Components() {
           <TooltipTrigger>
             <Circle
               className='cursor-pointer'
-              onClick={() => editor.addCircle(editor.canvas)}
+              onClick={() => editor.addCircle()}
             />
           </TooltipTrigger>
           <TooltipContent>
@@ -64,7 +99,7 @@ export default function Components() {
           <TooltipTrigger>
             <TypeOutline
               className='cursor-pointer text-[1.5rem] md:text-[1.8rem]'
-              onClick={() => editor.addText(editor.canvas)}
+              onClick={() => editor.addText()}
             />
           </TooltipTrigger>
           <TooltipContent>
@@ -94,6 +129,7 @@ export default function Components() {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
+
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>

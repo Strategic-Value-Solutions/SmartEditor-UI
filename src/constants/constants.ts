@@ -1,5 +1,7 @@
 // @ts-nocheck
 
+import imageConstants from "./imageConstants";
+
 
 export const client = ["Client 1", "Client 2", "Client 3", "Client 4", "Client 5"];
 export const project = ["Project 1", "Project 2", "Project 3", "Project 4", "Project 5"];
@@ -103,3 +105,36 @@ export const testUser = {
     group_id: "789",
     is_group_admin: "1"
 };
+
+
+export const tools = [
+    { title: "Floorbeam", imgSrc: imageConstants.floorbeam },
+    { title: "Diaphragms", imgSrc: imageConstants.diaphragms },
+    { title: "Support", imgSrc: imageConstants.support },
+    { title: "Subfloor", imgSrc: imageConstants.subfloor },
+    { title: "Angel", imgSrc: imageConstants.angel },
+    { separator: true },
+    { title: "Bent", imgSrc: imageConstants.bent },
+    { title: "Bridge Abutment", imgSrc: imageConstants.bridgeAbutment },
+    { title: "Drilled Shaft", imgSrc: imageConstants.drilledShaft },
+    { title: "Footing", imgSrc: imageConstants.footing },
+    { title: "Foundation", imgSrc: imageConstants.foundation },
+    { title: "Pier", imgSrc: imageConstants.pier },
+    { title: "Pile", imgSrc: imageConstants.pile },
+    { title: "Retaining Wall", imgSrc: imageConstants.retainingWall },
+    { title: "Structure Type", imgSrc: imageConstants.structureType },
+    { title: "Wing Wall", imgSrc: imageConstants.wingWall },
+    { separator: true },
+    { title: "Dampers", imgSrc: imageConstants.dampers },
+    { title: "Electrical System", imgSrc: imageConstants.electricalSystem },
+    { title: "Fuel Oil System", imgSrc: imageConstants.fuelOilSystem },
+    {
+      title: "Interior Construction",
+      imgSrc: imageConstants.interiorConstruction,
+    },
+    { title: "Mechanical System", imgSrc: imageConstants.mechanicalSystem },
+    { title: "Plumbing System", imgSrc: imageConstants.plumbingSystem },
+    { title: "Sprinkler System", imgSrc: imageConstants.sprinklerSystem },
+    { title: "Standpipe System", imgSrc: imageConstants.standpipeSystem },
+  ];
+  

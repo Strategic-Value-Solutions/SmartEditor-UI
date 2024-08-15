@@ -1,4 +1,4 @@
-import { Toaster } from '@/components/ui/toaster'
+import { Toaster } from 'sonner'
 import '@/global.css'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
@@ -49,7 +49,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           </Routes>
         </BrowserRouter>
         {/* <RouterProvider router={router} /> */}
-        <Toaster />
+        <Toaster 
+        richColors
+        position='top-center'
+        duration={2000}
+        />
       </ThemeProvider>
     </Provider>
   </React.StrictMode>

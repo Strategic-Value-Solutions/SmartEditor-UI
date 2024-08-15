@@ -1,18 +1,42 @@
-import { Grid2X2, List } from 'lucide-react'
+//@ts-nocheck
+import { Grid2X2, List, Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import NewTemplate from './Dialog/NewTemplate'
+import { Button } from '@/components/ui/button'
 
-const Header = () => {
+const Header = ({
+  setViewType,
+  viewType,
+  onHandleAddTemplate,
+  search,
+  setSearch,
+}) => {
+  const handleViewChange = (value) => {
+    setViewType(value)
+  }
   return (
     <div className='p-y-3 mt-4 flex w-full flex-row justify-between'>
-      <Input placeholder='Search Template...' className='w-[20vw]' />
+      <Input
+        placeholder='Search template...'
+        className='w-[20vw]'
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
       <div className='flex flex-row items-center justify-end gap-2'>
-        <NewTemplate />
+        <Button
+          onClick={onHandleAddTemplate}
+          className='flex h-8 items-center justify-center gap-2 p-2'
+        >
+          New Template
+          <Plus size={20} />
+        </Button>
         <Tabs
           orientation='vertical'
           defaultValue='overview'
           className='space-y-4'
+          value={viewType}
+          onValueChange={handleViewChange}
         >
           <div className='w-full overflow-x-auto'>
             <TabsList>
