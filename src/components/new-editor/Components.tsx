@@ -183,7 +183,7 @@ export default function Components({ toggleExtendedToolbar, getInputProps }) {
       </button>
       <button
         className='text-white hover:bg-black p-2 rounded'
-        onClick={() => editor.downloadPDFWithAnnotationsa()}
+        onClick={() => editor.downloadPDFWithAnnotations()}
       >
         <Save />
       </button>
