@@ -1,34 +1,78 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
-const router = createBrowserRouter([
-  // Auth routes
-  // {
-  //   path: '/sign-in',
-  //   lazy: async () => ({
-  //     Component: (await import('./pages/auth/sign-in')).default,
-  //   }),
-  // },
-  {
+import Auth from './pages/Auth'
+import Editor from './pages/Editor/index'
+import Projects from './pages/Projects'
+import Templates from './pages/Templates/index'
+import PrivateRoute from './routes/PrivateRoute'
+
+export const paths = {
+  root: {
+    name: 'Authentication',
     path: '/',
-    lazy: async () => ({
-      Component: (await import('./pages/Projects')).default,
-    }),
+    isAuth: false,
+    component: Auth,
   },
-  {
+  auth: {
+    name: 'Authentication',
+    path: '/auth',
+    isAuth: false,
+    component: Auth,
+  },
+  editor: {
+    name: 'Editor',
     path: '/editor',
-    lazy: async () => ({
-      Component: (await import('./pages/Editor')).default,
-    }),
+    isAuth: true,
+    component: Editor,
   },
+  projects: {
+    name: 'Projects',
+    path: '/projects',
+    isAuth: true,
+    component: Projects,
+  },
+  templates: {
+    name: 'Templates',
+    path: '/templates',
+    isAuth: true,
+    component: Templates,
+  },
+}
 
-  // // Error routes
-  // { path: '/500', Component: GeneralError },
-  // { path: '/404', Component: NotFoundError },
-  // { path: '/503', Component: MaintenanceError },
-  // { path: '/401', Component: UnauthorisedError },
+const Router = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {Object.values(paths)
+          .filter((path) => !path.isAuth)
+          .map((path) => (
+            <Route
+              key={path.path}
+              path={path.path}
+              element={<path.component />}
+            />
+          ))}
 
-  // // Fallback 404 route
-  // { path: '*', Component: NotFoundError },
-])
+        {Object.values(paths)
+          .filter((path) => path.isAuth)
+          .map((path) => (
+            <Route
+              key={path.path}
+              path={path.path}
+              element={
+                <PrivateRoute>
+                  {path.component ? (
+                    <path.component />
+                  ) : (
+                    <Navigate to='/' replace />
+                  )}
+                </PrivateRoute>
+              }
+            />
+          ))}
+      </Routes>
+    </BrowserRouter>
+  )
+}
 
-export default router
+export default Router
