@@ -1,5 +1,4 @@
-// @ts-nocheck
-
+//@ts-nocheck
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -7,7 +6,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import {
   Form,
@@ -26,15 +24,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus } from 'lucide-react'
-import { useContext, useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { useNavigate } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import { setCurrentProject, addProject } from '@/store/slices/projectSlice'
 import { RootState } from '@/store'
-import { z } from 'zod'
+import {
+  addProject,
+  setCurrentProject,
+  updateProject,
+} from '@/store/slices/projectSlice'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { v4 } from 'uuid'
+import { z } from 'zod'
 
 const newProjectSchema = z.object({
   projectName: z.string().nonempty('Project name is required'),
@@ -43,11 +45,15 @@ const newProjectSchema = z.object({
   config: z.string().nonempty('Configuration is required'),
 })
 
-const NewProject = () => {
+const NewProject = ({
+  isEdit = false,
+  selectedProject,
+  onClose,
+  open,
+}: any) => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
-  const [open, setOpen] = useState(false)
   const form = useForm({
     resolver: zodResolver(newProjectSchema),
     defaultValues: {
@@ -64,46 +70,47 @@ const NewProject = () => {
   )
 
   useEffect(() => {
+    if (isEdit && selectedProject) {
+      form.setValue('projectName', selectedProject.projectName)
+      form.setValue('siteName', selectedProject.siteName)
+      form.setValue('superModel', selectedProject.supermodelType)
+      form.setValue('config', selectedProject.config.modelName)
+    } else {
+      form.reset()
+    }
+  }, [isEdit, selectedProject, form])
+
+  useEffect(() => {
     setConfigs(configsData)
   }, [configsData])
 
-  const handleModal = () => {
-    setOpen(!open)
-  }
-
   const onSubmit = async (data) => {
-    // Store the project name in the context
     const projectData = {
       projectName: data.projectName,
       siteName: data.siteName,
-      supermodelType: data.supermodelType,
-      config: configs.find((config) => config._id === data.config),
+      supermodelType: data.superModel,
+      config: configs.find((config) => config.modelName === data.config),
+      id: isEdit ? selectedProject.id : v4(),
     }
 
-    // Store the project data in the Redux state
     dispatch(setCurrentProject(projectData))
-    dispatch(addProject(projectData))
+    if (isEdit) {
+      dispatch(updateProject(projectData))
+    } else {
+      dispatch(addProject(projectData))
+    }
 
-    form.reset() // Reset the form fields
-    handleModal() // Close the modal
-    // navigate('/editor') // Navigate to the editor route
+    onClose()
+    form.reset()
+    // navigate('/editor')
   }
 
   return (
     <>
-      <Dialog open={open}>
-        <DialogTrigger>
-          <Button
-            onClick={handleModal}
-            className='flex h-8 items-center justify-center gap-2 p-2'
-          >
-            New Project
-            <Plus size={20} />
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent className='max-w-lg'>
           <DialogHeader>
-            <DialogTitle>Create new</DialogTitle>
+            <DialogTitle>Create new project</DialogTitle>
           </DialogHeader>
           <DialogDescription>
             <Form {...form}>
@@ -115,7 +122,7 @@ const NewProject = () => {
                 <FormField
                   control={form.control}
                   name='projectName'
-                  render={({ field, fieldState: { error } }) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Project name</FormLabel>
                       <FormControl>
@@ -128,7 +135,7 @@ const NewProject = () => {
                 <FormField
                   control={form.control}
                   name='siteName'
-                  render={({ field, fieldState: { error } }) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Site name</FormLabel>
                       <FormControl>
@@ -142,7 +149,7 @@ const NewProject = () => {
                 <FormField
                   control={form.control}
                   name='superModel'
-                  render={({ field, fieldState: { error } }) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Supermodel Type</FormLabel>
                       <FormControl>
@@ -174,7 +181,7 @@ const NewProject = () => {
                 <FormField
                   control={form.control}
                   name='config'
-                  render={({ field, fieldState: { error } }) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Configuration</FormLabel>
                       <Select
@@ -189,8 +196,8 @@ const NewProject = () => {
                         <SelectContent>
                           {configs.map((config) => (
                             <SelectItem
-                              key={Math.random().toString(36).substring(7)}
-                              value={config.mcc}
+                              key={config.modelName}
+                              value={config.modelName}
                             >
                               {config.modelName}
                             </SelectItem>
@@ -205,7 +212,7 @@ const NewProject = () => {
                   type='submit'
                   className='mt-2 flex h-8 w-fit items-center justify-center'
                 >
-                  Create
+                  {isEdit ? 'Update' : 'Create'}
                 </Button>
               </form>
             </Form>

@@ -1,24 +1,28 @@
-import { sideLinks } from '@/data/sidelinks'
-import { cn } from '@/lib/utils'
-import { ChevronsLeft } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import Aeis from '../../assets/Aeis.png'
 import { Button } from '../ui/button'
 import { Layout } from './layout'
 import Nav from './nav'
+import { sideLinks } from '@/data/sidelinks'
+import { cn } from '@/lib/utils'
+import { AppDispatch } from '@/store'
+import { toggleCollapsed } from '@/store/slices/sidebarSlice'
+import { ChevronsLeft } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
 
 interface SidebarProps extends React.HTMLAttributes<HTMLElement> {
   isCollapsed: boolean
-  setIsCollapsed: React.Dispatch<React.SetStateAction<boolean>>
+  // setIsCollapsed: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export default function Sidebar({
   className,
   isCollapsed,
-  setIsCollapsed,
+  // setIsCollapsed,
 }: SidebarProps) {
   const [navOpened, setNavOpened] = useState(false)
 
+  const dispatch = useDispatch<AppDispatch>()
   /* Make body not scrollable when navBar is opened */
   useEffect(() => {
     if (navOpened) {
@@ -74,7 +78,7 @@ export default function Sidebar({
             aria-label='Toggle Navigation'
             aria-controls='sidebar-menu'
             aria-expanded={navOpened}
-            onClick={() => setNavOpened((prev) => !prev)}
+            onClick={() => dispatch(toggleCollapsed())}
           >
             {/* {navOpened ? <IconX /> : <IconMenu2 />} */}
             {navOpened ? '<<' : '>>'}
@@ -85,14 +89,14 @@ export default function Sidebar({
         <Nav
           id='sidebar-menu'
           className={`z-40 h-full flex-1 overflow-auto ${navOpened ? 'max-h-screen' : 'max-h-0 py-0 md:max-h-screen md:py-2'}`}
-          closeNav={() => setNavOpened(false)}
+          closeNav={() => dispatch(toggleCollapsed())}
           isCollapsed={isCollapsed}
           links={sideLinks}
         />
 
         {/* Scrollbar width toggle button */}
         <Button
-          onClick={() => setIsCollapsed((prev) => !prev)}
+          onClick={() => dispatch(toggleCollapsed())}
           size='icon'
           variant='outline'
           className='absolute -right-5 top-3/4 z-50 hidden rounded-full md:inline-flex'

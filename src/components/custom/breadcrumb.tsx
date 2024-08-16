@@ -1,5 +1,5 @@
-import * as React from 'react'
 import { cn } from '@/lib/utils'
+import * as React from 'react'
 
 interface BreadcrumbProps extends React.ComponentPropsWithoutRef<'nav'> {
   children:

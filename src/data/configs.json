@@ -1,25 +1,24 @@
 [
-    {
-      "model_name": "Model 1",
-      "mcc": "MCC1",
-      "fields_data": {
-        "field1": "value1",
-        "field2": "value2",
-        "field3": "value3"
-      },
-      "last_update": "2024-05-03T12:00:00Z",
-      "associated_configs": []
+  {
+    "modelName": "Model 1",
+    "mcc": "MCC1",
+    "fieldsData": {
+      "field1": "value1",
+      "field2": "value2",
+      "field3": "value3"
     },
-    {
-      "model_name": "Model 2",
-      "mcc": "MCC2",
-      "fields_data": {
-        "field1": "value4",
-        "field2": "value5",
-        "field3": "value6"
-      },
-      "last_update": "2024-05-03T12:00:00Z",
-      "associated_configs": []
-    }
-  ]
-  
+    "lastUpdate": "2024-05-03T12:00:00Z",
+    "associatedConfigs": []
+  },
+  {
+    "modelName": "Model 2",
+    "mcc": "MCC2",
+    "fieldsData": {
+      "field1": "value4",
+      "field2": "value5",
+      "field3": "value6"
+    },
+    "lastUpdate": "2024-05-03T12:00:00Z",
+    "associatedConfigs": []
+  }
+]

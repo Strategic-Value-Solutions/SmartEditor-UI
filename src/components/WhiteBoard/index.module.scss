@@ -65,7 +65,6 @@
 
 /* Adjust the size of images/icons inside the buttons if necessary */
 .toolbar button img {
-  
   width: auto; /* Keep image aspect ratio */
   height: auto; /* Keep image aspect ratio */
   max-width: 100%; /* Ensure image doesn't overflow */
@@ -73,8 +72,8 @@
 }
 
 /* Style adjustments for input elements */
-.toolbar input[type="color"],
-.toolbar input[type="range"] {
+.toolbar input[type='color'],
+.toolbar input[type='range'] {
   margin: 0 4px; /* Margin to the left and right of the inputs */
 }
 
@@ -120,7 +119,6 @@
 
 /* Adjust the size of images/icons inside the buttons if necessary */
 .extendedToolbar.show button img {
-  
   width: auto; /* Keep image aspect ratio */
   height: auto; /* Keep image aspect ratio */
   max-width: 100%; /* Ensure image doesn't overflow */
@@ -128,8 +126,8 @@
 }
 
 /* Style adjustments for input elements */
-.extendedToolbar.show input[type="color"],
-.extendedToolbar.show input[type="range"] {
+.extendedToolbar.show input[type='color'],
+.extendedToolbar.show input[type='range'] {
   margin: 0 4px; /* Margin to the left and right of the inputs */
 }
 
@@ -138,7 +136,6 @@
   --spc-small: 14px; /* Smaller space variable */
   /* ... other variables */
 }
-
 
 .dropdownButton {
   background-color: #7b7de0;
@@ -152,7 +149,7 @@
 .uploadDropdown {
   position: relative;
   display: inline-block;
-  color-scheme:  dark;
+  color-scheme: dark;
   background-color: #3b3b3b;
 }
 
@@ -166,7 +163,7 @@
   position: absolute;
   background-color: #f1f1f1;
   min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
 }
 
@@ -203,7 +200,7 @@
   align-items: center; /* Center align the content */
   height: 28px; /* Fixed height */
   box-sizing: border-box; /* Border box sizing */
-  font-family: "Segoe UI", Arial, sans-serif; /* Font style */
+  font-family: 'Segoe UI', Arial, sans-serif; /* Font style */
 }
 
 .toolbar-text {

@@ -1,12 +1,4 @@
 // @ts-nocheck
-
-import * as fabric from 'fabric'
-import { FabricObject } from 'fabric'
-import { saveAs } from 'file-saver'
-import PropTypes from 'prop-types'
-import { useEffect, useRef, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { v4 as uuidv4 } from 'uuid'
 import {
   addAnnotation,
   clearAnnotations,
@@ -21,6 +13,13 @@ import getCursor from './cursors.tsx'
 // import './eraserBrush.jsx'
 import styles from './index.module.scss'
 import { RootState } from '@/store/index.ts'
+import * as fabric from 'fabric'
+import { FabricObject } from 'fabric'
+import { saveAs } from 'file-saver'
+import PropTypes from 'prop-types'
+import { useEffect, useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { v4 as uuidv4 } from 'uuid'
 
 let drawInstance = null
 let origX
@@ -53,7 +52,7 @@ function removeObject(canvas, dispatch, projectId, pageNumber) {
         removeAnnotation({
           projectId,
           pageNumber,
-          objectId: target._id,
+          objectId: target.id,
         })
       )
     }
@@ -73,7 +72,6 @@ function removeCanvasListener(canvas) {
 /* ==== rectangle ==== */
 function createRect(canvas, icn, fileReaderInfo, dispatch, projectId) {
   removeCanvasListener(canvas)
-  console.log(projectId, 'projectId')
   canvas.on(
     'mouse:down',
     startAddRect(canvas, icn, fileReaderInfo, dispatch, projectId)
@@ -105,7 +103,7 @@ function startAddRect(canvas, icn, fileReaderInfo, dispatch, projectId) {
         scaleY: 1,
       })
 
-      img._id = uuidv4() // Set a unique id for the object
+      img.id = uuidv4() // Set a unique id for the object
 
       canvas.add(img)
 
@@ -139,7 +137,7 @@ function startAddRect(canvas, icn, fileReaderInfo, dispatch, projectId) {
       selectable: false,
     })
 
-    drawInstance._id = uuidv4() // Set a unique id for the object
+    drawInstance.id = uuidv4() // Set a unique id for the object
 
     canvas.add(drawInstance)
 
@@ -196,7 +194,7 @@ function createText(canvas, fileReaderInfo, dispatch, projectId) {
     editable: true,
   })
 
-  text._id = uuidv4() // Set a unique id for the object
+  text.id = uuidv4() // Set a unique id for the object
 
   canvas.add(text)
   canvas.renderAll()
@@ -216,7 +214,6 @@ function createText(canvas, fileReaderInfo, dispatch, projectId) {
 }
 
 function changeToErasingMode(canvas, dispatch, projectId, pageNumber) {
-  console.log('changeToErasingMode', options.currentMode)
   removeCanvasListener(canvas)
 
   canvas.isDrawingMode = false
@@ -253,7 +250,7 @@ function onSelectMode(canvas, dispatch, projectId, pageNumber) {
 
 function clearCanvas(canvas, dispatch, projectId, pageNumber) {
   canvas.getObjects().forEach((item) => {
-    dispatch(removeAnnotation({ projectId, pageNumber, objectId: item._id }))
+    dispatch(removeAnnotation({ projectId, pageNumber, objectId: item.id }))
     canvas.remove(item)
   })
 
@@ -287,15 +284,6 @@ function resizeCanvas(canvas, whiteboard) {
 
     const scale = whiteboardWidth / canvas.getWidth()
     const zoom = canvas.getZoom() * scale
-
-    console.log({
-      width: whiteboardWidth,
-      height: whiteboardWidth / ratio,
-    })
-    // canvas.setDimensions({
-    //   width: whiteboardWidth,
-    //   height: whiteboardWidth / ratio,
-    // })
     canvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0])
   }
 }
@@ -340,10 +328,6 @@ const Whiteboard = ({
   const currentProject = useSelector(
     (state: RootState) => state.project.currentProject
   )
-
-  console.log(projectAnnotations, 'projectAnnotations')
-  console.log(projectSettings, 'projectSettings')
-  console.log(currentProject, 'currentProject')
 
   const [canvas, setCanvas] = useState(null)
   const [brushWidth, setBrushWidth] = useState(1)
@@ -396,7 +380,7 @@ const Whiteboard = ({
         canvas,
         fileReaderInfo.currentPageNumber,
         projectAnnotations,
-        currentProject._id
+        currentProject.id
       )
     }
   }, [
@@ -433,7 +417,7 @@ const Whiteboard = ({
         canvas.add(img)
         dispatch(
           addAnnotation({
-            projectId: currentProject._id,
+            projectId: currentProject.id,
             pageNumber: fileReaderInfo.currentPageNumber,
             object: img.toObject(), // Convert to plain object before dispatching
           })
@@ -485,7 +469,7 @@ const Whiteboard = ({
         uploadPdfRef={uploadPdfRef}
         isOpen={isOpen}
         setIsOpen={setIsOpen}
-        projectId={currentProject?._id}
+        projectId={currentProject?.id}
         pickNumber={pickNumber}
         setPickNumber={setPickNumber}
         uploadImage={uploadImage}
@@ -497,7 +481,7 @@ const Whiteboard = ({
         showExtendedToolbar={showExtendedToolbar}
         toggleExtendedToolbar={toggleExtendedToolbar}
         createRect={(canvas, icn, fileReaderInfo) =>
-          createRect(canvas, icn, fileReaderInfo, dispatch, currentProject?._id)
+          createRect(canvas, icn, fileReaderInfo, dispatch, currentProject?.id)
         }
         fileReaderInfo={fileReaderInfo}
       />
@@ -514,18 +498,18 @@ const Whiteboard = ({
           onSelectMode(
             canvas,
             dispatch,
-            currentProject?._id,
+            currentProject?.id,
             fileReaderInfo.currentPageNumber
           )
         }
         createText={(canvas) =>
-          createText(canvas, fileReaderInfo, dispatch, currentProject?._id)
+          createText(canvas, fileReaderInfo, dispatch, currentProject?.id)
         }
         changeToErasingMode={(canvas) =>
           changeToErasingMode(
             canvas,
             dispatch,
-            currentProject?._id,
+            currentProject?.id,
             fileReaderInfo.currentPageNumber
           )
         }
@@ -533,7 +517,7 @@ const Whiteboard = ({
           clearCanvas(
             canvas,
             dispatch,
-            currentProject?._id,
+            currentProject?.id,
             fileReaderInfo.currentPageNumber
           )
         }

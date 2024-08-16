@@ -1,8 +1,7 @@
 // @ts-nocheck
-
+import styles from './index.module.scss'
 import React from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
-import styles from './index.module.scss'
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',

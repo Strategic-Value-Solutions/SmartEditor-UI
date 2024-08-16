@@ -1,6 +1,5 @@
-// src/redux/slices/projectSlice.js
+// @ts-nocheck
 import { createSlice } from '@reduxjs/toolkit'
-import { v4 as uuidv4 } from 'uuid'
 
 const loadState = () => {
   try {
@@ -38,16 +37,13 @@ const projectSlice = createSlice({
   reducers: {
     addProject: (state, action) => {
       const project = { ...action.payload } // Create a new object from the payload
-      if (!project._id) {
-        project._id = uuidv4() // Generate a unique ID if not present
-      }
       state.projectsData.push(project)
       saveState(state)
     },
     setProjectsData: (state, action) => {
       state.projectsData = action.payload.map((project: any) => ({
         ...project,
-        _id: project._id || uuidv4(), // Ensure each project has a unique ID
+        id: project.id,
       }))
       saveState(state)
     },
@@ -55,10 +51,33 @@ const projectSlice = createSlice({
       state.currentProject = action.payload
       saveState(state)
     },
+    deleteProject: (state, action) => {
+      const project = state.projectsData.find(
+        (project) => project.id === action.payload
+      )
+      state.projectsData = state.projectsData.filter(
+        (project) => project.id !== action.payload
+      )
+      saveState(state)
+    },
+    updateProject: (state, action) => {
+      const index = state.projectsData.findIndex(
+        (project: any) => project.id === action.payload.id
+      )
+      if (index !== -1) {
+        state.projectsData[index] = action.payload
+        saveState(state)
+      }
+    },
   },
 })
 
-export const { addProject, setProjectsData, setCurrentProject } =
-  projectSlice.actions
+export const {
+  addProject,
+  setProjectsData,
+  setCurrentProject,
+  deleteProject,
+  updateProject,
+} = projectSlice.actions
 
 export default projectSlice.reducer

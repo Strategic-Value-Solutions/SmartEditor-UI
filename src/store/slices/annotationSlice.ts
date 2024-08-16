@@ -19,7 +19,7 @@ const annotationSlice = createSlice({
         state.projectAnnotations[projectId][pageNumber] = []
       }
       const annotationObject = object.toObject ? object.toObject() : object
-      annotationObject._id = uuidv4() // Ensure each annotation has a unique _id
+      annotationObject.id = uuidv4() // Ensure each annotation has a unique id
       state.projectAnnotations[projectId][pageNumber].push(annotationObject)
     },
     setAnnotationsForPage: (state, action) => {
@@ -30,7 +30,7 @@ const annotationSlice = createSlice({
       state.projectAnnotations[projectId][pageNumber] = objects.map(
         (obj: any) => ({
           ...obj,
-          _id: obj._id || uuidv4(), // Ensure each annotation has a unique _id
+          id: obj.id || uuidv4(), // Ensure each annotation has a unique id
         })
       )
     },
@@ -49,7 +49,7 @@ const annotationSlice = createSlice({
       ) {
         state.projectAnnotations[projectId][pageNumber] =
           state.projectAnnotations[projectId][pageNumber].filter(
-            (obj: any) => obj._id !== objectId
+            (obj: any) => obj.id !== objectId
           )
       }
     },

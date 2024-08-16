@@ -1,5 +1,4 @@
 // @ts-nocheck
-
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -7,7 +6,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import {
   Form,
@@ -25,23 +23,46 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Cross, Plus } from 'lucide-react'
-import { useContext, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { ProjectDataContext } from '@/store/ProjectDataContext'
-import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
+import { addConfig, updateConfig } from '@/store/slices/configurationSlice'
+import { Plus, Trash } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useDispatch, useSelector } from 'react-redux'
+import { toast } from 'sonner'
+import { v4 } from 'uuid'
 
-const NewTemplate = ({ trigger = null, isEdit = false }: any) => {
+const NewTemplate = ({
+  isEdit = false,
+  selectedConfig,
+  onClose,
+  open,
+}: any) => {
   const form = useForm()
-
   const [fields, setFields] = useState([])
-  const [open, setOpen] = useState(false)
   const [selectedConfigs, setSelectedConfigs] = useState([])
 
+  const dispatch = useDispatch()
   const configsData = useSelector(
     (state: RootState) => state.configurations.configsData || []
   )
+
+  useEffect(() => {
+    if (isEdit && selectedConfig) {
+      form.setValue('modelName', selectedConfig.modelName)
+      setFields(
+        selectedConfig.fieldsData.map((field) => ({
+          fieldName: field.name,
+          fieldType: field.type,
+        }))
+      )
+      setSelectedConfigs([selectedConfig])
+    } else {
+      form.reset()
+      setFields([])
+      setSelectedConfigs([])
+    }
+  }, [isEdit, selectedConfig, form])
 
   const handleSelectConfig = (config) => {
     const isAlreadySelected = selectedConfigs.some(
@@ -56,28 +77,44 @@ const NewTemplate = ({ trigger = null, isEdit = false }: any) => {
     }
   }
 
-  const handleModal = () => {
-    setOpen(!open)
-  }
-
   const onSubmit = (data) => {
     const fieldsData = fields.map((field) => ({
       name: field.fieldName,
       type: field.fieldType,
     }))
 
-    const newConfig = {
-      id: Math.max(...configsData.map((c) => c.id)) + 1, // generate a new unique ID
-      model_name: data.modelName,
-      fields_data: fieldsData,
-      associated_configs: selectedConfigs,
-      last_update: new Date().toISOString(), // Add a timestamp for the last update
+    if (!data.modelName) {
+      toast.error('Please enter a model name')
+      return
+    }
+    if (fieldsData.length === 0) {
+      toast.error('Please have at least one field')
+      return
+    }
+    const isMissingFields = fieldsData.some(
+      (field) => !field.name || !field.type
+    )
+    if (isMissingFields) {
+      toast.error('Please fill in all fields')
+      return
     }
 
-    setConfigsData([...configsData, newConfig])
-    console.log('New configuration added successfully:', newConfig)
+    const newConfig = {
+      id: isEdit ? selectedConfig.id : v4(), // Use existing ID if editing
+      modelName: data.modelName,
+      fieldsData: fieldsData,
+      associatedConfigs: selectedConfigs,
+      lastUpdate: new Date().toISOString(), // Add a timestamp for the last update
+    }
+
+    if (isEdit) {
+      dispatch(updateConfig(newConfig))
+    } else {
+      dispatch(addConfig(newConfig))
+    }
+
+    onClose()
     form.reset()
-    handleModal()
   }
 
   const addField = () => {
@@ -85,44 +122,26 @@ const NewTemplate = ({ trigger = null, isEdit = false }: any) => {
   }
 
   return (
-    <Dialog>
-      <DialogTrigger>
-        {isEdit ? (
-          <>{trigger}</>
-        ) : (
-          <Button
-            onClick={handleModal}
-            className='flex h-8 items-center justify-center gap-2 p-2'
-          >
-            New Template
-            <Plus size={20} />
-          </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className='max-w-lg'>
         <DialogHeader>
-          <DialogTitle>{!isEdit ? 'Create' : 'Update'}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? 'Update Template' : 'Create New Template'}
+          </DialogTitle>
         </DialogHeader>
         <DialogDescription>
           <Form {...form}>
             <form
               noValidate
               onSubmit={form.handleSubmit(onSubmit)}
-              className='space-y-4'
+              className='space-y-6'
             >
               <FormField
                 control={form.control}
                 name='modelName'
-                onChange={(e) =>
-                  setFields(
-                    fields.map((f, i) =>
-                      i === index ? { ...f, modelName: e.target.value } : f
-                    )
-                  )
-                }
                 render={({ field }) => (
                   <FormItem className='mt-2'>
-                    <FormLabel>Model name</FormLabel>
+                    <FormLabel>Model Name</FormLabel>
                     <FormControl>
                       <Input placeholder='Enter Model name' {...field} />
                     </FormControl>
@@ -131,122 +150,107 @@ const NewTemplate = ({ trigger = null, isEdit = false }: any) => {
                 )}
               />
 
-              <div className='flex w-full flex-col'>
-                <div className='flex items-center justify-between'>
-                  <FormLabel className='mb-2 text-left'>Fields</FormLabel>
+              <div className='flex flex-col'>
+                <div className='mb-4 flex items-center justify-between'>
+                  <FormLabel>Fields</FormLabel>
                   <Button
-                    startIcon={<Plus />}
                     onClick={addField}
-                    className='flex h-6 w-fit items-center justify-center bg-gray-600 text-sm font-light'
+                    className='flex items-center justify-center gap-1 px-3 py-1 text-sm font-light'
                     type='button'
                   >
+                    <Plus size={16} />
                     Add Field
                   </Button>
                 </div>
-                <div className='flex w-full max-w-lg items-center gap-4 rounded-md border p-2'>
+                <div className='space-y-4'>
                   {fields.length === 0 && (
-                    <p className='w-full text-center text-sm font-light text-gray-500'>
+                    <p className='text-center text-sm font-light text-muted-foreground'>
                       No fields added
                     </p>
                   )}
                   {fields.map((field, index) => (
-                    <div
-                      key={index}
-                      className='flex w-full max-w-lg items-center gap-4'
-                    >
-                      <div className='flex w-[50%] flex-col items-center'>
-                        <FormField
-                          control={form.control}
-                          name={`fields[${index}].fieldName`}
-                          onChange={(e) =>
-                            setFields(
-                              fields.map((f, i) =>
-                                i === index
-                                  ? { ...f, fieldName: e.target.value }
-                                  : f
-                              )
-                            )
-                          }
-                          render={({ field }) => (
-                            <FormItem className='w-full'>
-                              {/* <FormLabel>Field Name</FormLabel> */}
-                              <FormControl>
-                                <Input
-                                  placeholder='Enter Field Name'
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className='flex w-[30%] flex-col items-center'>
-                        <FormField
-                          control={form.control}
-                          name={`fields[${index}].config`}
-                          render={({ field }) => (
-                            <FormItem className='w-full'>
-                              {/* <FormLabel>Field Type</FormLabel> */}
-                              <Select
-                                onValueChange={(value) =>
-                                  setFields(
-                                    fields.map((f, i) =>
-                                      i === index
-                                        ? { ...f, fieldType: value }
-                                        : f
-                                    )
+                    <div key={index} className='flex items-center gap-4'>
+                      <FormField
+                        control={form.control}
+                        name={`fields[${index}].fieldName`}
+                        render={() => (
+                          <FormItem className='w-full'>
+                            <FormControl>
+                              <Input
+                                placeholder='Enter Field Name'
+                                value={field.fieldName}
+                                onChange={(e) => {
+                                  const newFields = [...fields]
+                                  newFields[index].fieldName = e.target.value
+                                  setFields(newFields)
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`fields[${index}].fieldType`}
+                        render={() => (
+                          <FormItem className='w-40'>
+                            <Select
+                              onValueChange={(value) =>
+                                setFields(
+                                  fields.map((f, i) =>
+                                    i === index ? { ...f, fieldType: value } : f
                                   )
-                                }
-                                defaultValue={field.fieldType}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder='Field Type' />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value='text'>Text</SelectItem>
-                                  <SelectItem value='number'>Number</SelectItem>
-                                  <SelectItem value='date'>Date</SelectItem>
-                                  <SelectItem value='pdf'>PDF File</SelectItem>
-                                  <SelectItem value='image'>
-                                    Image File
-                                  </SelectItem>
-                                  <SelectItem value='3d'>3D File</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className='flex w-[10%] justify-end'>
-                        <Button
-                          type='button'
-                          className='h-6 p-1'
-                          onClick={() =>
-                            setFields(fields.filter((_, i) => i !== index))
-                          }
-                          size={'sm'}
-                        >
-                          <Plus size={15} />
-                        </Button>
-                      </div>
+                                )
+                              }
+                              value={field.fieldType}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder='Field Type' />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value='text'>Text</SelectItem>
+                                <SelectItem value='number'>Number</SelectItem>
+                                <SelectItem value='date'>Date</SelectItem>
+                                <SelectItem value='pdf'>PDF File</SelectItem>
+                                <SelectItem value='image'>
+                                  Image File
+                                </SelectItem>
+                                <SelectItem value='3d'>3D File</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type='button'
+                        className='h-6 p-1'
+                        onClick={() =>
+                          setFields(fields.filter((_, i) => i !== index))
+                        }
+                        variant='destructive'
+                      >
+                        <Trash size={16} />
+                      </Button>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className='mt-3'>
-                <p variant='subtitle1'>Select Configurations:</p>
-                <div className='mt-2'>
+              <div className='mt-6'>
+                <FormLabel>Select Configurations</FormLabel>
+                <div className='mt-2 flex flex-wrap gap-2'>
                   {configsData.map((config) => (
                     <Button
                       type='button'
-                      className='br-4 m-1 h-7 p-2'
+                      className={`h-8 p-2 ${
+                        selectedConfigs.some((c) => c.id === config.id)
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground'
+                      }`}
                       key={config.id}
                       onClick={() => handleSelectConfig(config)}
                       variant={
@@ -255,7 +259,7 @@ const NewTemplate = ({ trigger = null, isEdit = false }: any) => {
                           : 'outline'
                       }
                     >
-                      {config.model_name}
+                      {config.modelName}
                     </Button>
                   ))}
                 </div>
@@ -263,9 +267,9 @@ const NewTemplate = ({ trigger = null, isEdit = false }: any) => {
 
               <Button
                 type='submit'
-                className='mt-2 flex h-8 w-fit items-center justify-center'
+                className='mt-6 flex h-10 w-full items-center justify-center'
               >
-                {!isEdit ? 'Create' : 'Update'}
+                {isEdit ? 'Update Template' : 'Create Template'}
               </Button>
             </form>
           </Form>

@@ -1,13 +1,37 @@
-import { File } from 'lucide-react'
+// @ts-nocheck
+import { Card } from '@/components/ui/card'
+import { File, Pencil, Trash2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
-const ProjectCard = ({ title }: any) => {
+const ProjectCard = ({ project, handleClick, onEdit, onConfirm }: any) => {
+  const navigate = useNavigate()
+  const { projectName } = project
+
   return (
-    <div className='flex h-48 w-48 cursor-pointer flex-col rounded-lg bg-white p-4'>
-      <div className='flex h-36 items-center justify-center overflow-hidden rounded-md bg-[#fbe3f0]'>
-        <File className='text-9xl text-white' size={50} />
+    <Card className='m-2 w-52 capitalize'>
+      <div className='flex  cursor-pointer flex-col rounded-lg bg-white p-4'>
+        <div
+          className='flex h-36 items-center justify-center overflow-hidden rounded-md bg-pink-300'
+          onClick={() => handleClick(project)}
+        >
+          <File className='text-9xl text-white' size={50} />
+        </div>
+        <div className='flex justify-between pt-2'>
+          <div className='flex-grow text-left font-light'>{projectName}</div>
+          <div className='flex justify-between gap-1'>
+            <button onClick={onEdit} className='h-6 rounded p-1'>
+              <Pencil size={15} />
+            </button>
+            <button
+              onClick={onConfirm}
+              className='h-6 rounded bg-red-400 p-1 text-white'
+            >
+              <Trash2 size={15} />
+            </button>
+          </div>
+        </div>
       </div>
-      <div className='flex-grow px-2 pt-2 text-left font-light'>{title}</div>
-    </div>
+    </Card>
   )
 }
 
