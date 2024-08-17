@@ -5,7 +5,7 @@ interface SidebarState {
 }
 
 const initialState: SidebarState = {
-  isCollapsed: window.innerWidth < 768, // Initialize based on window width
+  isCollapsed: true,
 }
 
 export const sidebarSlice = createSlice({

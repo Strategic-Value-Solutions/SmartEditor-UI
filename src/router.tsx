@@ -1,10 +1,9 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-
 import Auth from './pages/Auth'
 import Editor from './pages/Editor/index'
 import Projects from './pages/Projects'
 import Templates from './pages/Templates/index'
 import PrivateRoute from './routes/PrivateRoute'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 export const paths = {
   root: {

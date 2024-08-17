@@ -1,7 +1,5 @@
-import { buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { Link } from 'react-router-dom'
 import { UserAuthForm } from './use-auth-form'
+import { Link } from 'react-router-dom'
 
 export const metadata = {
   title: 'Authentication',
@@ -12,7 +10,7 @@ export default function Auth() {
   return (
     <>
       <div className='container relative hidden h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0'>
-        <div className='absolute right-4 top-4 flex justify-center gap-3 md:right-8 md:top-8'>
+        {/* <div className='absolute right-4 top-4 flex justify-center gap-3 md:right-8 md:top-8'>
           <Link
             to='/login'
             className={cn(buttonVariants({ variant: 'ghost' }))}
@@ -25,7 +23,7 @@ export default function Auth() {
           >
             Register
           </Link>
-        </div>
+        </div> */}
         <div
           className='relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex'
           style={{
@@ -60,13 +58,11 @@ export default function Auth() {
           </div>
         </div>
         <div className='lg:p-8'>
-          <div className='mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]'>
+          <div className='mx-auto flex w-full flex-col justify-center items-center space-y-6 sm:w-[70%] border rounded-md p-4'>
             <div className='flex flex-col space-y-2 text-center'>
-              <h1 className='text-2xl font-semibold tracking-tight'>
-                Create an account
-              </h1>
+              <h1 className='text-2xl font-semibold tracking-tight'>Login</h1>
               <p className='text-sm text-muted-foreground'>
-                Enter your email below to create your account
+                Login to use the Services
               </p>
             </div>
             <UserAuthForm />

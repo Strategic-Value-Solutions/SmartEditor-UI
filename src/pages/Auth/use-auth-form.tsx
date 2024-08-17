@@ -1,51 +1,39 @@
 'use client'
 
-import * as React from 'react'
-
+import { config } from '@/config/config'
 import { cn } from '@/lib/utils'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Icons } from '@/components/ui/icons'
+import authApi from '@/service/authApi'
+import { setAuth } from '@/store/slices/authSlice'
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google'
+import * as React from 'react'
+import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
-  const [isLoading, setIsLoading] = React.useState<boolean>(false)
-
-  async function onSubmit(event: React.SyntheticEvent) {
-    event.preventDefault()
-    setIsLoading(true)
-
-    setTimeout(() => {
-      setIsLoading(false)
+  const onGoogleSuccess = async ({ credential }: any) => {
+    try {
+      const response: any = await authApi.loginWithGoogle({ credential })
+      const { user, tokens } = response
+      localStorage.setItem('user', JSON.stringify(user))
+      localStorage.setItem('accessToken', JSON.stringify(tokens.access))
+      localStorage.setItem('refreshToken', JSON.stringify(tokens.refresh))
+      dispatch(
+        setAuth({
+          isAuthenticated: true,
+          user,
+          accessToken: tokens.access,
+          refreshToken: tokens.refresh,
+        })
+      )
       navigate('/projects')
-    }, 3000)
-  }
-
-  const onGoogleSuccess = (response: any) => {
-    console.log(response)
-    const access_token = response.accessToken
-    const body = { access_token }
-    fetch(process.env.REACT_APP_URL_API_LOGIN + '/auth/google', {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then((r) => r.json())
-      .then((res) => {
-        const { user, token } = res
-        localStorage.setItem('user', JSON.stringify(user))
-        localStorage.setItem('token', JSON.stringify(token))
-        navigate('/dashboard')
-      })
-      .catch((error) => console.error('Error', error))
+    } catch (err) {
+      console.log(err)
+    }
   }
   const onGoogleFailure = () => {
     console.log('Google Sign In was unsuccessful. Try again later')
@@ -53,7 +41,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 
   return (
     <div className={cn('grid gap-6', className)} {...props}>
-      <form onSubmit={onSubmit}>
+      {/* <form onSubmit={onSubmit}>
         <div className='grid gap-2'>
           <div className='grid gap-1'>
             <Label className='sr-only' htmlFor='email'>
@@ -99,12 +87,10 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             Or continue with
           </span>
         </div>
-      </div>
+      </div> */}
 
       <div className='w-full'>
-        <GoogleOAuthProvider
-          clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}
-        >
+        <GoogleOAuthProvider clientId={config.google.clientId}>
           <GoogleLogin
             onSuccess={onGoogleSuccess}
             onError={onGoogleFailure}
