@@ -1,5 +1,5 @@
 // @ts-nocheck
-import Loader from './Loader'
+import Loader from '../Loader'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Document, Page } from 'react-pdf'
 
@@ -21,9 +21,9 @@ function PdfCanvas({
     editor.setNumPages(numPages)
     editor.setCurrPage(1)
 
-    setPageDimensions({ width: originalWidth, height: originalHeight })
-    editor.addPdfDimensions({ width: originalWidth, height: originalHeight })
-    editor.setCanvas(initCanvas(originalWidth, originalHeight))
+    setPageDimensions({ width: 1000, height: 800 })
+    editor.addPdfDimensions({ width: 1000, height: 800 })
+    editor.setCanvas(initCanvas(1000, 800))
     setTimeout(() => setIsDocLoading(false), 1000)
   }
   return (

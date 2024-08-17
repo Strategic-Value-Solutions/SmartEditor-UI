@@ -1,10 +1,10 @@
 import { CanvasProvider } from './CanvasContext'
-import FileUpload from './FileUpload'
+import Editor from './Editor'
 
 export default function WhiteBoard() {
   return (
     <CanvasProvider>
-      <FileUpload />
+      <Editor />
     </CanvasProvider>
   )
 }

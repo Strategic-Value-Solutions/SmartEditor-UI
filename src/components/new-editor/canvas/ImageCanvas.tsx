@@ -1,5 +1,5 @@
 // @ts-nocheck
-import Loader from './Loader'
+import Loader from '../Loader'
 import * as fabric from 'fabric'
 import React, { useEffect } from 'react'
 

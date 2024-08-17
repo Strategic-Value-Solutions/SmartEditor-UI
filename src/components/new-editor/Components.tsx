@@ -128,7 +128,7 @@ export default function Components({ toggleExtendedToolbar, getInputProps }) {
         >
           <MonitorUp />
         </button>
-        {isDropdownOpen && (
+        {/* {isDropdownOpen && (
           <div
             className={`absolute ${
               dropdownPosition === 'right' ? 'right-full' : 'left-full'
@@ -167,7 +167,7 @@ export default function Components({ toggleExtendedToolbar, getInputProps }) {
               </label>
             </div>
           </div>
-        )}
+        )} */}
       </div>
       <button
         className='text-white hover:bg-black p-2 rounded'
