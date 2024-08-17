@@ -3,6 +3,7 @@
 import { Icons } from '@/components/ui/icons'
 import { config } from '@/config/config'
 import { cn } from '@/lib/utils'
+import { paths } from '@/router'
 import authApi from '@/service/authApi'
 import { setAuth } from '@/store/slices/authSlice'
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google'
@@ -10,6 +11,7 @@ import { useState } from 'react'
 import * as React from 'react'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -35,7 +37,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           refreshToken: tokens.refresh,
         })
       )
-      navigate('/projects')
+      navigate(paths.projects.path)
     } catch (err) {
       console.log(err)
     } finally {
@@ -43,7 +45,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     }
   }
   const onGoogleFailure = () => {
-    console.log('Google Sign In was unsuccessful. Try again later')
+    toast.error('Google Sign In was unsuccessful. Try again later')
   }
 
   return (

@@ -26,7 +26,7 @@ const App = () => {
     <Provider store={store}>
       <ThemeProvider defaultTheme='light' storageKey='vite-ui-theme'>
         <Router />
-        <Toaster richColors position='top-center' duration={2000} />
+        <Toaster richColors position='bottom-right' duration={2000} />
       </ThemeProvider>
     </Provider>
   )
