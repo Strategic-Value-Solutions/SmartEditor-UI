@@ -1,10 +1,12 @@
 'use client'
 
+import { Icons } from '@/components/ui/icons'
 import { config } from '@/config/config'
 import { cn } from '@/lib/utils'
 import authApi from '@/service/authApi'
 import { setAuth } from '@/store/slices/authSlice'
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google'
+import { useState } from 'react'
 import * as React from 'react'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
@@ -15,7 +17,10 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
+  const [isLoading, setIsLoading] = useState(false)
+
   const onGoogleSuccess = async ({ credential }: any) => {
+    setIsLoading(true)
     try {
       const response: any = await authApi.loginWithGoogle({ credential })
       const { user, tokens } = response
@@ -33,6 +38,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       navigate('/projects')
     } catch (err) {
       console.log(err)
+    } finally {
+      setIsLoading(false)
     }
   }
   const onGoogleFailure = () => {
@@ -90,14 +97,21 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       </div> */}
 
       <div className='w-full'>
-        <GoogleOAuthProvider clientId={config.google.clientId}>
-          <GoogleLogin
-            onSuccess={onGoogleSuccess}
-            onError={onGoogleFailure}
-            logo_alignment='center'
-            width={350}
-          />
-        </GoogleOAuthProvider>
+        {isLoading ? (
+          <div className='flex items-center justify-center gap-2'>
+            <p>Signing in ...</p>
+            <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />
+          </div>
+        ) : (
+          <GoogleOAuthProvider clientId={config.google.clientId}>
+            <GoogleLogin
+              onSuccess={onGoogleSuccess}
+              onError={onGoogleFailure}
+              logo_alignment='center'
+              width={350}
+            />
+          </GoogleOAuthProvider>
+        )}
       </div>
     </div>
   )
