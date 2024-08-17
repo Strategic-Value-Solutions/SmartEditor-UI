@@ -20,7 +20,7 @@ export const paths = {
   },
   editor: {
     name: 'Editor',
-    path: '/editor',
+    path: '/project/:projectId/editor',
     isAuth: true,
     component: Editor,
   },
