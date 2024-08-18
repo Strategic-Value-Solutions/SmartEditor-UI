@@ -40,7 +40,7 @@ import { z } from 'zod'
 
 const newProjectSchema = z.object({
   projectName: z.string().nonempty('Project name is required'),
-  siteName: z.string().nonempty('Site name is required'),
+  clientName: z.string().nonempty('Client name is required'),
   superModel: z.string().nonempty('Supermodel Type is required'),
   config: z.string().nonempty('Configuration is required'),
 })
@@ -58,7 +58,7 @@ const NewProject = ({
     resolver: zodResolver(newProjectSchema),
     defaultValues: {
       projectName: '',
-      siteName: '',
+      clientName: '',
       superModel: '',
       config: '',
     },
@@ -72,7 +72,7 @@ const NewProject = ({
   useEffect(() => {
     if (isEdit && selectedProject) {
       form.setValue('projectName', selectedProject.projectName)
-      form.setValue('siteName', selectedProject.siteName)
+      form.setValue('clientName', selectedProject.clientName)
       form.setValue('superModel', selectedProject.supermodelType)
       form.setValue('config', selectedProject.config.modelName)
     } else {
@@ -87,7 +87,7 @@ const NewProject = ({
   const onSubmit = async (data) => {
     const projectData = {
       projectName: data.projectName,
-      siteName: data.siteName,
+      clientName: data.clientName,
       supermodelType: data.superModel,
       config: configs.find((config) => config.modelName === data.config),
       id: isEdit ? selectedProject.id : v4(),
@@ -134,12 +134,12 @@ const NewProject = ({
                 />
                 <FormField
                   control={form.control}
-                  name='siteName'
+                  name='clientName'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Site name</FormLabel>
+                      <FormLabel>Client name</FormLabel>
                       <FormControl>
-                        <Input placeholder='Site name' {...field} />
+                        <Input placeholder='Client name' {...field} />
                       </FormControl>
                       <FormDescription></FormDescription>
                       <FormMessage />

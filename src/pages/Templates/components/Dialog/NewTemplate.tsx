@@ -54,6 +54,7 @@ const NewTemplate = ({
         selectedConfig.fieldsData.map((field) => ({
           fieldName: field.name,
           fieldType: field.type,
+          fieldValues: field.values || [{ fieldValue: '' }],
         }))
       )
       setSelectedConfigs([selectedConfig])
@@ -81,6 +82,7 @@ const NewTemplate = ({
     const fieldsData = fields.map((field) => ({
       name: field.fieldName,
       type: field.fieldType,
+      values: field.fieldValues.map((fv) => ({ fieldValue: fv.fieldValue })),
     }))
 
     if (!data.modelName) {
@@ -91,8 +93,9 @@ const NewTemplate = ({
       toast.error('Please have at least one field')
       return
     }
+
     const isMissingFields = fieldsData.some(
-      (field) => !field.name || !field.type
+      (field) => !field.name || !field.type || field?.fieldValues?.length === 0
     )
     if (isMissingFields) {
       toast.error('Please fill in all fields')
@@ -118,7 +121,22 @@ const NewTemplate = ({
   }
 
   const addField = () => {
-    setFields([...fields, { fieldName: '', fieldType: '' }])
+    setFields([
+      ...fields,
+      { fieldName: '', fieldType: '', fieldValues: [{ fieldValue: '' }] },
+    ])
+  }
+
+  const addFieldValue = (fieldIndex) => {
+    const newFields = [...fields]
+    newFields[fieldIndex].fieldValues.push({ fieldValue: '' })
+    setFields(newFields)
+  }
+
+  const removeFieldValue = (fieldIndex, valueIndex) => {
+    const newFields = [...fields]
+    newFields[fieldIndex].fieldValues.splice(valueIndex, 1)
+    setFields(newFields)
   }
 
   return (
@@ -169,71 +187,140 @@ const NewTemplate = ({
                     </p>
                   )}
                   {fields.map((field, index) => (
-                    <div key={index} className='flex items-center gap-4'>
-                      <FormField
-                        control={form.control}
-                        name={`fields[${index}].fieldName`}
-                        render={() => (
-                          <FormItem className='w-full'>
-                            <FormControl>
-                              <Input
-                                placeholder='Enter Field Name'
-                                value={field.fieldName}
-                                onChange={(e) => {
-                                  const newFields = [...fields]
-                                  newFields[index].fieldName = e.target.value
-                                  setFields(newFields)
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`fields[${index}].fieldType`}
-                        render={() => (
-                          <FormItem className='w-40'>
-                            <Select
-                              onValueChange={(value) =>
-                                setFields(
-                                  fields.map((f, i) =>
-                                    i === index ? { ...f, fieldType: value } : f
-                                  )
-                                )
-                              }
-                              value={field.fieldType}
-                            >
+                    <div key={index} className='flex flex-col space-y-2'>
+                      <div className='flex items-center gap-4'>
+                        <FormField
+                          control={form.control}
+                          name={`fields[${index}].fieldName`}
+                          render={() => (
+                            <FormItem className='flex-1'>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder='Field Type' />
-                                </SelectTrigger>
+                                <Input
+                                  placeholder='Enter Field Name'
+                                  value={field.fieldName}
+                                  onChange={(e) => {
+                                    const newFields = [...fields]
+                                    newFields[index].fieldName = e.target.value
+                                    setFields(newFields)
+                                  }}
+                                />
                               </FormControl>
-                              <SelectContent>
-                                <SelectItem value='text'>Text</SelectItem>
-                                <SelectItem value='number'>Number</SelectItem>
-                                <SelectItem value='date'>Date</SelectItem>
-                                <SelectItem value='pdf'>PDF File</SelectItem>
-                                <SelectItem value='image'>
-                                  Image File
-                                </SelectItem>
-                                <SelectItem value='3d'>3D File</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`fields[${index}].fieldType`}
+                          render={() => (
+                            <FormItem className='flex-1'>
+                              <Select
+                                onValueChange={(value) =>
+                                  setFields(
+                                    fields.map((f, i) =>
+                                      i === index
+                                        ? { ...f, fieldType: value }
+                                        : f
+                                    )
+                                  )
+                                }
+                                value={field.fieldType}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder='Field Type' />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value='text'>Text</SelectItem>
+                                  <SelectItem value='number'>Number</SelectItem>
+                                  <SelectItem value='date'>Date</SelectItem>
+                                  <SelectItem value='pdf'>PDF File</SelectItem>
+                                  <SelectItem value='image'>
+                                    Image File
+                                  </SelectItem>
+                                  <SelectItem value='3d'>3D File</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button
+                          type='button'
+                          className='h-6 p-1'
+                          onClick={() =>
+                            setFields(fields.filter((_, i) => i !== index))
+                          }
+                          variant='destructive'
+                        >
+                          <Trash size={16} />
+                        </Button>
+                      </div>
+                      {field.fieldValues.map((fieldValue, valueIndex) => (
+                        <div
+                          key={valueIndex}
+                          className='flex items-center gap-4'
+                        >
+                          <FormField
+                            control={form.control}
+                            name={`fields[${index}].fieldValues[${valueIndex}].fieldValue`}
+                            render={() => (
+                              <FormItem className='flex-1'>
+                                <FormControl>
+                                  <Input
+                                    placeholder='Enter Field Value'
+                                    value={fieldValue.fieldValue}
+                                    onChange={(e) => {
+                                      // Create a deep copy of the fields array
+                                      const newFields = fields.map(
+                                        (field, i) => {
+                                          if (i === index) {
+                                            return {
+                                              ...field,
+                                              fieldValues:
+                                                field.fieldValues.map(
+                                                  (fv, vi) => {
+                                                    if (vi === valueIndex) {
+                                                      return {
+                                                        ...fv,
+                                                        fieldValue:
+                                                          e.target.value,
+                                                      }
+                                                    }
+                                                    return fv
+                                                  }
+                                                ),
+                                            }
+                                          }
+                                          return field
+                                        }
+                                      )
+
+                                      setFields(newFields)
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type='button'
+                            className='h-6 p-1'
+                            onClick={() => removeFieldValue(index, valueIndex)}
+                            variant='destructive'
+                          >
+                            <Trash size={16} />
+                          </Button>
+                        </div>
+                      ))}
                       <Button
+                        onClick={() => addFieldValue(index)}
+                        className='self-start mt-2 text-sm'
                         type='button'
-                        className='h-6 p-1'
-                        onClick={() =>
-                          setFields(fields.filter((_, i) => i !== index))
-                        }
-                        variant='destructive'
                       >
-                        <Trash size={16} />
+                        Add Field Value
                       </Button>
                     </div>
                   ))}

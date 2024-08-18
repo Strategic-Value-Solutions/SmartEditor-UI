@@ -1,12 +1,12 @@
+import '@/global.css'
+import { useEffect } from 'react'
+import { Provider } from 'react-redux'
+import { Toaster } from 'sonner'
 import { ThemeProvider } from './components/custom/theme-provider'
 import Router from './router'
 import userApi from './service/userApi'
 import { store } from './store'
 import { setUser } from './store/slices/authSlice'
-import '@/global.css'
-import { useEffect } from 'react'
-import { Provider } from 'react-redux'
-import { Toaster } from 'sonner'
 
 const App = () => {
   useEffect(() => {
@@ -18,7 +18,7 @@ const App = () => {
           const response = await userApi.get()
           store.dispatch(setUser(response))
         })()
-      }
+      } 
     }
   }, [])
 

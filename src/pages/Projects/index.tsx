@@ -47,7 +47,7 @@ const Projects = () => {
 
   const handleClick = (project: any) => {
     dispatch(setCurrentProject(project))
-    navigate('/editor')
+    navigate(`/project/${project.id}/editor`)
   }
 
   const handleDeleteModalClose = () => {

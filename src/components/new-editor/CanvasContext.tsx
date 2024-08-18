@@ -3,7 +3,7 @@ import imageConstants from '@/constants/imageConstants'
 import * as fabric from 'fabric'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
-import { PDFDocument, rgb, degrees } from 'pdf-lib'
+import { degrees, PDFDocument, rgb } from 'pdf-lib'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
@@ -102,19 +102,77 @@ export const CanvasProvider = ({ children }) => {
       canvas.setActiveObject(text) // Automatically select the text box so the user can start typing
       text.enterEditing() // Put the text box into editing mode
     } else if (mode === 'addIcon' && activeIconRef.current) {
+      const pointer = canvas.getPointer(event.e)
       const imgElement = document.createElement('img')
       imgElement.crossOrigin = 'anonymous'
 
       imgElement.onload = function () {
-        const img = new fabric.Image(imgElement, {
+        let img = new fabric.Image(imgElement, {
           left: pointer.x,
           top: pointer.y,
           selectable: false,
           scaleX: 1,
           scaleY: 1,
         })
+
         canvas.add(img)
-        canvas.renderAll()
+        canvas.renderAll() // Ensure the canvas is updated with the icon
+
+        // Now initiate the rectangle drawing
+        let rect = new fabric.Rect({
+          left: pointer.x,
+          top: pointer.y,
+          width: 0,
+          height: 0,
+          fill: 'transparent',
+          stroke: borderColor,
+          strokeWidth: 2,
+          selectable: false,
+        })
+
+        canvas.add(rect)
+
+        // Function to handle mouse movement for rectangle resizing
+        const onMouseMove = function (event) {
+          const pointerMove = canvas.getPointer(event.e)
+          let newLeft = pointer.x
+          let newTop = pointer.y
+
+          if (pointerMove.x < pointer.x) {
+            newLeft = pointerMove.x
+          }
+
+          if (pointerMove.y < pointer.y) {
+            newTop = pointerMove.y
+          }
+
+          rect.set({
+            left: newLeft,
+            top: newTop,
+            width: Math.abs(pointerMove.x - pointer.x),
+            height: Math.abs(pointerMove.y - pointer.y),
+          })
+
+          // Adjust the icon's position based on the rectangle's position
+          img.set({
+            left: newLeft,
+            top: newTop,
+          })
+
+          rect.setCoords()
+          img.setCoords()
+          canvas.renderAll()
+        }
+
+        // Function to stop drawing and remove event listeners
+        const onMouseUp = function () {
+          canvas.off('mouse:move', onMouseMove) // Remove the mouse move listener
+          canvas.off('mouse:up', onMouseUp) // Remove the mouse up listener
+        }
+
+        // Attach the event listeners
+        canvas.on('mouse:move', onMouseMove)
+        canvas.on('mouse:up', onMouseUp)
       }
 
       imgElement.src = activeIconRef.current
@@ -395,141 +453,145 @@ export const CanvasProvider = ({ children }) => {
       return
     }
 
-    const json = canvas.toJSON()
+    try {
+      const json = canvas.toJSON()
 
-    // Read the selected PDF file
-    const fileReader = new FileReader()
-    fileReader.readAsArrayBuffer(selectedFile)
+      // Read the selected PDF file
+      const fileReader = new FileReader()
+      fileReader.readAsArrayBuffer(selectedFile)
 
-    fileReader.onload = async function () {
-      const originalPdfBytes = fileReader.result
-      const originalPdfDoc = await PDFDocument.load(originalPdfBytes)
-      const pdfDoc = await PDFDocument.create()
+      fileReader.onload = async function () {
+        const originalPdfBytes = fileReader.result
+        const originalPdfDoc = await PDFDocument.load(originalPdfBytes)
+        const pdfDoc = await PDFDocument.create()
 
-      for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-        // Copy the original page from the original PDF
-        const [originalPage] = await pdfDoc.copyPages(originalPdfDoc, [
-          pageNum - 1,
-        ])
-        const page = pdfDoc.addPage(originalPage)
+        for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+          // Copy the original page from the original PDF
+          const [originalPage] = await pdfDoc.copyPages(originalPdfDoc, [
+            pageNum - 1,
+          ])
+          const page = pdfDoc.addPage(originalPage)
 
-        // Load the canvas state for the current page
-        setCurrPage(pageNum)
-        loadCanvasState(pageNum) // Ensure this loads the correct state without resetting
-        await new Promise((resolve) => setTimeout(resolve, 500)) // Wait for the content to render
+          // Load the canvas state for the current page
+          setCurrPage(pageNum)
+          loadCanvasState(pageNum) // Ensure this loads the correct state without resetting
+          await new Promise((resolve) => setTimeout(resolve, 500)) // Wait for the content to render
 
-        // Ensure all objects are loaded and rendered
-        canvas.renderAll()
+          // Ensure all objects are loaded and rendered
+          canvas.renderAll()
 
-        if (!json.objects || json.objects.length === 0) {
-          toast.error('No objects found on the canvas for page ' + pageNum)
-          return
-        }
+          if (!json.objects || json.objects.length === 0) {
+            toast.error('No objects found on the canvas for page ' + pageNum)
+            return
+          }
 
-        // Iterate over the canvas objects and apply them to the PDF
-        for (const obj of json.objects) {
-          const type = obj.type.toLowerCase()
+          // Iterate over the canvas objects and apply them to the PDF
+          for (const obj of json.objects) {
+            const type = obj.type.toLowerCase()
 
-          switch (type) {
-            case 'rect':
-              page.drawRectangle({
-                x: obj.left,
-                y: pdfDimensions.height - obj.top - obj.height,
-                width: obj.width,
-                height: obj.height,
-                borderColor: rgb(
-                  obj.stroke ? obj.stroke.r / 255 : 0,
-                  obj.stroke ? obj.stroke.g / 255 : 0,
-                  obj.stroke ? obj.stroke.b / 255 : 0
-                ),
-                borderWidth: obj.strokeWidth || 1,
-                color: rgb(
-                  obj.fill ? obj.fill.r / 255 : 0,
-                  obj.fill ? obj.fill.g / 255 : 0,
-                  obj.fill ? obj.fill.b / 255 : 0
-                ),
-              })
-              break
+            switch (type) {
+              case 'rect':
+                page.drawRectangle({
+                  x: obj.left,
+                  y: pdfDimensions.height - obj.top - obj.height,
+                  width: obj.width,
+                  height: obj.height,
+                  borderColor: rgb(
+                    obj.stroke ? obj.stroke.r / 255 || 0 : 0,
+                    obj.stroke ? obj.stroke.g / 255 || 0 : 0,
+                    obj.stroke ? obj.stroke.b / 255 || 0 : 0
+                  ),
+                  borderWidth: obj.strokeWidth || 1,
+                  color: rgb(
+                    obj.fill ? obj.fill.r / 255 || 0 : 0,
+                    obj.fill ? obj.fill.g / 255 || 0 : 0,
+                    obj.fill ? obj.fill.b / 255 || 0 : 0
+                  ),
+                })
+                break
 
-            case 'circle':
-              page.drawEllipse({
-                x: obj.left + obj.radius,
-                y: pdfDimensions.height - obj.top - obj.radius,
-                xScale: obj.radius,
-                yScale: obj.radius,
-                borderColor: rgb(
-                  obj.stroke ? obj.stroke.r / 255 : 0,
-                  obj.stroke ? obj.stroke.g / 255 : 0,
-                  obj.stroke ? obj.stroke.b / 255 : 0
-                ),
-                borderWidth: obj.strokeWidth || 1,
-                color: rgb(
-                  obj.fill ? obj.fill.r / 255 : 0,
-                  obj.fill ? obj.fill.g / 255 : 0,
-                  obj.fill ? obj.fill.b / 255 : 0
-                ),
-              })
-              break
+              case 'circle':
+                page.drawEllipse({
+                  x: obj.left + obj.radius,
+                  y: pdfDimensions.height - obj.top - obj.radius,
+                  xScale: obj.radius,
+                  yScale: obj.radius,
+                  borderColor: rgb(
+                    obj.stroke ? obj.stroke.r / 255 || 0 : 0,
+                    obj.stroke ? obj.stroke.g / 255 || 0 : 0,
+                    obj.stroke ? obj.stroke.b / 255 || 0 : 0
+                  ),
+                  borderWidth: obj.strokeWidth || 1,
+                  color: rgb(
+                    obj.fill ? obj.fill.r / 255 || 0 : 0,
+                    obj.fill ? obj.fill.g / 255 || 0 : 0,
+                    obj.fill ? obj.fill.b / 255 || 0 : 0
+                  ),
+                })
+                break
 
-            case 'textbox':
-            case 'text':
-              page.drawText(obj.text, {
-                x: obj.left,
-                y: pdfDimensions.height - obj.top - obj.fontSize,
-                size: obj.fontSize || 16,
-              })
-              break
+              case 'textbox':
+              case 'text':
+                page.drawText(obj.text, {
+                  x: obj.left,
+                  y: pdfDimensions.height - obj.top - obj.fontSize,
+                  size: obj.fontSize || 16,
+                })
+                break
 
-            case 'image':
-              // Handle SVG conversion to PNG for embedding
-              const svgToPng = async (svgData) => {
-                const img = new Image()
-                img.src = svgData
-                await new Promise((resolve) => (img.onload = resolve))
+              case 'image':
+                // Handle SVG conversion to PNG for embedding
+                const svgToPng = async (svgData) => {
+                  const img = new Image()
+                  img.src = svgData
+                  await new Promise((resolve) => (img.onload = resolve))
 
-                const canvas = document.createElement('canvas')
-                canvas.width = img.width
-                canvas.height = img.height
+                  const canvas = document.createElement('canvas')
+                  canvas.width = img.width
+                  canvas.height = img.height
 
-                const ctx = canvas.getContext('2d')
-                ctx.drawImage(img, 0, 0)
+                  const ctx = canvas.getContext('2d')
+                  ctx.drawImage(img, 0, 0)
 
-                return canvas.toDataURL('image/png')
-              }
+                  return canvas.toDataURL('image/png')
+                }
 
-              const pngDataUrl = await svgToPng(obj.src)
-              const pngBytes = await fetch(pngDataUrl).then((res) =>
-                res.arrayBuffer()
-              )
-              const pngImage = await pdfDoc.embedPng(pngBytes)
+                const pngDataUrl = await svgToPng(obj.src)
+                const pngBytes = await fetch(pngDataUrl).then((res) =>
+                  res.arrayBuffer()
+                )
+                const pngImage = await pdfDoc.embedPng(pngBytes)
 
-              // Calculate transformation matrix
-              const { left, top, width, height, scaleX, scaleY, angle } = obj
+                // Calculate transformation matrix
+                const { left, top, width, height, scaleX, scaleY, angle } = obj
 
-              // Apply the transformation directly when drawing the image
-              page.drawImage(pngImage, {
-                x: left,
-                y: pdfDimensions.height - top - height * scaleY,
-                width: width * scaleX,
-                height: height * scaleY,
-                rotate: degrees(angle), // Rotation using degrees
-              })
-              break
+                // Apply the transformation directly when drawing the image
+                page.drawImage(pngImage, {
+                  x: left,
+                  y: pdfDimensions.height - top - height * scaleY,
+                  width: width * scaleX,
+                  height: height * scaleY,
+                  rotate: degrees(angle), // Rotation using degrees
+                })
+                break
 
-            default:
-              console.warn('Unhandled type:', type)
-              break
+              default:
+                console.warn('Unhandled type:', type)
+                break
+            }
           }
         }
-      }
 
-      canvas.renderAll()
-      const pdfBytes = await pdfDoc.save()
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' })
-      const link = document.createElement('a')
-      link.href = URL.createObjectURL(blob)
-      link.download = 'annotated_document.pdf'
-      link.click()
+        canvas.renderAll()
+        const pdfBytes = await pdfDoc.save()
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+        const link = document.createElement('a')
+        link.href = URL.createObjectURL(blob)
+        link.download = 'annotated_document.pdf'
+        link.click()
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
 
@@ -662,6 +724,87 @@ export const CanvasProvider = ({ children }) => {
     setExportPages([])
   }
 
+  const zoomIn = () => {
+    if (canvas) {
+      const zoom = canvas.getZoom() * 1.1; // Zoom in by 10%
+      canvas.setZoom(zoom);
+  
+      // Adjust PDF dimensions
+      setPdfDimensions({
+        width: pdfDimensions.width * 1.1,
+        height: pdfDimensions.height * 1.1,
+      });
+    }
+  };
+  
+  const zoomOut = () => {
+    if (canvas) {
+      const zoom = canvas.getZoom() / 1.1; // Zoom out by 10%
+      canvas.setZoom(zoom);
+  
+      // Adjust PDF dimensions
+      setPdfDimensions({
+        width: pdfDimensions.width / 1.1,
+        height: pdfDimensions.height / 1.1,
+      });
+    }
+  };
+  
+
+
+  const enablePan = () => {
+    if (canvas) {
+      canvas.isDrawingMode = false; // Disable drawing mode if enabled
+      canvas.selection = false; // Disable selection
+  
+      // Handle panning
+      let isPanning = false;
+      let lastPosX = 0;
+      let lastPosY = 0;
+  
+      canvas.on('mouse:down', (event) => {
+        isPanning = true;
+        const pointer = canvas.getPointer(event.e);
+        lastPosX = pointer.x;
+        lastPosY = pointer.y;
+      });
+  
+      canvas.on('mouse:move', (event) => {
+        if (isPanning) {
+          const pointer = canvas.getPointer(event.e);
+          const dx = pointer.x - lastPosX;
+          const dy = pointer.y - lastPosY;
+  
+          const currentTransform = canvas.viewportTransform;
+          currentTransform[4] += dx;
+          currentTransform[5] += dy;
+  
+          // Update PDF position accordingly
+          const pdfWrapper = document.getElementById('pdfWrapper');
+          pdfWrapper.style.transform = `translate(${currentTransform[4]}px, ${currentTransform[5]}px)`;
+  
+          canvas.requestRenderAll();
+          lastPosX = pointer.x;
+          lastPosY = pointer.y;
+        }
+      });
+  
+      canvas.on('mouse:up', () => {
+        isPanning = false;
+      });
+    }
+  };
+  
+
+  useEffect(() => {
+    if (canvas) {
+      canvas.setDimensions({
+        width: pdfDimensions.width,
+        height: pdfDimensions.height,
+      })
+    }
+  }, [pdfDimensions])
+
   return (
     <editorFunctions.Provider
       value={{
@@ -695,6 +838,9 @@ export const CanvasProvider = ({ children }) => {
         setIsSelectFilePDF,
         isSelectFilePDF,
         downloadPDFWithAnnotations,
+        zoomIn,
+        zoomOut,
+        enablePan,
       }}
     >
       {children}

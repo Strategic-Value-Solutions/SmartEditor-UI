@@ -84,34 +84,7 @@ const ProjectDataContextProvider = ({ children }: ProviderProps) => {
 
   const [configsData, setConfigsData] = useState<Config[]>(() => {
     const storedConfigsData = localStorage.getItem('configsData')
-    return storedConfigsData
-      ? JSON.parse(storedConfigsData)
-      : [
-          {
-            id: 1,
-            modelName: 'Model 1',
-            mcc: 'MCC1',
-            fieldsData: {
-              field1: 'value1',
-              field2: 'value2',
-              field3: 'value3',
-            },
-            lastUpdate: '2024-05-03T12:00:00Z',
-            associatedConfigs: [],
-          },
-          {
-            id: 2,
-            modelName: 'Model 2',
-            mcc: 'MCC2',
-            fieldsData: {
-              field1: 'value4',
-              field2: 'value5',
-              field3: 'value6',
-            },
-            lastUpdate: '2024-05-03T12:00:00Z',
-            associatedConfigs: [],
-          },
-        ]
+    return storedConfigsData ? JSON.parse(storedConfigsData) : []
   })
 
   useEffect(() => {

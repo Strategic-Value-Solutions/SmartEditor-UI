@@ -21,14 +21,26 @@ function PdfCanvas({
     editor.setNumPages(numPages)
     editor.setCurrPage(1)
 
-    setPageDimensions({ width: 1000, height: 800 })
-    editor.addPdfDimensions({ width: 1000, height: 800 })
-    editor.setCanvas(initCanvas(1000, 800))
+    // Calculate dimensions
+    const maxWidth = window.innerWidth * 0.5 // Adjust the scale factor as needed
+    const scaleFactor = maxWidth / originalWidth
+    const width = originalWidth * scaleFactor
+    const height = originalHeight * scaleFactor
+
+    setPageDimensions({ width, height })
+    editor.addPdfDimensions({ width, height })
+    editor.setCanvas(initCanvas(width, height))
     setTimeout(() => setIsDocLoading(false), 1000)
   }
+
   return (
     <div
-      className={`flex flex-col items-center justify-center w-full ${editor.theme ? 'bg-[rgb(20,20,20)] text-white' : 'bg-white text-black'}`}
+      className={`flex flex-col mx-auto items-center justify-center w-full ${editor.theme ? 'bg-[rgb(20,20,20)] text-white' : 'bg-white text-black'}`}
+      style={{
+        minHeight: '100vh', // Ensure the component takes full viewport height
+        paddingTop: '20px', // Add padding to prevent overflow from the top
+        boxSizing: 'border-box',
+      }}
     >
       <div
         className={`flex items-center justify-center ${editor.theme ? 'bg-[rgb(20,20,20)] text-white' : 'bg-white text-black'}`}
@@ -36,6 +48,10 @@ function PdfCanvas({
         <div
           id='singlePageExport'
           className={`relative flex items-center justify-center ${editor.theme ? 'bg-[rgb(20,20,20)] text-white' : 'bg-white text-black'}`}
+          style={{
+            maxWidth: '100%',
+            // overflow: 'hidden',
+          }}
         >
           {isDocLoading && (
             <>
@@ -56,7 +72,7 @@ function PdfCanvas({
                 })
               )
             }
-            className='flex justify-center'
+            className='flex justify-center mt-28'
             id='doc'
           >
             <div
@@ -69,6 +85,7 @@ function PdfCanvas({
               <canvas id='canvas' />
             </div>
             <div
+              id='pdfWrapper'
               className={`px-4 py-4 ${!editor.isExporting && editor.theme ? 'border-none bg-[rgb(25,25,25)] shadow-[0px_0px_16px_rgb(0,0,0)]' : 'border shadow-lg'}`}
             >
               <Page

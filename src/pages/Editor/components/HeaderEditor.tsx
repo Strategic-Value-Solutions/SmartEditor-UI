@@ -78,7 +78,7 @@
 //             >
 //               Project 1
 //             </Box>
-//             {/* Remove projectData.siteName as it's not stored */}
+//             {/* Remove projectData.clientName as it's not stored */}
 //           </Box>
 //           <Box
 //             display='flex'

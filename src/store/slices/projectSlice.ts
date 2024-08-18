@@ -36,7 +36,7 @@ const projectSlice = createSlice({
   initialState,
   reducers: {
     addProject: (state, action) => {
-      const project = { ...action.payload } // Create a new object from the payload
+      const project = { ...action.payload }
       state.projectsData.push(project)
       saveState(state)
     },
@@ -52,9 +52,6 @@ const projectSlice = createSlice({
       saveState(state)
     },
     deleteProject: (state, action) => {
-      const project = state.projectsData.find(
-        (project) => project.id === action.payload
-      )
       state.projectsData = state.projectsData.filter(
         (project) => project.id !== action.payload
       )
@@ -69,6 +66,15 @@ const projectSlice = createSlice({
         saveState(state)
       }
     },
+    updateCurrentProjectDetails: (state, action) => {
+      if (state.currentProject) {
+        state.currentProject = {
+          ...state.currentProject,
+          ...action.payload,
+        }
+        saveState(state)
+      }
+    },
   },
 })
 
@@ -78,6 +84,7 @@ export const {
   setCurrentProject,
   deleteProject,
   updateProject,
+  updateCurrentProjectDetails,
 } = projectSlice.actions
 
 export default projectSlice.reducer
