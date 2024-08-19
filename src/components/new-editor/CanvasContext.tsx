@@ -107,20 +107,6 @@ export const CanvasProvider = ({ children }) => {
       text.enterEditing() // Put the text box into editing mode
     } else if (mode === 'addIcon' && activeIconRef.current) {
       const pointer = canvas.getPointer(event.e)
-
-      // Draw the rectangle immediately on mouse down
-      let rect = new fabric.Rect({
-        left: pointer.x,
-        top: pointer.y,
-        width: 0,
-        height: 0,
-        fill: 'transparent',
-        stroke: borderColor,
-        strokeWidth: 2,
-        selectable: false,
-      })
-      canvas.add(rect)
-
       let img // Declare the image variable outside the onload function to avoid adding it twice
 
       // Load the image immediately
@@ -140,6 +126,18 @@ export const CanvasProvider = ({ children }) => {
         // Add the image to the canvas
         canvas.add(img)
       }
+      // Draw the rectangle immediately on mouse down
+      let rect = new fabric.Rect({
+        left: pointer.x,
+        top: pointer.y,
+        width: 0,
+        height: 0,
+        fill: 'transparent',
+        stroke: borderColor,
+        strokeWidth: 2,
+        selectable: false,
+      })
+      canvas.add(rect)
 
       const onMouseMove = function (event) {
         const pointerMove = canvas.getPointer(event.e)
@@ -166,8 +164,6 @@ export const CanvasProvider = ({ children }) => {
           img.set({
             left: newLeft,
             top: newTop,
-            width: rect.width,
-            height: rect.height,
           })
 
           img.setCoords()
