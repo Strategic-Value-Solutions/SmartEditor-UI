@@ -107,11 +107,29 @@ export const CanvasProvider = ({ children }) => {
       text.enterEditing() // Put the text box into editing mode
     } else if (mode === 'addIcon' && activeIconRef.current) {
       const pointer = canvas.getPointer(event.e)
+
+      // Draw the rectangle immediately on mouse down
+      let rect = new fabric.Rect({
+        left: pointer.x,
+        top: pointer.y,
+        width: 0,
+        height: 0,
+        fill: 'transparent',
+        stroke: borderColor,
+        strokeWidth: 2,
+        selectable: false,
+      })
+      canvas.add(rect)
+
+      let img // Declare the image variable outside the onload function to avoid adding it twice
+
+      // Load the image immediately
       const imgElement = document.createElement('img')
       imgElement.crossOrigin = 'anonymous'
+      imgElement.src = activeIconRef.current
 
       imgElement.onload = function () {
-        let img = new fabric.Image(imgElement, {
+        img = new fabric.Image(imgElement, {
           left: pointer.x,
           top: pointer.y,
           selectable: false,
@@ -119,67 +137,95 @@ export const CanvasProvider = ({ children }) => {
           scaleY: 1,
         })
 
+        // Add the image to the canvas
         canvas.add(img)
-        canvas.renderAll() // Ensure the canvas is updated with the icon
+      }
 
-        // Now initiate the rectangle drawing
-        let rect = new fabric.Rect({
-          left: pointer.x,
-          top: pointer.y,
-          width: 0,
-          height: 0,
-          fill: 'transparent',
-          stroke: borderColor,
-          strokeWidth: 2,
-          selectable: false,
+      const onMouseMove = function (event) {
+        const pointerMove = canvas.getPointer(event.e)
+        let newLeft = pointer.x
+        let newTop = pointer.y
+
+        if (pointerMove.x < pointer.x) {
+          newLeft = pointerMove.x
+        }
+
+        if (pointerMove.y < pointer.y) {
+          newTop = pointerMove.y
+        }
+
+        rect.set({
+          left: newLeft,
+          top: newTop,
+          width: Math.abs(pointerMove.x - pointer.x),
+          height: Math.abs(pointerMove.y - pointer.y),
         })
 
-        canvas.add(rect)
-
-        // Function to handle mouse movement for rectangle resizing
-        const onMouseMove = function (event) {
-          const pointerMove = canvas.getPointer(event.e)
-          let newLeft = pointer.x
-          let newTop = pointer.y
-
-          if (pointerMove.x < pointer.x) {
-            newLeft = pointerMove.x
-          }
-
-          if (pointerMove.y < pointer.y) {
-            newTop = pointerMove.y
-          }
-
-          rect.set({
-            left: newLeft,
-            top: newTop,
-            width: Math.abs(pointerMove.x - pointer.x),
-            height: Math.abs(pointerMove.y - pointer.y),
-          })
-
-          // Adjust the icon's position based on the rectangle's position
+        // Adjust the icon's position and size based on the rectangle's position
+        if (img) {
           img.set({
             left: newLeft,
             top: newTop,
+            width: rect.width,
+            height: rect.height,
           })
 
-          rect.setCoords()
           img.setCoords()
-          canvas.renderAll()
         }
 
-        // Function to stop drawing and remove event listeners
-        const onMouseUp = function () {
-          canvas.off('mouse:move', onMouseMove) // Remove the mouse move listener
-          canvas.off('mouse:up', onMouseUp) // Remove the mouse up listener
-        }
-
-        // Attach the event listeners
-        canvas.on('mouse:move', onMouseMove)
-        canvas.on('mouse:up', onMouseUp)
+        rect.setCoords()
+        canvas.renderAll()
       }
 
-      imgElement.src = activeIconRef.current
+      const onMouseUp = function () {
+        const rectArea = rect.get('width') * rect.get('height')
+        const imgArea =
+          img.get('scaleX') *
+          img.get('width') *
+          img.get('scaleY') *
+          img.get('height')
+
+        // Check if the rectangle's area is smaller than the icon's area
+        if (rectArea < imgArea) {
+          toast.error(
+            'The rectangle is too small for the icon. Please draw a larger rectangle.'
+          )
+
+          // Remove the rectangle and icon from the canvas
+          canvas.remove(rect)
+          if (img) {
+            canvas.remove(img)
+          }
+          canvas.renderAll()
+
+          // Cleanup event listeners
+          canvas.off('mouse:move', onMouseMove)
+          canvas.off('mouse:up', onMouseUp)
+
+          return // Exit the function to prevent storing the objects
+        }
+
+        // Create a group containing the rectangle and the icon
+        const group = new fabric.Group([rect, img], {
+          selectable: false,
+          hasControls: true,
+        })
+
+        // Add the group to the canvas
+        canvas.add(group)
+
+        // Remove the separate image and rectangle from the canvas after grouping
+        canvas.remove(rect)
+        canvas.remove(img)
+
+        // Cleanup event listeners
+        canvas.off('mouse:move', onMouseMove)
+        canvas.off('mouse:up', onMouseUp)
+      }
+
+      // Attach the event listeners
+      canvas.on('mouse:move', onMouseMove)
+      canvas.on('mouse:up', onMouseUp)
     }
 
     canvas.renderAll()

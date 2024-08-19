@@ -2,25 +2,22 @@
 import { useEditor } from './CanvasContext'
 import Components from './Components'
 import ExtendedToolbar from './ExtendedToolbar'
-import Loader from './Loader'
 import SelectPick from './SelectPick'
 import ImageCanvas from './canvas/ImageCanvas'
 import PdfCanvas from './canvas/PdfCanvas'
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select'
 import { RootState } from '@/store'
 import { updateCurrentProjectDetails } from '@/store/slices/projectSlice'
 import * as fabric from 'fabric'
 import React, { useEffect, useState } from 'react'
-import { useDropzone } from 'react-dropzone'
-import { Document, Page, pdfjs } from 'react-pdf'
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css'
-import 'react-pdf/dist/esm/Page/TextLayer.css'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'sonner'
-
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString()
 
 export default function Editor() {
   const dispatch = useDispatch()
@@ -39,7 +36,26 @@ export default function Editor() {
     height: 820,
   })
 
-  function changePage(offset) {
+  useEffect(() => {
+    if (currentProject.config.fieldsData) {
+      // Initialize the selectedFieldValues with the first value for each field
+      const initialFieldValues = currentProject.config.fieldsData.map(
+        (field) => ({
+          fieldName: field.name,
+          selectedValue: field.values[0]?.fieldValue || '',
+        })
+      )
+      setSelectedFieldValues(initialFieldValues)
+    }
+  }, [currentProject.config.fieldsData])
+
+  const handleFieldValueChange = (index, value) => {
+    const updatedFieldValues = [...selectedFieldValues]
+    updatedFieldValues[index].selectedValue = value
+    setSelectedFieldValues(updatedFieldValues)
+  }
+
+  const changePage = (offset) => {
     const page = editor.currPage
     editor.edits[page] = editor.canvas.toObject()
     editor.setEdits(editor.edits)
@@ -69,11 +85,9 @@ export default function Editor() {
 
     const fileType = selectedFile.type
     dispatch(
-      updateCurrentProjectDetails({
-        selectedFieldValues,
-        supermodelType: pick,
-      })
+      updateCurrentProjectDetails({ selectedFieldValues, supermodelType: pick })
     )
+
     if (fileType.includes('pdf')) {
       editor.setFile(selectedFile)
       editor.setIsSelectFilePDF(true)
@@ -85,9 +99,10 @@ export default function Editor() {
   }
 
   const isFileSelected = !!editor.selectedFile
+  console.log(currentProject?.config?.fieldsData)
   return (
     <div className='flex flex-col w-full h-full justify-center items-center'>
-      <p className='text-2xl text-center p-2'>{currentProject?.projectName}</p>
+      {/* <p className='text-2xl text-center p-2'>{currentProject?.projectName}</p> */}
 
       {!isFileSelected ? (
         <SelectPick
@@ -99,10 +114,32 @@ export default function Editor() {
           setSelectedFieldValues={setSelectedFieldValues}
         />
       ) : (
-        <div className='fle w-full justify-center items-center'>
+        <div className='fle w-full justify-center items-center overflow-hidden'>
           <Components toggleExtendedToolbar={toggleExtendedToolbar} />
+
           <div>
-            
+            <div className='fixed w-1/4 z-50 p-4 top-0 right-1/2 transform translate-x-1/2'>
+              {currentProject?.config?.fieldsData?.map((field, index) => (
+                <Select
+                  key={field.name}
+                  value={selectedFieldValues[index]?.selectedValue}
+                  onValueChange={(value: any) =>
+                    handleFieldValueChange(index, value)
+                  }
+                >
+                  <SelectTrigger className='w-full mb-2'>
+                    <SelectValue placeholder='Field Value' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {field?.values?.map((value: any, idx: any) => (
+                      <SelectItem value={value.fieldValue} key={idx}>
+                        {value.fieldValue}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ))}
+            </div>
             {editor.isSelectFilePDF ? (
               <PdfCanvas
                 editor={editor}

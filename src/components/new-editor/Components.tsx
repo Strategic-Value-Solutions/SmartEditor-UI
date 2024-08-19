@@ -1,20 +1,17 @@
 // @ts-nocheck
-import { useEditor } from './CanvasContext'
 import imageConstants from '@/constants/imageConstants'
 import { RootState } from '@/store'
 import { updateCurrentProjectDetails } from '@/store/slices/projectSlice'
 import debounce from 'lodash/debounce'
 import {
-  File,
   FileJson,
-  FileText,
-  Image,
   ImageDown,
   MonitorUp,
-  Save,
+  Save
 } from 'lucide-react'
-import React, { useState, useRef, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useEditor } from './CanvasContext'
 
 export default function Components({ toggleExtendedToolbar, getInputProps }) {
   const dispatch = useDispatch()
@@ -75,23 +72,7 @@ export default function Components({ toggleExtendedToolbar, getInputProps }) {
 
   return (
     <div className='flex flex-col items-center justify-center gap-3 fixed right-10 bottom-10 z-50 bg-gradient-to-br from-gray-300 to-gray-400 p-4 rounded-lg shadow-lg w-fit max-h-[80vh] overflow-y-auto'>
-      <div className='flex flex-col mt-6'>
-        {currentProject?.selectedFieldValues.map((field: any, index: any) => (
-          <button
-            key={index}
-            type='button'
-            title='Move'
-            onClick={() => setSelectedFieldValues(field)}
-            className={`rounded text-white p-2 ${
-              field.name === currentProject?.selectedFieldValue?.name
-                ? 'bg-black'
-                : ''
-            }`}
-          >
-            {field.name}
-          </button>
-        ))}
-      </div>
+    
       <button
         type='button'
         title='Move'

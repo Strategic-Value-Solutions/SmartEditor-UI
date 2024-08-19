@@ -17,12 +17,12 @@ function PdfCanvas({
     originalHeight,
     originalWidth,
   }: any) {
-    editor.setEdits({})
+    editor.setEdits([])
     editor.setNumPages(numPages)
     editor.setCurrPage(1)
 
     // Calculate dimensions
-    const maxWidth = window.innerWidth * 0.5 // Adjust the scale factor as needed
+    const maxWidth = window.innerWidth * 0.4 // Adjust the scale factor as needed
     const scaleFactor = maxWidth / originalWidth
     const width = originalWidth * scaleFactor
     const height = originalHeight * scaleFactor
@@ -72,7 +72,7 @@ function PdfCanvas({
                 })
               )
             }
-            className='flex justify-center mt-28'
+            className='flex justify-center mb-20'
             id='doc'
           >
             <div

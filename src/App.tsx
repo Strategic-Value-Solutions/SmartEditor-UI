@@ -1,5 +1,8 @@
 import '@/global.css'
 import { useEffect } from 'react'
+import { pdfjs } from 'react-pdf'
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css'
+import 'react-pdf/dist/esm/Page/TextLayer.css'
 import { Provider } from 'react-redux'
 import { Toaster } from 'sonner'
 import { ThemeProvider } from './components/custom/theme-provider'
@@ -7,6 +10,11 @@ import Router from './router'
 import userApi from './service/userApi'
 import { store } from './store'
 import { setUser } from './store/slices/authSlice'
+
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).toString()
 
 const App = () => {
   useEffect(() => {
@@ -18,7 +26,7 @@ const App = () => {
           const response = await userApi.get()
           store.dispatch(setUser(response))
         })()
-      } 
+      }
     }
   }, [])
 

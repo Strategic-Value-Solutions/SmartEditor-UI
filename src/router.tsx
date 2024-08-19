@@ -31,8 +31,8 @@ export const paths = {
     component: Projects,
   },
   templates: {
-    name: 'Templates',
-    path: '/templates',
+    name: 'Configs',
+    path: '/configs',
     isAuth: true,
     component: Templates,
   },
