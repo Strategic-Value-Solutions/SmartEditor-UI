@@ -27,7 +27,6 @@ export default function Components({ toggleExtendedToolbar, getInputProps }) {
   const dropdownRef = useRef(null)
 
   const setSelectedFieldValues = (fieldValue) => {
-    console.log(fieldValue)
     dispatch(
       updateCurrentProjectDetails({
         selectedFieldValue: fieldValue,

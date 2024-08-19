@@ -64,7 +64,6 @@ const authSlice = createSlice({
         isAuthenticated: boolean
       }>
     ) => {
-      console.log(action)
       state.user = action.payload.user
       state.accessToken = action.payload.accessToken
       state.refreshToken = action.payload.refreshToken

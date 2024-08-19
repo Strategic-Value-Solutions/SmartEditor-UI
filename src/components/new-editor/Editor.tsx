@@ -28,7 +28,7 @@ export default function Editor() {
   const currentProject = useSelector(
     (state: RootState) => state.project.currentProject
   )
-  console.log(currentProject)
+
   const [pick, setPick] = useState('')
   const [selectedFile, setSelectedFile] = useState('')
   const [isDocLoading, setIsDocLoading] = useState(false)
@@ -83,7 +83,7 @@ export default function Editor() {
       editor.setFile(selectedFile)
     }
   }
-  console.log(currentProject)
+
   const isFileSelected = !!editor.selectedFile
   return (
     <div className='flex flex-col w-full h-full justify-center items-center'>

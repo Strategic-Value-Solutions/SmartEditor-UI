@@ -39,7 +39,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       )
       navigate(paths.projects.path)
     } catch (err) {
-      console.log(err)
+      toast.error('Google Sign In was unsuccessful. Try again later')
     } finally {
       setIsLoading(false)
     }

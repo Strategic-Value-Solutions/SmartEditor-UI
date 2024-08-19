@@ -64,7 +64,7 @@ function SelectPick({
     updatedFieldValues[index].selectedValue = newValue
     setFieldValues(updatedFieldValues)
   }
-  console.log(fieldValues)
+
   return (
     <div className='flex flex-col w-full max-w-[500px] border rounded-md items-center justify-center p-4'>
       <div className='flex items-center gap-4 flex-col w-full'>
@@ -86,7 +86,6 @@ function SelectPick({
             <div key={index} className='flex items-center gap-4 w-full'>
               <Input
                 value={field.name}
-                onChange={(e) => console.log(e.target.value)}
                 disabled={true}
                 className='w-full'
               />

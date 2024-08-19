@@ -11,7 +11,6 @@ export default function AppShell({ children }: any) {
     (state: RootState) => state.sidebar.isCollapsed
   )
   const location = useLocation()
-  console.log(location, 'LOCATION')
 
   const showUserName = () => {
     if (

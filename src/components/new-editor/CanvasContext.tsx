@@ -5,6 +5,7 @@ import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import { degrees, PDFDocument, rgb } from 'pdf-lib'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -35,7 +36,6 @@ export const CanvasProvider = ({ children }) => {
     activeIconRef.current = activeIcon
     updateCursorStyle()
   }, [activeIcon])
-
   const saveCanvasState = (pageNumber) => {
     if (canvas) {
       const canvasJson = canvas.toJSON()
@@ -48,9 +48,13 @@ export const CanvasProvider = ({ children }) => {
 
   const loadCanvasState = (pageNumber) => {
     const canvasJson = edits[pageNumber]
+
     if (canvas && canvasJson) {
       canvas.loadFromJSON(canvasJson, () => {
         canvas.renderAll()
+        setTimeout(() => {
+          canvas.renderAll()
+        }, 100)
       })
     }
   }
@@ -591,7 +595,7 @@ export const CanvasProvider = ({ children }) => {
         link.click()
       }
     } catch (error) {
-      console.log(error)
+      toast.error('Failed to download the PDF.')
     }
   }
 
@@ -726,75 +730,72 @@ export const CanvasProvider = ({ children }) => {
 
   const zoomIn = () => {
     if (canvas) {
-      const zoom = canvas.getZoom() * 1.1; // Zoom in by 10%
-      canvas.setZoom(zoom);
-  
+      const zoom = canvas.getZoom() * 1.1 // Zoom in by 10%
+      canvas.setZoom(zoom)
+
       // Adjust PDF dimensions
       setPdfDimensions({
         width: pdfDimensions.width * 1.1,
         height: pdfDimensions.height * 1.1,
-      });
+      })
     }
-  };
-  
+  }
+
   const zoomOut = () => {
     if (canvas) {
-      const zoom = canvas.getZoom() / 1.1; // Zoom out by 10%
-      canvas.setZoom(zoom);
-  
+      const zoom = canvas.getZoom() / 1.1 // Zoom out by 10%
+      canvas.setZoom(zoom)
+
       // Adjust PDF dimensions
       setPdfDimensions({
         width: pdfDimensions.width / 1.1,
         height: pdfDimensions.height / 1.1,
-      });
+      })
     }
-  };
-  
-
+  }
 
   const enablePan = () => {
     if (canvas) {
-      canvas.isDrawingMode = false; // Disable drawing mode if enabled
-      canvas.selection = false; // Disable selection
-  
+      canvas.isDrawingMode = false // Disable drawing mode if enabled
+      canvas.selection = false // Disable selection
+
       // Handle panning
-      let isPanning = false;
-      let lastPosX = 0;
-      let lastPosY = 0;
-  
+      let isPanning = false
+      let lastPosX = 0
+      let lastPosY = 0
+
       canvas.on('mouse:down', (event) => {
-        isPanning = true;
-        const pointer = canvas.getPointer(event.e);
-        lastPosX = pointer.x;
-        lastPosY = pointer.y;
-      });
-  
+        isPanning = true
+        const pointer = canvas.getPointer(event.e)
+        lastPosX = pointer.x
+        lastPosY = pointer.y
+      })
+
       canvas.on('mouse:move', (event) => {
         if (isPanning) {
-          const pointer = canvas.getPointer(event.e);
-          const dx = pointer.x - lastPosX;
-          const dy = pointer.y - lastPosY;
-  
-          const currentTransform = canvas.viewportTransform;
-          currentTransform[4] += dx;
-          currentTransform[5] += dy;
-  
+          const pointer = canvas.getPointer(event.e)
+          const dx = pointer.x - lastPosX
+          const dy = pointer.y - lastPosY
+
+          const currentTransform = canvas.viewportTransform
+          currentTransform[4] += dx
+          currentTransform[5] += dy
+
           // Update PDF position accordingly
-          const pdfWrapper = document.getElementById('pdfWrapper');
-          pdfWrapper.style.transform = `translate(${currentTransform[4]}px, ${currentTransform[5]}px)`;
-  
-          canvas.requestRenderAll();
-          lastPosX = pointer.x;
-          lastPosY = pointer.y;
+          const pdfWrapper = document.getElementById('pdfWrapper')
+          pdfWrapper.style.transform = `translate(${currentTransform[4]}px, ${currentTransform[5]}px)`
+
+          canvas.requestRenderAll()
+          lastPosX = pointer.x
+          lastPosY = pointer.y
         }
-      });
-  
+      })
+
       canvas.on('mouse:up', () => {
-        isPanning = false;
-      });
+        isPanning = false
+      })
     }
-  };
-  
+  }
 
   useEffect(() => {
     if (canvas) {
