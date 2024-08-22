@@ -3,12 +3,7 @@ import imageConstants from '@/constants/imageConstants'
 import { RootState } from '@/store'
 import { updateCurrentProjectDetails } from '@/store/slices/projectSlice'
 import debounce from 'lodash/debounce'
-import {
-  FileJson,
-  ImageDown,
-  MonitorUp,
-  Save
-} from 'lucide-react'
+import { FileJson, ImageDown, MonitorUp, Save } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEditor } from './CanvasContext'

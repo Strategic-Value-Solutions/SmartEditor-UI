@@ -25,7 +25,7 @@ export default function Editor() {
   const currentProject = useSelector(
     (state: RootState) => state.project.currentProject
   )
-
+  const { activePick } = currentProject
   const [pick, setPick] = useState('')
   const [selectedFile, setSelectedFile] = useState('')
   const [isDocLoading, setIsDocLoading] = useState(false)
@@ -50,9 +50,11 @@ export default function Editor() {
   }, [currentProject.config.fieldsData])
 
   const handleFieldValueChange = (index, value) => {
-    const updatedFieldValues = [...selectedFieldValues]
-    updatedFieldValues[index].selectedValue = value
-    setSelectedFieldValues(updatedFieldValues)
+    dispatch(
+      updateCurrentProjectDetails({
+        activePick: value,
+      })
+    )
   }
 
   const changePage = (offset) => {
@@ -82,7 +84,7 @@ export default function Editor() {
 
   const onSubmit = () => {
     if (!selectedFile) return toast.error('Please select a file')
-
+    if (!activePick) return toast.error('Please select a pick')
     const fileType = selectedFile.type
     dispatch(
       updateCurrentProjectDetails({ selectedFieldValues, supermodelType: pick })
@@ -99,7 +101,7 @@ export default function Editor() {
   }
 
   const isFileSelected = !!editor.selectedFile
-  console.log(currentProject?.config?.fieldsData)
+
   return (
     <div className='flex flex-col w-full h-full justify-center items-center'>
       {/* <p className='text-2xl text-center p-2'>{currentProject?.projectName}</p> */}
@@ -122,7 +124,7 @@ export default function Editor() {
               {currentProject?.config?.fieldsData?.map((field, index) => (
                 <Select
                   key={field.name}
-                  value={selectedFieldValues[index]?.selectedValue}
+                  value={currentProject?.activePick}
                   onValueChange={(value: any) =>
                     handleFieldValueChange(index, value)
                   }

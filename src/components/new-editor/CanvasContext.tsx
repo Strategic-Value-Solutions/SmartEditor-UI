@@ -5,7 +5,6 @@ import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import { degrees, PDFDocument, rgb } from 'pdf-lib'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
-import { useDispatch } from 'react-redux'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -31,11 +30,13 @@ export const CanvasProvider = ({ children }) => {
   const [pdfDimensions, setPdfDimensions] = useState({ width: 0, height: 0 })
   const [edits, setEdits] = useState({})
   const [isSelectFilePDF, setIsSelectFilePDF] = useState(false)
+  const [allowPinchZoom, setAllowPinchZoom] = useState(false)
 
   useEffect(() => {
     activeIconRef.current = activeIcon
     updateCursorStyle()
   }, [activeIcon])
+
   const saveCanvasState = (pageNumber) => {
     if (canvas) {
       const canvasJson = canvas.toJSON()
@@ -48,7 +49,6 @@ export const CanvasProvider = ({ children }) => {
 
   const loadCanvasState = (pageNumber) => {
     const canvasJson = edits[pageNumber]
-
     if (canvas && canvasJson) {
       canvas.loadFromJSON(canvasJson, () => {
         canvas.renderAll()
@@ -68,6 +68,11 @@ export const CanvasProvider = ({ children }) => {
   }
 
   const handleCanvasClick = async (event) => {
+    if (allowPinchZoom) {
+      // toast.error('Drawing is disabled while pinch zoom is enabled')
+      return
+    }
+
     if (!canvas || mode === 'erase') return
     const pointer = canvas.getPointer(event.e)
 
@@ -100,16 +105,15 @@ export const CanvasProvider = ({ children }) => {
         fill: color,
         fontFamily: 'roboto',
         selectable: true,
-        editable: true, // Make the textbox editable
+        editable: true,
       })
       canvas.add(text)
-      canvas.setActiveObject(text) // Automatically select the text box so the user can start typing
-      text.enterEditing() // Put the text box into editing mode
+      canvas.setActiveObject(text)
+      text.enterEditing()
     } else if (mode === 'addIcon' && activeIconRef.current) {
       const pointer = canvas.getPointer(event.e)
-      let img // Declare the image variable outside the onload function to avoid adding it twice
+      let img
 
-      // Load the image immediately
       const imgElement = document.createElement('img')
       imgElement.crossOrigin = 'anonymous'
       imgElement.src = activeIconRef.current
@@ -123,10 +127,9 @@ export const CanvasProvider = ({ children }) => {
           scaleY: 1,
         })
 
-        // Add the image to the canvas
         canvas.add(img)
       }
-      // Draw the rectangle immediately on mouse down
+
       let rect = new fabric.Rect({
         left: pointer.x,
         top: pointer.y,
@@ -159,7 +162,6 @@ export const CanvasProvider = ({ children }) => {
           height: Math.abs(pointerMove.y - pointer.y),
         })
 
-        // Adjust the icon's position and size based on the rectangle's position
         if (img) {
           img.set({
             left: newLeft,
@@ -181,45 +183,37 @@ export const CanvasProvider = ({ children }) => {
           img.get('scaleY') *
           img.get('height')
 
-        // Check if the rectangle's area is smaller than the icon's area
         if (rectArea < imgArea) {
           toast.error(
             'The rectangle is too small for the icon. Please draw a larger rectangle.'
           )
 
-          // Remove the rectangle and icon from the canvas
           canvas.remove(rect)
           if (img) {
             canvas.remove(img)
           }
           canvas.renderAll()
 
-          // Cleanup event listeners
           canvas.off('mouse:move', onMouseMove)
           canvas.off('mouse:up', onMouseUp)
 
-          return // Exit the function to prevent storing the objects
+          return
         }
 
-        // Create a group containing the rectangle and the icon
         const group = new fabric.Group([rect, img], {
           selectable: false,
           hasControls: true,
         })
 
-        // Add the group to the canvas
         canvas.add(group)
 
-        // Remove the separate image and rectangle from the canvas after grouping
         canvas.remove(rect)
         canvas.remove(img)
 
-        // Cleanup event listeners
         canvas.off('mouse:move', onMouseMove)
         canvas.off('mouse:up', onMouseUp)
       }
 
-      // Attach the event listeners
       canvas.on('mouse:move', onMouseMove)
       canvas.on('mouse:up', onMouseUp)
     }
@@ -314,16 +308,14 @@ export const CanvasProvider = ({ children }) => {
 
     const doc = document.querySelector('#singlePageExport')
 
-    // Use html2canvas to capture the canvas, which includes both PDF content and annotations
     html2canvas(doc, {
-      scale: 2, // Improve quality
+      scale: 2,
       useCORS: true,
       allowTaint: true,
     })
       .then((canvasEl) => {
         const imgData = canvasEl.toDataURL('image/png')
 
-        // Create a download link and trigger the download
         const link = document.createElement('a')
         link.href = imgData
         link.download = `annotated_page_${currPage}.png`
@@ -337,7 +329,6 @@ export const CanvasProvider = ({ children }) => {
       })
   }
 
-  // Various functionalities for the editor
   const downloadPageAsPDF = () => {
     if (!canvas || !pdfDimensions.width || !pdfDimensions.height) {
       toast.error('Canvas or PDF dimensions are not available.')
@@ -346,26 +337,22 @@ export const CanvasProvider = ({ children }) => {
 
     setExporting(true)
 
-    // Render the canvas to ensure all elements are drawn
     canvas.renderAll()
     const doc = document.querySelector('#singlePageExport')
-    // Use html2canvas to capture the canvas, which includes both PDF content and annotations
     html2canvas(doc, {
-      scale: 2, // Improve quality
+      scale: 2,
       useCORS: true,
       allowTaint: true,
     })
       .then((canvasEl) => {
         const imgData = canvasEl.toDataURL('image/png')
 
-        // Create a new jsPDF instance with the PDF's dimensions
         const pdf = new jsPDF({
           orientation: 'portrait',
           unit: 'px',
           format: [pdfDimensions.width, pdfDimensions.height],
         })
 
-        // Add the captured image to the PDF
         pdf.addImage(
           imgData,
           'PNG',
@@ -375,7 +362,6 @@ export const CanvasProvider = ({ children }) => {
           pdfDimensions.height
         )
 
-        // Save the PDF with annotations
         pdf.save(`annotated_page_${currPage}.pdf`)
 
         setExporting(false)
@@ -388,17 +374,14 @@ export const CanvasProvider = ({ children }) => {
 
   const downloadCanvasAsImage = () => {
     if (canvas) {
-      // Render the canvas to ensure all elements are drawn
       canvas.renderAll()
 
-      // Convert the canvas to a data URL
       const dataURL = canvas.toDataURL({
         format: 'png',
         quality: 1.0,
-        multiplier: 2, // Increase the resolution by setting a higher multiplier
+        multiplier: 2,
       })
 
-      // Create a download link and trigger the download
       const link = document.createElement('a')
       link.href = dataURL
       link.download = `canvas_${currPage}.png`
@@ -407,6 +390,11 @@ export const CanvasProvider = ({ children }) => {
   }
 
   const handleImageUpload = (e) => {
+    if (allowPinchZoom) {
+      // toast.error('Drawing is disabled while pinch zoom is enabled')
+      return
+    }
+
     const file = e.target.files[0]
     const reader = new FileReader()
     reader.onload = function (f) {
@@ -430,7 +418,6 @@ export const CanvasProvider = ({ children }) => {
         const numPages = pdf.numPages
         setNumPages(numPages)
 
-        // Load the first page as an example
         pdf.getPage(1).then((page) => {
           const viewport = page.getViewport({ scale: 1.5 })
           const canvasElement = document.createElement('canvas')
@@ -502,7 +489,6 @@ export const CanvasProvider = ({ children }) => {
     try {
       const json = canvas.toJSON()
 
-      // Read the selected PDF file
       const fileReader = new FileReader()
       fileReader.readAsArrayBuffer(selectedFile)
 
@@ -512,18 +498,15 @@ export const CanvasProvider = ({ children }) => {
         const pdfDoc = await PDFDocument.create()
 
         for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-          // Copy the original page from the original PDF
           const [originalPage] = await pdfDoc.copyPages(originalPdfDoc, [
             pageNum - 1,
           ])
           const page = pdfDoc.addPage(originalPage)
 
-          // Load the canvas state for the current page
           setCurrPage(pageNum)
-          loadCanvasState(pageNum) // Ensure this loads the correct state without resetting
-          await new Promise((resolve) => setTimeout(resolve, 500)) // Wait for the content to render
+          loadCanvasState(pageNum)
+          await new Promise((resolve) => setTimeout(resolve, 500))
 
-          // Ensure all objects are loaded and rendered
           canvas.renderAll()
 
           if (!json.objects || json.objects.length === 0) {
@@ -531,7 +514,6 @@ export const CanvasProvider = ({ children }) => {
             return
           }
 
-          // Iterate over the canvas objects and apply them to the PDF
           for (const obj of json.objects) {
             const type = obj.type.toLowerCase()
 
@@ -586,7 +568,6 @@ export const CanvasProvider = ({ children }) => {
                 break
 
               case 'image':
-                // Handle SVG conversion to PNG for embedding
                 const svgToPng = async (svgData) => {
                   const img = new Image()
                   img.src = svgData
@@ -608,16 +589,14 @@ export const CanvasProvider = ({ children }) => {
                 )
                 const pngImage = await pdfDoc.embedPng(pngBytes)
 
-                // Calculate transformation matrix
                 const { left, top, width, height, scaleX, scaleY, angle } = obj
 
-                // Apply the transformation directly when drawing the image
                 page.drawImage(pngImage, {
                   x: left,
                   y: pdfDimensions.height - top - height * scaleY,
                   width: width * scaleX,
                   height: height * scaleY,
-                  rotate: degrees(angle), // Rotation using degrees
+                  rotate: degrees(angle),
                 })
                 break
 
@@ -772,10 +751,9 @@ export const CanvasProvider = ({ children }) => {
 
   const zoomIn = () => {
     if (canvas) {
-      const zoom = canvas.getZoom() * 1.1 // Zoom in by 10%
+      const zoom = canvas.getZoom() * 1.1
       canvas.setZoom(zoom)
 
-      // Adjust PDF dimensions
       setPdfDimensions({
         width: pdfDimensions.width * 1.1,
         height: pdfDimensions.height * 1.1,
@@ -785,10 +763,9 @@ export const CanvasProvider = ({ children }) => {
 
   const zoomOut = () => {
     if (canvas) {
-      const zoom = canvas.getZoom() / 1.1 // Zoom out by 10%
+      const zoom = canvas.getZoom() / 1.1
       canvas.setZoom(zoom)
 
-      // Adjust PDF dimensions
       setPdfDimensions({
         width: pdfDimensions.width / 1.1,
         height: pdfDimensions.height / 1.1,
@@ -798,10 +775,9 @@ export const CanvasProvider = ({ children }) => {
 
   const enablePan = () => {
     if (canvas) {
-      canvas.isDrawingMode = false // Disable drawing mode if enabled
-      canvas.selection = false // Disable selection
+      canvas.isDrawingMode = false
+      canvas.selection = false
 
-      // Handle panning
       let isPanning = false
       let lastPosX = 0
       let lastPosY = 0
@@ -823,7 +799,6 @@ export const CanvasProvider = ({ children }) => {
           currentTransform[4] += dx
           currentTransform[5] += dy
 
-          // Update PDF position accordingly
           const pdfWrapper = document.getElementById('pdfWrapper')
           pdfWrapper.style.transform = `translate(${currentTransform[4]}px, ${currentTransform[5]}px)`
 
@@ -838,6 +813,17 @@ export const CanvasProvider = ({ children }) => {
       })
     }
   }
+
+  useEffect(() => {
+    if (!canvas) return
+    if (allowPinchZoom) {
+      setMode('freeze')
+      canvas.selection = false
+      // canvas.forEachObject((obj) => alert(obj.type))
+    } else {
+      setMode('select')
+    }
+  }, [allowPinchZoom])
 
   useEffect(() => {
     if (canvas) {
@@ -874,9 +860,9 @@ export const CanvasProvider = ({ children }) => {
         downloadJSON,
         loadNewPDF,
         clearCanvas,
-        handlePdfUpload, // Function to load a new PDF
-        handleImageUpload, // Function to load an image
-        downloadCanvasAsImage, // Function to download canvas as an image
+        handlePdfUpload,
+        handleImageUpload,
+        downloadCanvasAsImage,
         downloadPageAsImage,
         setIsSelectFilePDF,
         isSelectFilePDF,
@@ -884,6 +870,8 @@ export const CanvasProvider = ({ children }) => {
         zoomIn,
         zoomOut,
         enablePan,
+        allowPinchZoom,
+        setAllowPinchZoom,
       }}
     >
       {children}

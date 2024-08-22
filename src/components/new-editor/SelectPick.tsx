@@ -8,9 +8,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { RootState } from '@/store'
+import { updateCurrentProjectDetails } from '@/store/slices/projectSlice'
 import { useState, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 interface UploadModalProps {
   pick: string
@@ -32,6 +33,7 @@ function SelectPick({
   const currentProject = useSelector(
     (state: RootState) => state.project.currentProject
   )
+  const dispatch = useDispatch()
 
   // Initialize local state to track selected field values
   const [fieldValues, setFieldValues] = useState(
@@ -63,6 +65,12 @@ function SelectPick({
     const updatedFieldValues = [...fieldValues]
     updatedFieldValues[index].selectedValue = newValue
     setFieldValues(updatedFieldValues)
+
+    dispatch(
+      updateCurrentProjectDetails({
+        activePick: newValue,
+      })
+    )
   }
 
   return (
@@ -84,13 +92,9 @@ function SelectPick({
         <div className='flex flex-col space-y-2 w-full'>
           {currentProject?.config?.fieldsData.map((field: any, index: any) => (
             <div key={index} className='flex items-center gap-4 w-full'>
-              <Input
-                value={field.name}
-                disabled={true}
-                className='w-full'
-              />
+              <Input value={field.name} disabled={true} className='w-full' />
               <Select
-                value={fieldValues[index]?.selectedValue}
+              value={currentProject?.activePick}
                 onValueChange={(value: any) =>
                   handleFieldValueChange(index, value)
                 }
