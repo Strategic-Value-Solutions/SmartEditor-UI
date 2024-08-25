@@ -2,7 +2,7 @@ import api from './api'
 
 const loginWithGoogle = async (data: any) => {
   const response = await api.post('/auth/google', data)
-  return response.data
+  return response.data.data
 }
 
 const logout = async (data: any) => {

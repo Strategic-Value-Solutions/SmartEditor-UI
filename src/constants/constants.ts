@@ -71,3 +71,5 @@ export const tools = [
   { title: 'Sprinkler System', imgSrc: imageConstants.sprinklerSystem },
   { title: 'Standpipe System', imgSrc: imageConstants.standpipeSystem },
 ]
+
+export const ERROR_MESSAGE = 'Something went wrong. Please try again later.'

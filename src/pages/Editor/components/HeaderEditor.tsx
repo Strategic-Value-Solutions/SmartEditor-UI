@@ -9,7 +9,7 @@
 // const HeaderEditor = () => {
 //   // const { projectData } = useContext(ProjectDataContext);
 //   let navigate = useNavigate()
-//   // const projectTitle = projectData.projectName;
+//   // const projectTitle = projectData.name;
 
 //   function handleClose() {
 //     navigate('/')

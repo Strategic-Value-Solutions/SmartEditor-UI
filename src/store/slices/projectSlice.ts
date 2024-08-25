@@ -38,7 +38,6 @@ const projectSlice = createSlice({
     addProject: (state, action) => {
       const project = { ...action.payload }
       state.projectsData.push(project)
-      saveState(state)
     },
     setProjectsData: (state, action) => {
       state.projectsData = action.payload.map((project: any) => ({

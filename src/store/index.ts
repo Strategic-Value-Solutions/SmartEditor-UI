@@ -3,6 +3,7 @@ import authSlice from './slices/authSlice'
 import configurationSlice from './slices/configurationSlice'
 import projectSlice from './slices/projectSlice'
 import sidebarSlice from './slices/sidebarSlice'
+import superStructureSlice from './slices/superStructureSlice'
 import templateSlice from './slices/templateSlice'
 import { configureStore } from '@reduxjs/toolkit'
 
@@ -16,5 +17,6 @@ export const store = configureStore({
     project: projectSlice,
     template: templateSlice,
     sidebar: sidebarSlice,
+    superStructure: superStructureSlice,
   },
 })

@@ -36,18 +36,18 @@ export default function Editor() {
     height: 820,
   })
 
-  useEffect(() => {
-    if (currentProject.config.fieldsData) {
-      // Initialize the selectedFieldValues with the first value for each field
-      const initialFieldValues = currentProject.config.fieldsData.map(
-        (field) => ({
-          fieldName: field.name,
-          selectedValue: field.values[0]?.fieldValue || '',
-        })
-      )
-      setSelectedFieldValues(initialFieldValues)
-    }
-  }, [currentProject.config.fieldsData])
+  // useEffect(() => {
+  //   if (currentProject.config.fieldsData) {
+  //     // Initialize the selectedFieldValues with the first value for each field
+  //     const initialFieldValues = currentProject.config.fieldsData.map(
+  //       (field) => ({
+  //         fieldName: field.name,
+  //         selectedValue: field.values[0]?.fieldValue || '',
+  //       })
+  //     )
+  //     setSelectedFieldValues(initialFieldValues)
+  //   }
+  // }, [currentProject.config.fieldsData])
 
   const handleFieldValueChange = (index, value) => {
     dispatch(
@@ -87,7 +87,7 @@ export default function Editor() {
     if (!activePick) return toast.error('Please select a pick')
     const fileType = selectedFile.type
     dispatch(
-      updateCurrentProjectDetails({ selectedFieldValues, supermodelType: pick })
+      updateCurrentProjectDetails({ selectedFieldValues, superStructureId: pick })
     )
 
     if (fileType.includes('pdf')) {
@@ -104,8 +104,6 @@ export default function Editor() {
 
   return (
     <div className='flex flex-col w-full h-full justify-center items-center'>
-      {/* <p className='text-2xl text-center p-2'>{currentProject?.projectName}</p> */}
-
       {!isFileSelected ? (
         <SelectPick
           onSubmit={onSubmit}
@@ -120,7 +118,7 @@ export default function Editor() {
           <Components toggleExtendedToolbar={toggleExtendedToolbar} />
 
           <div>
-            <div className='fixed w-1/4 z-50 p-4 top-0 right-1/2 transform translate-x-1/2'>
+            {/* <div className='fixed w-1/4 z-50 p-4 top-0 right-1/2 transform translate-x-1/2'>
               {currentProject?.config?.fieldsData?.map((field, index) => (
                 <Select
                   key={field.name}
@@ -141,7 +139,7 @@ export default function Editor() {
                   </SelectContent>
                 </Select>
               ))}
-            </div>
+            </div> */}
             {editor.isSelectFilePDF ? (
               <PdfCanvas
                 editor={editor}

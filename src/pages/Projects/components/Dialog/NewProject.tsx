@@ -24,25 +24,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import projectApi from '@/service/projectApi'
 import { RootState } from '@/store'
 import {
   addProject,
   setCurrentProject,
   updateProject,
 } from '@/store/slices/projectSlice'
+import { getErrorMessage } from '@/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { v4 } from 'uuid'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 const newProjectSchema = z.object({
-  projectName: z.string().nonempty('Project name is required'),
+  name: z.string().nonempty('Project name is required'),
   clientName: z.string().nonempty('Client name is required'),
-  superModel: z.string().nonempty('Supermodel Type is required'),
-  config: z.string().nonempty('Configuration is required'),
+  superStructureId: z.string().nonempty('Supermodel Type is required'),
+  // config: z.string().nonempty('Configuration is required'),
 })
 
 const NewProject = ({
@@ -57,24 +59,26 @@ const NewProject = ({
   const form = useForm({
     resolver: zodResolver(newProjectSchema),
     defaultValues: {
-      projectName: '',
+      name: '',
       clientName: '',
-      superModel: '',
-      config: '',
+      superStructureId: 'cjxqf3swq0000u5skt2ddc5p0',
+      // config: '',
     },
   })
   const [configs, setConfigs] = useState([])
-
   const configsData = useSelector(
     (state: RootState) => state.configurations.configsData || []
+  )
+  const superStructures = useSelector(
+    (state: RootState) => state.superStructure.superStructureData || []
   )
 
   useEffect(() => {
     if (isEdit && selectedProject) {
-      form.setValue('projectName', selectedProject.projectName)
+      form.setValue('name', selectedProject.name)
       form.setValue('clientName', selectedProject.clientName)
-      form.setValue('superModel', selectedProject.supermodelType)
-      form.setValue('config', selectedProject.config.modelName)
+      form.setValue('superStructureId', selectedProject.superStructureId)
+      // form.setValue('config', selectedProject.config.modelName)
     } else {
       form.reset()
     }
@@ -85,23 +89,31 @@ const NewProject = ({
   }, [configsData])
 
   const onSubmit = async (data) => {
-    const projectData = {
-      projectName: data.projectName,
-      clientName: data.clientName,
-      supermodelType: data.superModel,
-      config: configs.find((config) => config.modelName === data.config),
-      id: isEdit ? selectedProject.id : v4(),
-    }
+    try {
+      const projectData = {
+        name: data.name,
+        clientName: data.clientName,
+        superStructureId: data.superStructureId,
+      }
 
-    dispatch(setCurrentProject(projectData))
-    if (isEdit) {
-      dispatch(updateProject(projectData))
-    } else {
-      dispatch(addProject(projectData))
-    }
+      if (isEdit) {
+        const response = await projectApi.updateProject(
+          selectedProject.id,
+          projectData
+        )
+        dispatch(setCurrentProject(response))
+        dispatch(updateProject(response))
+      } else {
+        const response = await projectApi.createProject(projectData)
+        dispatch(setCurrentProject(response))
+        dispatch(addProject(response))
+      }
 
-    onClose()
-    form.reset()
+      onClose()
+      form.reset()
+    } catch (error) {
+      toast.error(getErrorMessage(error))
+    }
     // navigate('/editor')
   }
 
@@ -121,7 +133,7 @@ const NewProject = ({
               >
                 <FormField
                   control={form.control}
-                  name='projectName'
+                  name='name'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Project name</FormLabel>
@@ -148,7 +160,7 @@ const NewProject = ({
                 />
                 <FormField
                   control={form.control}
-                  name='superModel'
+                  name='superStructureId'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Supermodel Type</FormLabel>
@@ -161,15 +173,14 @@ const NewProject = ({
                             <SelectValue placeholder='Supermodel Type' />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value='Orthotropic'>
-                              Orthotropic
-                            </SelectItem>
-                            <SelectItem value='Multistory Building'>
-                              Multistory Building
-                            </SelectItem>
-                            <SelectItem value='Aviation Project'>
-                              Aviation Project
-                            </SelectItem>
+                            {superStructures.map((superStructure: any) => (
+                              <SelectItem
+                                key={superStructure.id}
+                                value={superStructure.id}
+                              >
+                                {superStructure.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -178,7 +189,7 @@ const NewProject = ({
                     </FormItem>
                   )}
                 />
-                <FormField
+                {/* <FormField
                   control={form.control}
                   name='config'
                   render={({ field }) => (
@@ -207,7 +218,7 @@ const NewProject = ({
                       <FormMessage />
                     </FormItem>
                   )}
-                />
+                /> */}
                 <Button
                   type='submit'
                   className='mt-2 flex h-8 w-fit items-center justify-center'

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 
 const ProjectCard = ({ project, handleClick, onEdit, onConfirm }: any) => {
   const navigate = useNavigate()
-  const { projectName } = project
+  const { name } = project
 
   return (
     <Card className='m-2 w-52 capitalize'>
@@ -17,13 +17,13 @@ const ProjectCard = ({ project, handleClick, onEdit, onConfirm }: any) => {
           <File className='text-9xl text-white' size={50} />
         </div>
         <div className='flex justify-between pt-2'>
-          <div className='flex-grow text-left font-light'>{projectName}</div>
+          <div className='flex-grow text-left font-light'>{name}</div>
           <div className='flex justify-between gap-1'>
-            <button onClick={onEdit} className='h-6 rounded p-1'>
+            <button onClick={() => onEdit(project)} className='h-6 rounded p-1'>
               <Pencil size={15} />
             </button>
             <button
-              onClick={onConfirm}
+              onClick={() => onConfirm(project)}
               className='h-6 rounded bg-red-400 p-1 text-white'
             >
               <Trash2 size={15} />

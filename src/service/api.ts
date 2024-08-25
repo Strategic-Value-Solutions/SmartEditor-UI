@@ -51,7 +51,7 @@ api.interceptors.request.use(
 //             }
 //           )
 
-//           const { access: newAccessToken } = response.data
+//           const { access: newAccessToken } = response.data.data
 
 //           // Store the new access token
 //           localStorage.setItem('accessToken', JSON.stringify(newAccessToken))

@@ -1,5 +1,6 @@
 import Auth from './pages/Auth'
 import Editor from './pages/Editor/index'
+import Picks from './pages/Picks'
 import Projects from './pages/Projects'
 import Templates from './pages/Templates/index'
 import PrivateRoute from './routes/PrivateRoute'
@@ -35,6 +36,12 @@ export const paths = {
     path: '/configs',
     isAuth: true,
     component: Templates,
+  },
+  picks: {
+    name: 'Picks',
+    path: '/picks/:projectId',
+    isAuth: true,
+    component: Picks,
   },
 }
 

@@ -32,7 +32,7 @@ interface ProjectDataContextProps {
   setConfigsData: React.Dispatch<React.SetStateAction<Config[]>>
   projectsData: Project[]
   setProjectsData: React.Dispatch<React.SetStateAction<Project[]>>
-  projectName: string
+  name: string
   setProjectName: React.Dispatch<React.SetStateAction<string>>
 }
 
@@ -77,8 +77,8 @@ const ProjectDataContextProvider = ({ children }: ProviderProps) => {
         ]
   })
 
-  const [projectName, setProjectName] = useState<string>(() => {
-    const storedProjectName = localStorage.getItem('projectName')
+  const [name, setProjectName] = useState<string>(() => {
+    const storedProjectName = localStorage.getItem('name')
     return storedProjectName ? JSON.parse(storedProjectName) : ''
   })
 
@@ -90,15 +90,15 @@ const ProjectDataContextProvider = ({ children }: ProviderProps) => {
   useEffect(() => {
     localStorage.setItem('configsData', JSON.stringify(configsData))
     localStorage.setItem('projectsData', JSON.stringify(projectsData))
-    localStorage.setItem('projectName', JSON.stringify(projectName))
-  }, [configsData, projectsData, projectName])
+    localStorage.setItem('name', JSON.stringify(name))
+  }, [configsData, projectsData, name])
 
   const value: ProjectDataContextProps = {
     configsData,
     setConfigsData,
     projectsData,
     setProjectsData,
-    projectName,
+    name,
     setProjectName,
   }
 

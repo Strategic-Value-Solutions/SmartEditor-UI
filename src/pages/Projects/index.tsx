@@ -10,10 +10,19 @@ import {
 import NewProject from './components/Dialog/NewProject'
 import Header from './components/Header'
 import ProjectCard from './components/ProjectCard'
+import Loader from '@/components/ui/Loader'
 import { Button } from '@/components/ui/button'
 import ConfirmationDialog from '@/components/ui/confirmation-dialog'
+import projectApi from '@/service/projectApi'
+import superStructureApi from '@/service/superStructureApi'
 import { RootState } from '@/store'
-import { deleteProject, setCurrentProject } from '@/store/slices/projectSlice'
+import {
+  deleteProject,
+  setCurrentProject,
+  setProjectsData,
+} from '@/store/slices/projectSlice'
+import { setSuperStructureData } from '@/store/slices/superStructureSlice'
+import { getErrorMessage } from '@/utils'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -33,6 +42,7 @@ const Projects = () => {
   const [selectedProject, setSelectedProject] = useState(null)
   const [openProjectModal, setOpenProjectModal] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const handleEditButtonClick = (project) => {
     setSelectedProject(project)
@@ -47,7 +57,7 @@ const Projects = () => {
 
   const handleClick = (project: any) => {
     dispatch(setCurrentProject(project))
-    navigate(`/project/${project.id}/editor`)
+    navigate(`/picks/${project.id}`)
   }
 
   const handleDeleteModalClose = () => {
@@ -55,13 +65,21 @@ const Projects = () => {
     setSelectedProject(null)
   }
 
-  const onConfirm = () => {
+  const onConfirm = async () => {
     if (!selectedProject?.id) {
       toast.error('Please select a project to delete')
       return
     }
-    dispatch(deleteProject(selectedProject.id))
-    handleDeleteModalClose()
+    try {
+      setLoading(true)
+      const response = await projectApi.deleteProject(selectedProject.id)
+      dispatch(deleteProject(selectedProject.id))
+    } catch (error) {
+      toast.error(getErrorMessage(error))
+    } finally {
+      setLoading(false)
+      handleDeleteModalClose()
+    }
   }
 
   const onHandleAddProject = () => {
@@ -81,15 +99,47 @@ const Projects = () => {
       setFilteredProjects(projectsData)
     } else {
       const filtered = projectsData.filter((project: any) => {
-        return project.projectName.toLowerCase().includes(search.toLowerCase())
+        return project.name.toLowerCase().includes(search.toLowerCase())
       })
       setFilteredProjects(filtered)
     }
   }, [search])
 
   useEffect(() => {
+    const fetchSuperStructures = async () => {
+      try {
+        setLoading(true)
+        const response = await superStructureApi.getSuperStructures()
+        dispatch(setSuperStructureData(response))
+      } catch (error) {
+        toast.error(getErrorMessage(error))
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchSuperStructures()
+  }, [])
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true)
+        const response = await projectApi.getProjects()
+        dispatch(setProjectsData(response))
+      } catch (error) {
+        toast.error(getErrorMessage(error))
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProjects()
+  }, [])
+
+  useEffect(() => {
     setFilteredProjects(projectsData)
   }, [projectsData])
+
+  if (loading) return <Loader />
 
   return (
     <div className='flex flex-col'>
@@ -109,8 +159,8 @@ const Projects = () => {
               project={project}
               key={project.id}
               handleClick={handleClick}
-              onConfirm={() => handleDeleteButtonClick(project)}
-              onEdit={() => handleEditButtonClick(project)}
+              onConfirm={handleDeleteButtonClick}
+              onEdit={handleEditButtonClick}
             />
           ))}
         </div>
@@ -130,7 +180,7 @@ const Projects = () => {
                     onClick={() => handleClick(project)}
                     className='cursor-pointer'
                   >
-                    {project.projectName}
+                    {project.name}
                   </TableCell>
                   <TableCell className='flex items-center justify-end gap-2'>
                     <Button
