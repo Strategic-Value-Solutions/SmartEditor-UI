@@ -50,6 +50,20 @@ const uploadProjectModelPdf = async (
   return response.data.data
 }
 
+const skipPick = async (projectModelId: string, projectId: string) => {
+  const response = await api.put(
+    `/project/${projectId}/model/${projectModelId}/skip`
+  )
+  return response.data.data
+}
+
+const completePick = async (projectModelId: string, projectId: string) => {
+  const response = await api.put(
+    `/project/${projectId}/model/${projectModelId}/complete`
+  )
+  return response.data.data
+}
+
 export default {
   createProject,
   updateProject,
@@ -58,4 +72,6 @@ export default {
   deleteProject,
   getProjectModels,
   uploadProjectModelPdf,
+  skipPick,
+  completePick,
 }

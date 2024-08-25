@@ -2,6 +2,7 @@ import Aeis from '../../assets/Aeis.png'
 import { Button } from '../ui/button'
 import { Layout } from './layout'
 import Nav from './nav'
+import imageConstants from '@/constants/imageConstants'
 import { sideLinks } from '@/data/sidelinks'
 import { cn } from '@/lib/utils'
 import { AppDispatch } from '@/store'
@@ -53,7 +54,7 @@ export default function Sidebar({
         >
           <div className={`flex items-center ${!isCollapsed ? 'gap-2' : ''}`}>
             <img
-              src={Aeis}
+              src={imageConstants.logo}
               alt='AEIS'
               style={{
                 width: '50px',

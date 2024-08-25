@@ -20,13 +20,14 @@ function PdfCanvas({
   setPageDimensions,
   initCanvas,
   setIsDocLoading,
+  pick,
 }: any) {
   function onDocumentLoadSuccess({
     numPages,
     originalHeight,
     originalWidth,
   }: any) {
-    editor.setEdits([])
+    // editor.setAnnotations([])
     editor.setNumPages(numPages)
     editor.setCurrPage(1)
 
@@ -79,7 +80,7 @@ function PdfCanvas({
             </>
           )}
           <Document
-            file={editor.selectedFile}
+            file={'https://cdn.filestackcontent.com/wcrjf9qPTCKXV3hMXDwK'}
             onLoadSuccess={(pdf) =>
               pdf.getPage(editor.currPage).then((page) =>
                 onDocumentLoadSuccess({

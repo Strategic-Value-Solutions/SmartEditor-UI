@@ -21,7 +21,7 @@ export const paths = {
   },
   editor: {
     name: 'Editor',
-    path: '/project/:projectId/editor',
+    path: '/project/:projectId/pick/:pickId',
     isAuth: true,
     component: Editor,
   },

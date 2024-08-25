@@ -30,9 +30,11 @@ import EraserIcon from '../assets/images/eraser.svg'
 import SelectIcon from '../assets/images/hand.svg'
 import RectangleIcon from '../assets/images/icons.svg'
 import linebreak from '../assets/images/linebreak.svg'
+import logo from '../assets/images/logo.png'
 import removeCursor from '../assets/images/remove.svg'
 
 export default {
+  logo,
   Aeis,
   close,
   floorbeam,

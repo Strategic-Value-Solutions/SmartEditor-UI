@@ -1,4 +1,3 @@
-//@ts-nocheck
 import {
   Table,
   TableBody,
@@ -139,6 +138,17 @@ const Projects = () => {
     setFilteredProjects(projectsData)
   }, [projectsData])
 
+  // Separate the projects into different categories based on status
+  const inProgressProjects = filteredProjects.filter(
+    (project) => project.status === 'InProgress'
+  )
+  const draftProjects = filteredProjects.filter(
+    (project) => project.status === 'Draft'
+  )
+  const completedProjects = filteredProjects.filter(
+    (project) => project.status === 'Completed'
+  )
+
   if (loading) return <Loader />
 
   return (
@@ -153,56 +163,204 @@ const Projects = () => {
       />
 
       {viewType === 'grid' ? (
-        <div className='mt-4 inline-flex flex-row flex-wrap gap-2 overflow-hidden'>
-          {filteredProjects.map((project: any, index: any) => (
-            <ProjectCard
-              project={project}
-              key={project.id}
-              handleClick={handleClick}
-              onConfirm={handleDeleteButtonClick}
-              onEdit={handleEditButtonClick}
-            />
-          ))}
-        </div>
+        <>
+          <div className='mt-4'>
+            <h4 className='text-xl font-semibold'>In Progress</h4>
+            <div className='flex flex-row flex-wrap gap-2'>
+              {inProgressProjects.length > 0 ? (
+                inProgressProjects.map((project: any, index: any) => (
+                  <ProjectCard
+                    project={project}
+                    key={project.id}
+                    handleClick={handleClick}
+                    onConfirm={handleDeleteButtonClick}
+                    onEdit={handleEditButtonClick}
+                  />
+                ))
+              ) : (
+                <p>No projects in progress.</p>
+              )}
+            </div>
+          </div>
+
+          <div className='mt-4'>
+            <h4 className='text-xl font-semibold'>Draft</h4>
+            <div className='flex flex-row flex-wrap gap-2'>
+              {draftProjects.length > 0 ? (
+                draftProjects.map((project: any, index: any) => (
+                  <ProjectCard
+                    project={project}
+                    key={project.id}
+                    handleClick={handleClick}
+                    onConfirm={handleDeleteButtonClick}
+                    onEdit={handleEditButtonClick}
+                  />
+                ))
+              ) : (
+                <p>No draft projects.</p>
+              )}
+            </div>
+          </div>
+
+          <div className='mt-4'>
+            <h4 className='text-xl font-semibold'>Completed</h4>
+            <div className='flex flex-row flex-wrap gap-2'>
+              {completedProjects.length > 0 ? (
+                completedProjects.map((project: any, index: any) => (
+                  <ProjectCard
+                    project={project}
+                    key={project.id}
+                    handleClick={handleClick}
+                    onConfirm={handleDeleteButtonClick}
+                    onEdit={handleEditButtonClick}
+                  />
+                ))
+              ) : (
+                <p>No completed projects.</p>
+              )}
+            </div>
+          </div>
+        </>
       ) : (
-        <div className='mt-4'>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Project Name</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredProjects.map((project: any, index: any) => (
-                <TableRow key={project.id || index}>
-                  <TableCell
-                    onClick={() => handleClick(project)}
-                    className='cursor-pointer'
-                  >
-                    {project.name}
-                  </TableCell>
-                  <TableCell className='flex items-center justify-end gap-2'>
-                    <Button
-                      variant='outline'
-                      className='h-6 rounded p-1'
-                      onClick={() => handleEditButtonClick(project)}
-                    >
-                      <Pencil size={15} />
-                    </Button>
-                    <Button
-                      onClick={() => handleDeleteButtonClick(project)}
-                      variant='destructive'
-                      className='h-6 rounded bg-red-400 p-1'
-                    >
-                      <Trash2 size={15} />
-                    </Button>
-                  </TableCell>
+        <>
+          <div className='mt-4'>
+            <h4 className='text-xl font-semibold'>In Progress</h4>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Project Name</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {inProgressProjects.length > 0 ? (
+                  inProgressProjects.map((project: any, index: any) => (
+                    <TableRow key={project.id || index}>
+                      <TableCell
+                        onClick={() => handleClick(project)}
+                        className='cursor-pointer'
+                      >
+                        {project.name}
+                      </TableCell>
+                      <TableCell className='flex items-center justify-end gap-2'>
+                        <Button
+                          variant='outline'
+                          className='h-6 rounded p-1'
+                          onClick={() => handleEditButtonClick(project)}
+                        >
+                          <Pencil size={15} />
+                        </Button>
+                        <Button
+                          onClick={() => handleDeleteButtonClick(project)}
+                          variant='destructive'
+                          className='h-6 rounded bg-red-400 p-1'
+                        >
+                          <Trash2 size={15} />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={2}>No projects in progress.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className='mt-4'>
+            <h4 className='text-xl font-semibold'>Draft</h4>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Project Name</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {draftProjects.length > 0 ? (
+                  draftProjects.map((project: any, index: any) => (
+                    <TableRow key={project.id || index}>
+                      <TableCell
+                        onClick={() => handleClick(project)}
+                        className='cursor-pointer'
+                      >
+                        {project.name}
+                      </TableCell>
+                      <TableCell className='flex items-center justify-end gap-2'>
+                        <Button
+                          variant='outline'
+                          className='h-6 rounded p-1'
+                          onClick={() => handleEditButtonClick(project)}
+                        >
+                          <Pencil size={15} />
+                        </Button>
+                        <Button
+                          onClick={() => handleDeleteButtonClick(project)}
+                          variant='destructive'
+                          className='h-6 rounded bg-red-400 p-1'
+                        >
+                          <Trash2 size={15} />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={2}>No draft projects.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className='mt-4'>
+            <h4 className='text-xl font-semibold'>Completed</h4>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Project Name</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {completedProjects.length > 0 ? (
+                  completedProjects.map((project: any, index: any) => (
+                    <TableRow key={project.id || index}>
+                      <TableCell
+                        onClick={() => handleClick(project)}
+                        className='cursor-pointer'
+                      >
+                        {project.name}
+                      </TableCell>
+                      <TableCell className='flex items-center justify-end gap-2'>
+                        <Button
+                          variant='outline'
+                          className='h-6 rounded p-1'
+                          onClick={() => handleEditButtonClick(project)}
+                        >
+                          <Pencil size={15} />
+                        </Button>
+                        <Button
+                          onClick={() => handleDeleteButtonClick(project)}
+                          variant='destructive'
+                          className='h-6 rounded bg-red-400 p-1'
+                        >
+                          <Trash2 size={15} />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={2}>No completed projects.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       )}
       <ConfirmationDialog
         title='Delete Project'

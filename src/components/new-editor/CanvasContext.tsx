@@ -17,7 +17,7 @@ export const useEditor = () => {
 export const CanvasProvider = ({ children }) => {
   const [currPage, setCurrPage] = useState(1)
   const [numPages, setNumPages] = useState(null)
-  const [selectedFile, setFile] = useState(null)
+  const [selectedFile, setSelectedFile] = useState(null)
   const [isExporting, setExporting] = useState(false)
   const [hideCanvas, setHiddenCanvas] = useState(false)
   const [canvas, setCanvas] = useState<fabric.Canvas>(null)
@@ -28,7 +28,7 @@ export const CanvasProvider = ({ children }) => {
   const activeIconRef = useRef(activeIcon)
   const [exportPages, setExportPages] = useState([])
   const [pdfDimensions, setPdfDimensions] = useState({ width: 0, height: 0 })
-  const [edits, setEdits] = useState({})
+  const [annotations, setAnnotations] = useState({})
   const [isSelectFilePDF, setIsSelectFilePDF] = useState(false)
   const [allowPinchZoom, setAllowPinchZoom] = useState(false)
 
@@ -40,15 +40,26 @@ export const CanvasProvider = ({ children }) => {
   const saveCanvasState = (pageNumber) => {
     if (canvas) {
       const canvasJson = canvas.toJSON()
-      setEdits((prevEdits) => ({
+      setAnnotations((prevEdits) => ({
         ...prevEdits,
         [pageNumber]: canvasJson,
       }))
     }
   }
 
+  // useEffect(() => {
+  //   if (canvas && annotations[currPage]) {
+  //     canvas.loadFromJSON(annotations[currPage], () => {
+  //       canvas.renderAll()
+  //       setTimeout(() => {
+  //         canvas.renderAll()
+  //       }, 100)
+  //     })
+  //   }
+  // }, [annotations])
+
   const loadCanvasState = (pageNumber) => {
-    const canvasJson = edits[pageNumber]
+    const canvasJson = annotations[pageNumber]
     if (canvas && canvasJson) {
       canvas.loadFromJSON(canvasJson, () => {
         canvas.renderAll()
@@ -219,6 +230,9 @@ export const CanvasProvider = ({ children }) => {
     }
 
     canvas.renderAll()
+
+    // Save the canvas state immediately after any changes are made
+    saveCanvasState(currPage)
   }
 
   useEffect(() => {
@@ -243,6 +257,7 @@ export const CanvasProvider = ({ children }) => {
       if (target) {
         canvas.remove(target)
         canvas.renderAll()
+        saveCanvasState(currPage)
       }
     }
   }
@@ -448,6 +463,7 @@ export const CanvasProvider = ({ children }) => {
   const clearCanvas = () => {
     canvas.clear()
     canvas.renderAll()
+    saveCanvasState(currPage)
   }
 
   const eraseMode = () => {
@@ -744,8 +760,8 @@ export const CanvasProvider = ({ children }) => {
       canvas.dispose()
       setCanvas(null)
     }
-    setFile(file)
-    setEdits({})
+    setSelectedFile(file)
+    setAnnotations({})
     setExportPages([])
   }
 
@@ -851,9 +867,9 @@ export const CanvasProvider = ({ children }) => {
         currPage,
         setCurrPage,
         selectedFile,
-        setFile,
-        edits,
-        setEdits,
+        setSelectedFile,
+        annotations,
+        setAnnotations,
         downloadPageAsPDF,
         addPdfDimensions,
         setHiddenCanvas,
@@ -871,6 +887,7 @@ export const CanvasProvider = ({ children }) => {
         zoomOut,
         enablePan,
         allowPinchZoom,
+        loadCanvasState,
         setAllowPinchZoom,
       }}
     >
