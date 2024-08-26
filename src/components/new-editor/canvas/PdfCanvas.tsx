@@ -82,7 +82,7 @@ function PdfCanvas({
             </>
           )}
           <Document
-            file={'https://cdn.filestackcontent.com/wcrjf9qPTCKXV3hMXDwK'}
+            file={pick.fileUrl}
             onLoadSuccess={(pdf) =>
               pdf.getPage(editor.currPage).then((page) =>
                 onDocumentLoadSuccess({
