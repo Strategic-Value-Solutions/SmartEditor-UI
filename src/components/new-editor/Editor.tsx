@@ -321,7 +321,7 @@ export default function Editor() {
         setSelectedPick={setSelectedPick}
         projectId={projectId}
       />
-      <div className='absolute top-10 right-1/2 flex gap-2 p-1.5 items-center'>
+      <div className='absolute top-1 right-1/2 flex gap-2 p-1.5 items-center'>
         <div className='absolute top-0 left-1/2 transform -translate-x-1/2 flex items-center'>
           <Select onValueChange={handleNavigate} value={pick?.id}>
             <SelectTrigger

@@ -13,7 +13,7 @@ const ProjectCard = ({ project, handleClick, onEdit, onConfirm }: any) => {
     <Card className='w-52 capitalize'>
       <div className='flex flex-col rounded-lg bg-white p-4'>
         <div
-          className='flex h-36 items-center justify-center overflow-hidden rounded-md bg-pink-300 cursor-pointer'
+          className='flex h-36 items-center justify-center overflow-hidden rounded-md bg-blue-200 cursor-pointer'
           onClick={() => handleClick(project)}
         >
           <File className='text-9xl text-white' size={50} />
