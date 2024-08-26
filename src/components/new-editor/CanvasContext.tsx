@@ -15,7 +15,9 @@ export const useEditor = () => {
 }
 
 export const CanvasProvider = ({ children }) => {
-  const [currPage, setCurrPage] = useState(1)
+  // Initialize currPage directly from localStorage
+  const initialPage = parseInt(localStorage.getItem('currentPage'), 10) || 1
+  const [currPage, setCurrPage] = useState(initialPage)
   const [numPages, setNumPages] = useState(null)
   const [selectedFile, setSelectedFile] = useState(null)
   const [isExporting, setExporting] = useState(false)
@@ -47,26 +49,29 @@ export const CanvasProvider = ({ children }) => {
     }
   }
 
-  // useEffect(() => {
-  //   if (canvas && annotations[currPage]) {
-  //     canvas.loadFromJSON(annotations[currPage], () => {
-  //       canvas.renderAll()
-  //       setTimeout(() => {
-  //         canvas.renderAll()
-  //       }, 100)
-  //     })
-  //   }
-  // }, [annotations])
+  const setCurrPageWithStorage = (page) => {
+    setCurrPage(page)
+    localStorage.setItem('currentPage', page) // Save the current page to localStorage
+  }
 
-  const loadCanvasState = (pageNumber) => {
+  const loadCanvasState = (pageNumber = currPage, data = null) => {
     const canvasJson = annotations[pageNumber]
-    if (canvas && canvasJson) {
-      canvas.loadFromJSON(canvasJson, () => {
-        canvas.renderAll()
-        setTimeout(() => {
+    if (canvas) {
+      if (data) {
+        canvas.loadFromJSON(data, () => {
           canvas.renderAll()
-        }, 100)
-      })
+          setTimeout(() => {
+            canvas.renderAll()
+          }, 100)
+        })
+      } else {
+        canvas.loadFromJSON(annotations[pageNumber], () => {
+          canvas.renderAll()
+          setTimeout(() => {
+            canvas.renderAll()
+          }, 100)
+        })
+      }
     }
   }
 
@@ -80,7 +85,6 @@ export const CanvasProvider = ({ children }) => {
 
   const handleCanvasClick = async (event) => {
     if (allowPinchZoom) {
-      // toast.error('Drawing is disabled while pinch zoom is enabled')
       return
     }
 
@@ -267,11 +271,7 @@ export const CanvasProvider = ({ children }) => {
     if (mode === 'erase') {
       canvas.defaultCursor = `url(${imageConstants.removeCursor}) 12 12, auto`
       canvas.hoverCursor = `url(${imageConstants.removeCursor}) 12 12, auto`
-    }
-    // else if (mode === 'addIcon') {
-    //   canvas.defaultCursor = `url(${activeIconRef.current}) 12 12, auto`
-    // }
-    else if (mode === 'select' || mode === 'move') {
+    } else if (mode === 'select' || mode === 'move') {
       canvas.defaultCursor = `url(${imageConstants.SelectIcon}) 12 12, auto`
     } else {
       canvas.defaultCursor = 'default'
@@ -406,7 +406,6 @@ export const CanvasProvider = ({ children }) => {
 
   const handleImageUpload = (e) => {
     if (allowPinchZoom) {
-      // toast.error('Drawing is disabled while pinch zoom is enabled')
       return
     }
 
@@ -835,7 +834,6 @@ export const CanvasProvider = ({ children }) => {
     if (allowPinchZoom) {
       setMode('freeze')
       canvas.selection = false
-      // canvas.forEachObject((obj) => alert(obj.type))
     } else {
       setMode('select')
     }
@@ -865,7 +863,7 @@ export const CanvasProvider = ({ children }) => {
         numPages,
         setNumPages,
         currPage,
-        setCurrPage,
+        setCurrPage: setCurrPageWithStorage,
         selectedFile,
         setSelectedFile,
         annotations,

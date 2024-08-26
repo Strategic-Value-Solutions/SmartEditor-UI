@@ -8,9 +8,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import projectApi from '@/service/projectApi'
+import { RootState } from '@/store'
+import { setProjectModels } from '@/store/slices/projectModelSlice'
 import { getErrorMessage } from '@/utils'
 import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
+import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
 function EditProjectModelModal({
@@ -19,7 +22,6 @@ function EditProjectModelModal({
   selectedPick,
   setSelectedPick,
   projectId,
-  setProjectModels,
 }: any) {
   const [loading, setLoading] = useState(false)
   const { getRootProps, getInputProps } = useDropzone({
@@ -36,6 +38,10 @@ function EditProjectModelModal({
       'image/*': ['.jpeg', '.jpg', '.png'],
     },
   })
+  const dispatch = useDispatch()
+  const { projectModels } = useSelector(
+    (state: RootState) => state.projectModels
+  )
   const handleUploadFile = async () => {
     if (!selectedPick?.file) return toast.error('Please select a file')
     try {
@@ -43,14 +49,15 @@ function EditProjectModelModal({
       const response = await projectApi.uploadProjectModelPdf(
         projectId,
         selectedPick.id,
-        selectedPick
+        selectedPick.file
       )
       setSelectedPick(null)
-      setProjectModels((prevState: any) =>
-        prevState.map((projectModel: any) =>
-          projectModel.id === selectedPick.id ? response : projectModel
-        )
+      const updatedModels = projectModels.map((projectModel: any) =>
+        projectModel.id === selectedPick.id
+          ? { ...response, isActive: selectedPick.isActive }
+          : projectModel
       )
+      dispatch(setProjectModels(updatedModels))
       setShowPickModal(false)
     } catch (error) {
       toast.error(getErrorMessage(error))

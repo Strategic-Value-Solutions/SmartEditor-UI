@@ -1,4 +1,5 @@
 import { Input } from '../ui/input'
+import Loader from '@/components/ui/Loader'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -7,34 +8,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import projectApi from '@/service/projectApi'
 import { RootState } from '@/store'
+import {
+  navigateToPick,
+  setProjectModels,
+} from '@/store/slices/projectModelSlice'
 import { updateCurrentProjectDetails } from '@/store/slices/projectSlice'
-import { useState, useEffect } from 'react'
+import { getErrorMessage } from '@/utils'
+import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useDispatch, useSelector } from 'react-redux'
+import { toast } from 'sonner'
 
 interface UploadModalProps {
-  pick: string
-  setPick: any
-  selectedFile: any
-  setSelectedFile: any
-  onSubmit: Function
-  setSelectedFieldValues: any
+  projectId: string
+  currentProjectModel: any
+  projectModels: any[]
 }
 
 function SelectPick({
-  pick,
-  setPick,
-  selectedFile,
-  setSelectedFile,
-  onSubmit,
-  setSelectedFieldValues,
+  projectId,
+  currentProjectModel,
+  projectModels,
 }: UploadModalProps) {
   const currentProject = useSelector(
     (state: RootState) => state.project.currentProject
   )
-  const dispatch = useDispatch()
 
+  const dispatch = useDispatch()
+  const [selectedFile, setSelectedFile] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
   // Initialize local state to track selected field values
   const [fieldValues, setFieldValues] = useState(
     currentProject?.config?.fieldsData.map((field: any) => ({
@@ -42,11 +46,6 @@ function SelectPick({
       selectedValue: field?.values?.[0]?.fieldValue || '', // Set initial value if available
     }))
   )
-
-  useEffect(() => {
-    // Update selected field values in the state
-    setSelectedFieldValues(fieldValues)
-  }, [fieldValues])
 
   // Handle file drop
   const { getRootProps, getInputProps } = useDropzone({
@@ -73,47 +72,34 @@ function SelectPick({
     )
   }
 
+  const handleUploadFile = async () => {
+    if (!selectedFile) return toast.error('Please select a file')
+    try {
+      setLoading(true)
+      const response = await projectApi.uploadProjectModelPdf(
+        projectId,
+        currentProjectModel.id,
+        selectedFile
+      )
+      setSelectedFile(null)
+      const updatedModels = projectModels.map((projectModel: any) =>
+        projectModel.id === currentProjectModel.id
+          ? { ...response, isActive: currentProjectModel.isActive }
+          : projectModel
+      )
+
+      dispatch(setProjectModels(updatedModels))
+    } catch (error) {
+      toast.error(getErrorMessage(error))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) return <Loader />
+
   return (
     <div className='flex flex-col w-full max-w-[500px] border rounded-md items-center justify-center p-4'>
-      <div className='flex items-center gap-4 flex-col w-full'>
-        <Select value={pick} onValueChange={(value: any) => setPick(value)}>
-          <SelectTrigger className='w-full'>
-            <SelectValue placeholder='Supermodel Type' />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value='Master Structure'>Master Structure</SelectItem>
-            <SelectItem value='Project Area'>Project Area</SelectItem>
-            <SelectItem value='Inspection Area'>Inspection Area</SelectItem>
-            <SelectItem value='Inspection Type'>Inspection Type</SelectItem>
-            <SelectItem value='Component'>Component</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <div className='flex flex-col space-y-2 w-full'>
-          {currentProject?.config?.fieldsData.map((field: any, index: any) => (
-            <div key={index} className='flex items-center gap-4 w-full'>
-              <Input value={field.name} disabled={true} className='w-full' />
-              <Select
-              value={currentProject?.activePick}
-                onValueChange={(value: any) =>
-                  handleFieldValueChange(index, value)
-                }
-              >
-                <SelectTrigger className='w-full'>
-                  <SelectValue placeholder='Field Value' />
-                </SelectTrigger>
-                <SelectContent>
-                  {field?.values?.map((value: any, idx: any) => (
-                    <SelectItem value={value.fieldValue} key={idx}>
-                      {value.fieldValue}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
-        </div>
-      </div>
       <div
         className='flex h-full w-full items-center justify-center py-8'
         {...getRootProps()}
@@ -147,7 +133,7 @@ function SelectPick({
 
       <div className='w-full flex justify-center items-center'>
         <Button
-          onClick={() => onSubmit()}
+          onClick={handleUploadFile}
           className='mt-2 flex h-8 w-fit items-center justify-center'
         >
           Proceed

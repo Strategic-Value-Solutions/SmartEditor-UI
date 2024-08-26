@@ -33,10 +33,10 @@ const getProjectModels = async (projectId: any) => {
 const uploadProjectModelPdf = async (
   projectId: string,
   projectModelId: string,
-  data: any
+  file: File
 ) => {
   const formData = new FormData()
-  const file = data.file
+
   formData.append('document', file)
   const response = await api.post(
     `/project/${projectId}/model/${projectModelId}/upload-pdf`,

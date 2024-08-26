@@ -1,12 +1,12 @@
 // @ts-nocheck
+import { useEditor } from './CanvasContext'
 import imageConstants from '@/constants/imageConstants'
 import { RootState } from '@/store'
 import { updateCurrentProjectDetails } from '@/store/slices/projectSlice'
 import debounce from 'lodash/debounce'
-import { FileJson, ImageDown, MonitorUp, Save } from 'lucide-react'
+import { FileDown, FileJson, ImageDown, MonitorUp } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEditor } from './CanvasContext'
 
 export default function Components({ toggleExtendedToolbar, getInputProps }) {
   const dispatch = useDispatch()
@@ -67,7 +67,6 @@ export default function Components({ toggleExtendedToolbar, getInputProps }) {
 
   return (
     <div className='flex flex-col items-center justify-center gap-3 fixed right-10 bottom-10 z-50 bg-gradient-to-br from-gray-300 to-gray-400 p-4 rounded-lg shadow-lg w-fit max-h-[80vh] overflow-y-auto'>
-    
       <button
         type='button'
         title='Move'
@@ -193,7 +192,7 @@ export default function Components({ toggleExtendedToolbar, getInputProps }) {
         className='text-white hover:bg-black p-2 rounded'
         onClick={() => editor.downloadPDFWithAnnotations()}
       >
-        <Save />
+        <FileDown />
       </button>
     </div>
   )

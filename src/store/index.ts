@@ -1,6 +1,7 @@
 import annotationSlice from './slices/annotationSlice'
 import authSlice from './slices/authSlice'
 import configurationSlice from './slices/configurationSlice'
+import projectModelSlice from './slices/projectModelSlice'
 import projectSlice from './slices/projectSlice'
 import sidebarSlice from './slices/sidebarSlice'
 import superStructureSlice from './slices/superStructureSlice'
@@ -18,5 +19,6 @@ export const store = configureStore({
     template: templateSlice,
     sidebar: sidebarSlice,
     superStructure: superStructureSlice,
+    projectModels: projectModelSlice,
   },
 })

@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { Card } from '@/components/ui/card'
+import StatusCapsule from '@/components/ui/status-capsule'
 import { formatText, getStatusDotColor, getStatusStyles } from '@/utils'
 import { File, Pencil, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -20,7 +21,7 @@ const ProjectCard = ({ project, handleClick, onEdit, onConfirm }: any) => {
         <div className='flex flex-col pt-4'>
           <h4 className='text-lg font-semibold'>{name}</h4>
           <div className='mt-4 flex items-center justify-between'>
-            <span
+            {/* <span
               className={`text-sm flex items-center justify-center p-1 rounded-full ${getStatusStyles(
                 project.status
               )}`}
@@ -32,7 +33,11 @@ const ProjectCard = ({ project, handleClick, onEdit, onConfirm }: any) => {
                   project.status
                 )}`}
               ></span>
-            </span>
+            </span> */}
+            <StatusCapsule
+              status={project.status}
+              redirectTo={() => handleClick(project)}
+            />
             <div className='flex items-center gap-2'>
               <button
                 onClick={() => onEdit(project)}

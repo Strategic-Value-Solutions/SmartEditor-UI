@@ -6,11 +6,12 @@ import {
   Pause,
   Play,
   RotateCcw,
+  Save,
   ZoomIn,
   ZoomOut,
 } from 'lucide-react'
 import { Document, Page } from 'react-pdf'
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
+import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
 function PdfCanvas({
   editor,
@@ -21,6 +22,7 @@ function PdfCanvas({
   initCanvas,
   setIsDocLoading,
   pick,
+  handleSaveAnnotations,
 }: any) {
   function onDocumentLoadSuccess({
     numPages,
@@ -172,6 +174,16 @@ function PdfCanvas({
                         <Play className='w-6 h-6 text-white' />
                       )}
                     </button>
+                    {pick?.status !== 'Completed' &&
+                      pick?.status !== 'Skipped' &&
+                      pick?.isActive && (
+                        <button
+                          className='rounded-md bg-gray-800 px-4 py-2 text-white'
+                          onClick={handleSaveAnnotations}
+                        >
+                          <Save />
+                        </button>
+                      )}
                     <button
                       onClick={() => resetTransform()} // Reset zoom
                       className='rounded-md bg-gray-800 px-4 py-2 text-white'
