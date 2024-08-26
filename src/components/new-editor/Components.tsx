@@ -66,7 +66,7 @@ export default function Components({ toggleExtendedToolbar, getInputProps }) {
   }, [dropdownRef])
 
   return (
-    <div className='flex flex-col items-center justify-center gap-3 fixed right-10 bottom-10 z-50 bg-gradient-to-br from-gray-300 to-gray-400 p-4 rounded-lg shadow-lg w-fit max-h-[80vh] overflow-y-auto'>
+    <div className='flex flex-col items-center justify-center gap-3 fixed right-10 bottom-10 z-50 border bg-blue-950 border-gray-400  p-4 rounded-lg w-fit max-h-[80vh] overflow-y-auto'>
       <button
         type='button'
         title='Move'

@@ -22,7 +22,7 @@ function ExtendedToolbar({
 
   return (
     <div
-      className={`grid grid-cols-2 items-center justify-center gap-3 fixed z-50 bg-gradient-to-br from-gray-100 to-gray-400 rounded-lg shadow-lg w-24 p-1 transition-all duration-300 ${
+      className={`grid grid-cols-2 items-center justify-center gap-3 fixed z-50 bg-gradient-to-br border bg-blue-950 border-gray-400 h-[80vh] rounded-lg invert-lg w-24 p-1 transition-all duration-300 ${
         isCollapsed ? 'left-24 top-24' : 'left-64 top-24'
       }`}
     >
@@ -30,9 +30,9 @@ function ExtendedToolbar({
         if (pick?.pickModel?.name === button.pickName) {
           return (
             <button
-              key={index}
+              key={`${index}-primary`}
               type='button'
-              className='p-2 hover:bg-white rounded'
+              className='p-2 hover:bg-white rounded invert'
               title={button.title}
               onClick={() => editor.addIcon(button.imgSrc)}
             >
@@ -41,10 +41,111 @@ function ExtendedToolbar({
           )
         }
       })}
+      {tools.map((button: any, index: any) => {
+        if (pick?.pickModel?.name === button.pickName) {
+          return (
+            <button
+              key={`${index}-secondary`}
+              type='button'
+              className='p-2 hover:bg-blue-100 rounded invert'
+              title={`${button.title} (Alternative)`}
+              onClick={() =>
+                editor.addIcon(button.imgSrc, { variant: 'secondary' })
+              }
+            >
+              <img
+                src={button.imgSrc}
+                alt={`${button?.title?.toLowerCase()} (alt)`}
+              />
+            </button>
+          )
+        }
+      })}
+      {tools.map((button: any, index: any) => {
+        if (pick?.pickModel?.name === button.pickName) {
+          return (
+            <button
+              key={`${index}-tertiary`}
+              type='button'
+              className='p-2 hover:bg-green-100 rounded invert'
+              title={`${button.title} (Special)`}
+              onClick={() =>
+                editor.addIcon(button.imgSrc, { variant: 'special' })
+              }
+            >
+              <img
+                src={button.imgSrc}
+                alt={`${button?.title?.toLowerCase()} (special)`}
+              />
+            </button>
+          )
+        }
+      })}
+      {tools.map((button: any, index: any) => {
+        if (pick?.pickModel?.name === button.pickName) {
+          return (
+            <button
+              key={`${index}-tertiary`}
+              type='button'
+              className='p-2 hover:bg-green-100 rounded invert'
+              title={`${button.title} (Special)`}
+              onClick={() =>
+                editor.addIcon(button.imgSrc, { variant: 'special' })
+              }
+            >
+              <img
+                src={button.imgSrc}
+                alt={`${button?.title?.toLowerCase()} (special)`}
+              />
+            </button>
+          )
+        }
+      })}
+      {tools.map((button: any, index: any) => {
+        if (pick?.pickModel?.name === button.pickName) {
+          return (
+            <button
+              key={`${index}-tertiary`}
+              type='button'
+              className='p-2 hover:bg-green-100 rounded invert'
+              title={`${button.title} (Special)`}
+              onClick={() =>
+                editor.addIcon(button.imgSrc, { variant: 'special' })
+              }
+            >
+              <img
+                src={button.imgSrc}
+                alt={`${button?.title?.toLowerCase()} (special)`}
+              />
+            </button>
+          )
+        }
+      })}
+      {tools.map((button: any, index: any) => {
+        if (pick?.pickModel?.name === button.pickName) {
+          return (
+            <button
+              key={`${index}-tertiary`}
+              type='button'
+              className='p-2 hover:bg-green-100 rounded invert'
+              title={`${button.title} (Special)`}
+              onClick={() =>
+                editor.addIcon(button.imgSrc, { variant: 'special' })
+              }
+            >
+              <img
+                src={button.imgSrc}
+                alt={`${button?.title?.toLowerCase()} (special)`}
+              />
+            </button>
+          )
+        }
+      })}
+      
       <button
         type='button'
         onClick={() => toggleExtendedToolbar()}
-        className='p-2 hover:bg-white  rounded'
+        className='p-2 hover:bg-white  rounded invert'
       >
         <img src={imageConstants.close} alt='close' />
       </button>
