@@ -18,15 +18,15 @@ export const formatText = (text: string) => {
 export const getStatusStyles = (status: string) => {
   switch (status) {
     case 'Draft':
-      return 'bg-gray-200 text-gray-700'
+      return 'bg-gray-100 text-gray-700'
     case 'InProgress':
-      return 'bg-blue-200 text-blue-700'
+      return 'bg-blue-100 text-blue-700'
     case 'Skipped':
-      return 'bg-yellow-200 text-yellow-700'
+      return 'bg-yellow-100 text-yellow-700'
     case 'Completed':
-      return 'bg-green-200 text-green-700'
+      return 'bg-green-100 text-green-700'
     default:
-      return 'bg-gray-200 text-gray-700'
+      return 'bg-gray-100 text-gray-700'
   }
 }
 

@@ -7,10 +7,12 @@ function StatusCapsule({ status, redirectTo = () => {} }: any) {
       style={{
         height: '24px',
         padding: '0 8px',
+        display: 'inline-flex',
+        alignItems: 'center',
       }}
       onClick={redirectTo}
     >
-      {formatText(status)}
+      <span className='flex-grow text-center'>{formatText(status)}</span>
       <span
         className={`ml-2 w-2 h-2 rounded-full ${getStatusDotColor(status)}`}
       ></span>
