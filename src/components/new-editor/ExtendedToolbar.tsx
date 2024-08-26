@@ -1,18 +1,15 @@
-// @ts-nocheck
-import { tools } from '../../constants/constants'
-import imageConstants from '../../constants/imageConstants'
 import { useEditor } from '@/components/new-editor/CanvasContext'
+import { tools } from '@/constants'
+import imageConstants from '@/constants/imageConstants'
 import { RootState } from '@/store'
-import { stat } from 'fs'
-import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
 function ExtendedToolbar({
   canvas,
   showExtendedToolbar,
-  toggleExtendedToolbar,
   createRect,
   fileReaderInfo,
+  toggleExtendedToolbar,
 }: any) {
   const isCollapsed = useSelector(
     (state: RootState) => state.sidebar.isCollapsed
@@ -20,7 +17,7 @@ function ExtendedToolbar({
   const { currentProjectModel: pick } = useSelector(
     (state: RootState) => state.projectModels
   )
-  const editor = useEditor()
+  const editor = useEditor() as any
   if (!pick?.isActive) return null
 
   return (
@@ -29,7 +26,7 @@ function ExtendedToolbar({
         isCollapsed ? 'left-24 top-24' : 'left-64 top-24'
       }`}
     >
-      {tools.map((button, index) => {
+      {tools.map((button: any, index: any) => {
         if (pick?.pickModel?.name === button.pickName) {
           return (
             <button

@@ -1,4 +1,4 @@
-import { ERROR_MESSAGE } from '@/constants/constants'
+import { ERROR_MESSAGE } from '@/constants'
 
 export const getErrorMessage = (error: any) => {
   console.log(error)

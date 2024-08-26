@@ -19,6 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '../ui/tooltip'
+import { UserNav } from './user-nav'
 import { SideLink } from '@/data/sidelinks'
 import useCheckActiveNav from '@/hooks/use-check-active-nav'
 import { cn } from '@/lib/utils'
@@ -67,8 +68,11 @@ export default function Nav({
       )}
     >
       <TooltipProvider delayDuration={0}>
-        <nav className='grid gap-1 p-2 group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]:px-2'>
-          {links.map(renderLink)}
+        <nav className='grid gap-1 h-full p-2 group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]:px-2'>
+          <div className='flex-grow'>{links.map(renderLink)}</div>
+          <div className='mt-auto'>
+            <UserNav />
+          </div>
         </nav>
       </TooltipProvider>
     </div>
@@ -98,8 +102,8 @@ function NavLink({
           variant: checkActiveNav(href) ? 'secondary' : 'ghost',
           size: 'sm',
         }),
-        'h-12 justify-start text-wrap rounded-lg px-6',
-        subLink && 'h-10 w-full border-l border-l-slate-500 px-2'
+        'h-12 justify-start text-wrap rounded-lg px-6 w-full',
+        subLink && 'h-10 border-l border-l-slate-500 px-2'
       )}
       aria-current={checkActiveNav(href) ? 'page' : undefined}
     >

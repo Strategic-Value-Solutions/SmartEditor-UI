@@ -1,12 +1,12 @@
 import api from './api'
 
-const getSuperStructures = async (data: any) => {
-  const response = await api.get('/super-structure', data)
+const getSuperStructures = async (query = '') => {
+  const response = await api.get(`/super-structure?${query}`)
   return response.data.data
 }
 
-const getSuperStructure = async (data: any) => {
-  const response = await api.get('/superstructure', data)
+const getSuperStructure = async (query = '') => {
+  const response = await api.get(`/super-structure/${query}`)
   return response.data.data
 }
 

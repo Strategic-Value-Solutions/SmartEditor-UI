@@ -33,19 +33,14 @@ export default function AppShell({ children }: any) {
         <Layout>
           <ScrollArea>
             {/* ===== Top Heading ===== */}
-            {showUserName() && (
+            {/* {showUserName() && (
               <Layout.Header>
-                {/* <TopNav links={topNav} /> */}
                 <p className='text-2xl font-semibold'>Welcome back!</p>
                 <div className='ml-auto flex items-center space-x-4'>
-                  {/* <Search />
-                   */}
-                  {/* <ThemeSwitch /> */}
-
                   <UserNav />
                 </div>
               </Layout.Header>
-            )}
+            )} */}
 
             {/* ===== Main ===== */}
             <Layout.Body>{children}</Layout.Body>

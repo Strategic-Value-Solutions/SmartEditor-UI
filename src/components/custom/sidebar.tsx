@@ -1,4 +1,3 @@
-import Aeis from '../../assets/Aeis.png'
 import { Button } from '../ui/button'
 import { Layout } from './layout'
 import Nav from './nav'

@@ -1,12 +1,12 @@
 import api from './api'
 
-const getProjects = async (data: any) => {
-  const response = await api.get('/project', data)
+const getProjects = async (query = '') => {
+  const response = await api.get(`/project?${query}`)
   return response.data.data
 }
 
-const getProject = async (data: any) => {
-  const response = await api.get('/project', data)
+const getProject = async (query = '') => {
+  const response = await api.get(`/project/${query}`)
   return response.data.data
 }
 

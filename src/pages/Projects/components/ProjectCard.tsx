@@ -10,7 +10,7 @@ const ProjectCard = ({ project, handleClick, onEdit, onConfirm }: any) => {
   const { name } = project
 
   return (
-    <Card className='m-2 w-52 capitalize'>
+    <Card className='w-52 capitalize'>
       <div className='flex flex-col rounded-lg bg-white p-4'>
         <div
           className='flex h-36 items-center justify-center overflow-hidden rounded-md bg-pink-300 cursor-pointer'
@@ -18,9 +18,9 @@ const ProjectCard = ({ project, handleClick, onEdit, onConfirm }: any) => {
         >
           <File className='text-9xl text-white' size={50} />
         </div>
-        <div className='flex flex-col pt-4'>
-          <h4 className='text-lg font-semibold'>{name}</h4>
-          <div className='mt-4 flex items-center justify-between'>
+        <div className='flex flex-col pt-2'>
+          <p className='text-lg'>{name}</p>
+          <div className='mt-2 flex items-center justify-between'>
             {/* <span
               className={`text-sm flex items-center justify-center p-1 rounded-full ${getStatusStyles(
                 project.status

@@ -6,7 +6,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import { Link } from 'react-router-dom'
 
 interface TopNavProps extends React.HTMLAttributes<HTMLElement> {
   links: {

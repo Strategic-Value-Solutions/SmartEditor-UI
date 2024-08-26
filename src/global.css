@@ -6,7 +6,7 @@
   :root {
     /* Custom CSS Variables */
     --header-height: 8vh;
-    --body-height: 92vh;
+    --body-height: 100vh;
 
     /* CSS Variables for light theme */
     --background: 0 0% 100%;

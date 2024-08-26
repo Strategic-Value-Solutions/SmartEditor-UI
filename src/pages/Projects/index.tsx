@@ -1,16 +1,9 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/table'
+import { Separator } from '@/components/ui/separator'
 import NewProject from './components/Dialog/NewProject'
 import Header from './components/Header'
-import ProjectCard from './components/ProjectCard'
+import GridView from './components/Views/GridView'
+import ListView from './components/Views/ListView'
 import Loader from '@/components/ui/Loader'
-import { Button } from '@/components/ui/button'
 import ConfirmationDialog from '@/components/ui/confirmation-dialog'
 import projectApi from '@/service/projectApi'
 import superStructureApi from '@/service/superStructureApi'
@@ -22,7 +15,6 @@ import {
 } from '@/store/slices/projectSlice'
 import { setSuperStructureData } from '@/store/slices/superStructureSlice'
 import { getErrorMessage } from '@/utils'
-import { Pencil, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
@@ -38,18 +30,18 @@ const Projects = () => {
   const [search, setSearch] = useState('')
   const [filteredProjects, setFilteredProjects] = useState([])
   const [openDeleteModal, setOpenDeleteModal] = useState(false)
-  const [selectedProject, setSelectedProject] = useState(null)
+  const [selectedProject, setSelectedProject] = useState<any>(null)
   const [openProjectModal, setOpenProjectModal] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const handleEditButtonClick = (project) => {
+  const handleEditButtonClick = (project: any) => {
     setSelectedProject(project)
     setIsEdit(true)
     setOpenProjectModal(true)
   }
 
-  const handleDeleteButtonClick = (project) => {
+  const handleDeleteButtonClick = (project: any) => {
     setSelectedProject(project)
     setOpenDeleteModal(true)
   }
@@ -71,7 +63,7 @@ const Projects = () => {
     }
     try {
       setLoading(true)
-      const response = await projectApi.deleteProject(selectedProject.id)
+      await projectApi.deleteProject(selectedProject.id)
       dispatch(deleteProject(selectedProject.id))
     } catch (error) {
       toast.error(getErrorMessage(error))
@@ -82,15 +74,15 @@ const Projects = () => {
   }
 
   const onHandleAddProject = () => {
-    setSelectedProject(null) // Clear selected template
-    setIsEdit(false) // Set to create mode
+    setSelectedProject(null)
+    setIsEdit(false)
     setOpenProjectModal(true)
   }
 
   const handleCloseProjectModal = () => {
     setOpenProjectModal(false)
-    setSelectedProject(null) // Clear the selected template when modal is closed
-    setIsEdit(false) // Reset edit mode
+    setSelectedProject(null)
+    setIsEdit(false)
   }
 
   useEffect(() => {
@@ -138,22 +130,21 @@ const Projects = () => {
     setFilteredProjects(projectsData)
   }, [projectsData])
 
-  // Separate the projects into different categories based on status
   const inProgressProjects = filteredProjects.filter(
-    (project) => project.status === 'InProgress'
+    (project: any) => project.status === 'In Progress'
   )
   const draftProjects = filteredProjects.filter(
-    (project) => project.status === 'Draft'
+    (project: any) => project.status === 'Draft'
   )
   const completedProjects = filteredProjects.filter(
-    (project) => project.status === 'Completed'
+    (project: any) => project.status === 'Completed'
   )
 
   if (loading) return <Loader />
 
   return (
     <div className='flex flex-col'>
-      <h3 className='ml-3 flex h-8 flex-col pb-1 text-2xl'>Projects</h3>
+      <h3 className='flex h-8 flex-col pb-1 text-2xl'>Projects</h3>
       <Header
         setViewType={setViewType}
         viewType={viewType}
@@ -162,206 +153,28 @@ const Projects = () => {
         search={search}
       />
 
+      <Separator className='my-4' />
+
       {viewType === 'grid' ? (
-        <>
-          <div className='mt-4'>
-            <h4 className='text-xl font-semibold'>In Progress</h4>
-            <div className='flex flex-row flex-wrap gap-2'>
-              {inProgressProjects.length > 0 ? (
-                inProgressProjects.map((project: any, index: any) => (
-                  <ProjectCard
-                    project={project}
-                    key={project.id}
-                    handleClick={handleClick}
-                    onConfirm={handleDeleteButtonClick}
-                    onEdit={handleEditButtonClick}
-                  />
-                ))
-              ) : (
-                <p>No projects in progress.</p>
-              )}
-            </div>
-          </div>
-
-          <div className='mt-4'>
-            <h4 className='text-xl font-semibold'>Draft</h4>
-            <div className='flex flex-row flex-wrap gap-2'>
-              {draftProjects.length > 0 ? (
-                draftProjects.map((project: any, index: any) => (
-                  <ProjectCard
-                    project={project}
-                    key={project.id}
-                    handleClick={handleClick}
-                    onConfirm={handleDeleteButtonClick}
-                    onEdit={handleEditButtonClick}
-                  />
-                ))
-              ) : (
-                <p>No draft projects.</p>
-              )}
-            </div>
-          </div>
-
-          <div className='mt-4'>
-            <h4 className='text-xl font-semibold'>Completed</h4>
-            <div className='flex flex-row flex-wrap gap-2'>
-              {completedProjects.length > 0 ? (
-                completedProjects.map((project: any, index: any) => (
-                  <ProjectCard
-                    project={project}
-                    key={project.id}
-                    handleClick={handleClick}
-                    onConfirm={handleDeleteButtonClick}
-                    onEdit={handleEditButtonClick}
-                  />
-                ))
-              ) : (
-                <p>No completed projects.</p>
-              )}
-            </div>
-          </div>
-        </>
+        <GridView
+          inProgressProjects={inProgressProjects}
+          draftProjects={draftProjects}
+          completedProjects={completedProjects}
+          handleClick={handleClick}
+          handleDeleteButtonClick={handleDeleteButtonClick}
+          handleEditButtonClick={handleEditButtonClick}
+        />
       ) : (
-        <>
-          <div className='mt-4'>
-            <h4 className='text-xl font-semibold'>In Progress</h4>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Project Name</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {inProgressProjects.length > 0 ? (
-                  inProgressProjects.map((project: any, index: any) => (
-                    <TableRow key={project.id || index}>
-                      <TableCell
-                        onClick={() => handleClick(project)}
-                        className='cursor-pointer'
-                      >
-                        {project.name}
-                      </TableCell>
-                      <TableCell className='flex items-center justify-end gap-2'>
-                        <Button
-                          variant='outline'
-                          className='h-6 rounded p-1'
-                          onClick={() => handleEditButtonClick(project)}
-                        >
-                          <Pencil size={15} />
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteButtonClick(project)}
-                          variant='destructive'
-                          className='h-6 rounded bg-red-400 p-1'
-                        >
-                          <Trash2 size={15} />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={2}>No projects in progress.</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          <div className='mt-4'>
-            <h4 className='text-xl font-semibold'>Draft</h4>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Project Name</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {draftProjects.length > 0 ? (
-                  draftProjects.map((project: any, index: any) => (
-                    <TableRow key={project.id || index}>
-                      <TableCell
-                        onClick={() => handleClick(project)}
-                        className='cursor-pointer'
-                      >
-                        {project.name}
-                      </TableCell>
-                      <TableCell className='flex items-center justify-end gap-2'>
-                        <Button
-                          variant='outline'
-                          className='h-6 rounded p-1'
-                          onClick={() => handleEditButtonClick(project)}
-                        >
-                          <Pencil size={15} />
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteButtonClick(project)}
-                          variant='destructive'
-                          className='h-6 rounded bg-red-400 p-1'
-                        >
-                          <Trash2 size={15} />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={2}>No draft projects.</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          <div className='mt-4'>
-            <h4 className='text-xl font-semibold'>Completed</h4>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Project Name</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {completedProjects.length > 0 ? (
-                  completedProjects.map((project: any, index: any) => (
-                    <TableRow key={project.id || index}>
-                      <TableCell
-                        onClick={() => handleClick(project)}
-                        className='cursor-pointer'
-                      >
-                        {project.name}
-                      </TableCell>
-                      <TableCell className='flex items-center justify-end gap-2'>
-                        <Button
-                          variant='outline'
-                          className='h-6 rounded p-1'
-                          onClick={() => handleEditButtonClick(project)}
-                        >
-                          <Pencil size={15} />
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteButtonClick(project)}
-                          variant='destructive'
-                          className='h-6 rounded bg-red-400 p-1'
-                        >
-                          <Trash2 size={15} />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={2}>No completed projects.</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </>
+        <ListView
+          inProgressProjects={inProgressProjects}
+          draftProjects={draftProjects}
+          completedProjects={completedProjects}
+          handleClick={handleClick}
+          handleDeleteButtonClick={handleDeleteButtonClick}
+          handleEditButtonClick={handleEditButtonClick}
+        />
       )}
+
       <ConfirmationDialog
         title='Delete Project'
         message='Are you sure you want to delete this project?'
