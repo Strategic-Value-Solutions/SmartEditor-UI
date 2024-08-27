@@ -5,10 +5,16 @@ import imageConstants from '@/constants/imageConstants'
 import { sideLinks } from '@/data/sidelinks'
 import { cn } from '@/lib/utils'
 import { AppDispatch } from '@/store'
-import { toggleCollapsed } from '@/store/slices/sidebarSlice'
-import { ChevronsLeft } from 'lucide-react'
+import { toggleCollapsed, setIsCollapsed } from '@/store/slices/sidebarSlice'
+import {
+  ChevronDown,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronUp,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 
 interface SidebarProps extends React.HTMLAttributes<HTMLElement> {
   isCollapsed: boolean
@@ -32,12 +38,27 @@ export default function Sidebar({
     }
   }, [navOpened])
 
+  const handleMouseEnter = () => {
+    if (isCollapsed) {
+      dispatch(setIsCollapsed(false))
+      setNavOpened(true)
+    }
+  }
+
+  const navigation = useNavigate()
+
+  const handleMouseLeave = () => {
+    if (!isCollapsed) {
+      dispatch(setIsCollapsed(true))
+      setNavOpened(false)
+    }
+  }
+
   return (
     <aside
-      className={cn(
-        `fixed left-0 right-0 top-0 z-50 w-full border-r-2 border-r-muted transition-[width] md:bottom-0 md:right-auto md:h-svh ${isCollapsed ? 'md:w-14' : 'md:w-52'}`,
-        className
-      )}
+      // onMouseEnter={handleMouseEnter}
+      // onMouseLeave={handleMouseLeave}
+      className={`fixed left-0 right-0 top-0 z-50 w-full border-r-2 duration-500 border-r-muted transition-[width] md:bottom-0 md:right-auto md:h-svh ${isCollapsed ? 'md:w-14' : 'md:w-52'}`}
     >
       {/* Overlay in mobile */}
       <div
@@ -54,7 +75,9 @@ export default function Sidebar({
           <div className={`flex items-center ${!isCollapsed ? 'gap-2' : ''}`}>
             <img
               src={imageConstants.logo}
+              onClick={() => navigation('/projects')}
               alt='AEIS'
+              className='cursor-pointer'
               style={{
                 width: '50px',
                 height: '50px',
@@ -78,17 +101,19 @@ export default function Sidebar({
             aria-label='Toggle Navigation'
             aria-controls='sidebar-menu'
             aria-expanded={navOpened}
-            onClick={() => dispatch(toggleCollapsed())}
+            onClick={() => {
+              dispatch(toggleCollapsed())
+            }}
           >
             {/* {navOpened ? <IconX /> : <IconMenu2 />} */}
-            {navOpened ? '<<' : '>>'}
+            {navOpened ? <ChevronDown /> : <ChevronUp />}
           </Button>
         </Layout.Header>
 
         {/* Navigation links */}
         <Nav
           id='sidebar-menu'
-          className={`z-40 h-full flex-1 overflow-auto ${navOpened ? 'max-h-screen' : 'max-h-0 py-0 md:max-h-screen md:py-2'}`}
+          className={`z-40 h-full flex-1 overflow-x-hidden ${navOpened ? 'max-h-screen' : 'max-h-0 py-0 md:max-h-screen md:py-2'}`}
           closeNav={() => dispatch(toggleCollapsed())}
           isCollapsed={isCollapsed}
           links={sideLinks}

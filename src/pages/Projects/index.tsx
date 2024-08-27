@@ -1,10 +1,11 @@
-import { Separator } from '@/components/ui/separator'
 import NewProject from './components/Dialog/NewProject'
 import Header from './components/Header'
 import GridView from './components/Views/GridView'
 import ListView from './components/Views/ListView'
+import LandingPage from '@/components/Landing/Landing'
 import Loader from '@/components/ui/Loader'
 import ConfirmationDialog from '@/components/ui/confirmation-dialog'
+import { Separator } from '@/components/ui/separator'
 import projectApi from '@/service/projectApi'
 import superStructureApi from '@/service/superStructureApi'
 import { RootState } from '@/store'
@@ -141,7 +142,6 @@ const Projects = () => {
   )
 
   if (loading) return <Loader />
-
   return (
     <div className='flex flex-col'>
       <h3 className='flex h-8 flex-col pb-1 text-2xl'>Projects</h3>
@@ -155,12 +155,18 @@ const Projects = () => {
 
       <Separator className='my-4' />
 
-      {viewType === 'grid' ? (
+      {projectsData.length === 0 ? (
+        <LandingPage 
+        
+        />
+      ) : viewType === 'grid' ? (
         <GridView
           inProgressProjects={inProgressProjects}
           draftProjects={draftProjects}
           completedProjects={completedProjects}
-          handleRedirectToProjectModelScreen={handleRedirectToProjectModelScreen}
+          handleRedirectToProjectModelScreen={
+            handleRedirectToProjectModelScreen
+          }
           handleDeleteButtonClick={handleDeleteButtonClick}
           handleEditButtonClick={handleEditButtonClick}
         />
@@ -169,7 +175,9 @@ const Projects = () => {
           inProgressProjects={inProgressProjects}
           draftProjects={draftProjects}
           completedProjects={completedProjects}
-          handleRedirectToProjectModelScreen={handleRedirectToProjectModelScreen}
+          handleRedirectToProjectModelScreen={
+            handleRedirectToProjectModelScreen
+          }
           handleDeleteButtonClick={handleDeleteButtonClick}
           handleEditButtonClick={handleEditButtonClick}
         />

@@ -1,5 +1,6 @@
 //@ts-nocheck
 import { TourProvider, useTour } from '@reactour/tour'
+import { useState } from 'react'
 
 const customStyles = {
   popover: (base) => ({
@@ -40,7 +41,9 @@ const customStyles = {
 }
 
 const TourProviderComponent = ({ children }: any) => {
-  const componentSteps = [
+  const [tourToShow, setTourToShow] = useState('editor')
+  const { pathname } = window.location
+  const editorSteps = [
     {
       selector: '#canvas',
       content: 'This is the canvas',
@@ -121,6 +124,26 @@ const TourProviderComponent = ({ children }: any) => {
     },
   ]
 
+  const projectModelTour = [
+    {
+      selector: '#project-model-card',
+      content:
+        'This is the project model card. From here you can update the pdf , or mark the pdf as completed or skipped',
+    },
+    {
+      selector: '#complete-button',
+      content: 'This is the complete button',
+    },
+    {
+      selector: '#skip-button',
+      content: 'This is the skip button',
+    },
+    {
+      selector: '#edit-button',
+      content: 'This is the edit button',
+    },
+  ]
+
   const { setIsOpen, isOpen } = useTour()
   const handleStoreTourCompletion = () => {
     localStorage.setItem('tourCompleted', 'true')
@@ -129,14 +152,31 @@ const TourProviderComponent = ({ children }: any) => {
 
   return (
     <TourProvider
-      steps={componentSteps}
-      beforeClose={handleStoreTourCompletion}
+      steps={pathname.includes('pick') ? editorSteps : projectModelTour}
       styles={customStyles}
-      //   onClickClose={handleStoreTourCompletion}
     >
       {children}
     </TourProvider>
   )
+  // return tourToShow === 'editor' ? (
+  //   <TourProvider
+  //     steps={editorSteps}
+  //     beforeClose={handleStoreTourCompletion}
+  //     styles={customStyles}
+  //     //   onClickClose={handleStoreTourCompletion}
+  //   >
+  //     {children}
+  //   </TourProvider>
+  // ) : (
+  //   <TourProvider
+  //     steps={projectModelTour}
+  //     beforeClose={handleStoreTourCompletion}
+  //     styles={customStyles}
+  //     //   onClickClose={handleStoreTourCompletion}
+  //   >
+  //     {children}
+  //   </TourProvider>
+  // )
 }
 
 export default TourProviderComponent

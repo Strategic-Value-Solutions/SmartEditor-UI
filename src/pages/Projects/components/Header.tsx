@@ -17,10 +17,10 @@ const Header = ({
   }
 
   return (
-    <div className='p-y-3 mt-4 flex w-full flex-row justify-between'>
+    <div className='p-y-3 mt-4 flex w-full flex-row justify-between lg:gap-0 gap-2 '>
       <Input
         placeholder='Search project...'
-        className='w-[20vw]'
+        className='lg:w-[20vw]'
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />

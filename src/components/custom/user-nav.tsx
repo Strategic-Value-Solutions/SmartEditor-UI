@@ -34,7 +34,7 @@ export function UserNav() {
         <DropdownMenuTrigger asChild>
           {!isCollapsed ? (
             <div className='flex justify-start text-wrap w-full h-10 border-l items-center p-1 rounded-full bg-secondary overflow-hidden cursor-pointer'>
-              <Avatar className='h-10 w-10'>
+              <Avatar className='h-8 w-8'>
                 <img
                   src={user?.avatar}
                   alt={user?.name}

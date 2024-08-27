@@ -1,5 +1,7 @@
 import { cn } from '@/lib/utils'
+import { RootState } from '@/store'
 import * as React from 'react'
+import { useSelector } from 'react-redux'
 
 const LayoutContext = React.createContext<{
   offset: number
@@ -84,13 +86,16 @@ const Body = React.forwardRef<
   if (contextVal === null) {
     throw new Error(`Layout.Body must be used within ${Layout.displayName}.`)
   }
+  const isAuthenticated = useSelector(
+    (state: RootState) => state.auth.isAuthenticated
+  )
 
   return (
     <div
       ref={ref}
       data-layout='body'
       className={cn(
-        'px-4 py-6 overflow-auto md:px-8 h-[var(--body-height)]',
+        `${isAuthenticated && 'px-4 py-6 md:px-8'} overflow-auto h-[var(--body-height)]`,
         contextVal && contextVal.fixed && 'flex-1',
         className
       )}

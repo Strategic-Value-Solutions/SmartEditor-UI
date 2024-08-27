@@ -67,7 +67,7 @@ const ActionButtons = ({
         onClick={handleShowCompleteModal}
         disabled={!projectModel.isActive}
       >
-        <Check size={20} />
+        <Check size={20} id='complete-button' />
       </button>
       <button
         className={`h-6 rounded p-1 text-red-400 ${
@@ -76,20 +76,20 @@ const ActionButtons = ({
         onClick={handleShowSkipModal}
         disabled={!projectModel.isActive}
       >
-        <Ban size={15} />
+        <Ban size={15} id='skip-button' />
       </button>
       <button
         className={`h-6 rounded p-1 `}
         onClick={() => onSelectPick(projectModel)}
       >
-        <Pencil size={15} />
+        <Pencil size={15} id='edit-button' />
       </button>
-      <button
+      {/* <button
         className='h-6 rounded bg-red-400 p-1 text-white'
         onClick={() => toast.info('Coming soon')}
       >
         <Trash2 size={15} />
-      </button>
+      </button> */}
     </div>
   )
 }

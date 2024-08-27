@@ -25,6 +25,7 @@ import {
   getErrorMessage,
 } from '@/utils'
 import { red } from '@mui/material/colors'
+import { useTour } from '@reactour/tour'
 import { Check, Ban, Pencil, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -40,6 +41,7 @@ const Picks = () => {
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const { setIsOpen } = useTour()
   const { projectModels } = useSelector(
     (state: RootState) => state.projectModels
   )
@@ -47,12 +49,13 @@ const Picks = () => {
     dispatch(setProjectModels(projectModels))
     setLoading(false)
   }
+
   useEffect(() => {
     const fetchProjectModels = async () => {
       try {
         setLoading(true)
         const response = await projectApi.getProjectModels(projectId)
-
+        setIsOpen(true)
         handleSetProjectModels(response)
       } catch (error) {
         toast.error(getErrorMessage(error))
@@ -84,8 +87,10 @@ const Picks = () => {
   const skipPick = async (pick: any) => {
     try {
       if (!pick) return toast.error('Please select a pick')
-      if (!pick.isActive) return toast.error('Project Model is not active')
-      // if (!pick.fileUrl) return toast.error('Upload a file first')
+      if (!pick.isActive)
+        return toast.error(
+          'Project Model is not active but you can upload the file'
+        )
       setLoading(true)
 
       await projectApi.skipPick(pick.id, pick.projectId)
@@ -184,7 +189,6 @@ const Picks = () => {
       setLoading(false)
     }
   }
-  
 
   if (loading) return <Loader />
 
@@ -206,7 +210,10 @@ const Picks = () => {
       />
 
       {viewType === 'grid' ? (
-        <div className='mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5'>
+        <div
+          className='mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5'
+     
+        >
           {projectModels.map((projectModel: any) => (
             <ProjectModelCard
               key={projectModel.id}

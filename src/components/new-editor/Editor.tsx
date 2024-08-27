@@ -19,11 +19,9 @@ import annotationApi from '@/service/annotationApi'
 import projectApi from '@/service/projectApi'
 import { RootState } from '@/store'
 import {
-  navigateToPick,
   setCurrentProjectModelById,
   setProjectModels,
 } from '@/store/slices/projectModelSlice'
-import { updateCurrentProjectDetails } from '@/store/slices/projectSlice'
 import { getErrorMessage } from '@/utils'
 import * as fabric from 'fabric'
 import { MoveLeft } from 'lucide-react'
@@ -47,8 +45,6 @@ export default function Editor() {
     (state: RootState) => state.projectModels
   )
 
-  const { activePick } = currentProject
-
   const [selectedFile, setSelectedFile] = useState('')
   const [isDocLoading, setIsDocLoading] = useState(false)
   const [showExtendedToolbar, setShowExtendedToolbar] = useState(true)
@@ -61,14 +57,6 @@ export default function Editor() {
   })
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-
-  const handleFieldValueChange = (index, value) => {
-    dispatch(
-      updateCurrentProjectDetails({
-        activePick: value,
-      })
-    )
-  }
 
   const changePage = (offset) => {
     const page = editor.currPage
@@ -203,7 +191,6 @@ export default function Editor() {
     try {
       if (!pick) return toast.error('Please select a pick')
       if (!pick.isActive) return toast.error('Project Model is not active')
-      // if (!pick.fileUrl) return toast.error('Upload a file first')
       setLoading(true)
 
       await projectApi.skipPick(pick.id, pick.projectId)
@@ -310,7 +297,7 @@ export default function Editor() {
   }
 
   if (loading) return <Loader />
-
+  if (!pick?.isActive) toast.error('You can only edit active project models')
   return (
     <div className='flex flex-col w-full h-full justify-center items-center'>
       <EditProjectModelModal

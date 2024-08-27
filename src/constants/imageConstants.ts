@@ -25,15 +25,24 @@ import angel from '../assets/images/bridge/UmbrellaAngel.svg'
 import close from '../assets/images/bridge/close.svg'
 import separator from '../assets/images/bridge/separator.svg'
 import TextIcon from '../assets/images/comment.svg'
+import cubeLeg from '../assets/images/cube-leg.png'
 import DeleteIcon from '../assets/images/delete.svg'
 import EraserIcon from '../assets/images/eraser.svg'
+import growth from '../assets/images/growth.png'
 import SelectIcon from '../assets/images/hand.svg'
 import RectangleIcon from '../assets/images/icons.svg'
 import linebreak from '../assets/images/linebreak.svg'
 import logo from '../assets/images/logo.png'
+import lookingAhead from '../assets/images/looking-ahead.png'
+import pilot from '../assets/images/pilot.png'
+import reflecting from '../assets/images/reflecting.png'
 import removeCursor from '../assets/images/remove.svg'
 
 export default {
+  cubeLeg,
+  growth,
+  lookingAhead,
+  reflecting,
   logo,
   Aeis,
   close,
@@ -68,4 +77,5 @@ export default {
   structureType,
   wingWall,
   removeCursor,
+  pilot,
 }

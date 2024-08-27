@@ -1,6 +1,6 @@
+import ActionButtons from './ActionButtons'
 import StatusCapsule from '@/components/ui/status-capsule'
 import { Document, Page } from 'react-pdf'
-import ActionButtons from './ActionButtons'
 
 const ProjectModelCard = ({
   projectModel,
@@ -11,10 +11,9 @@ const ProjectModelCard = ({
 }: any) => {
   return (
     <div
+      id='project-model-card'
       className={`relative border rounded-lg p-4 ${
-        projectModel.isActive
-          ? 'border-blue-500 border-2 '
-          : 'border-gray-300'
+        projectModel.isActive ? 'border-blue-500 border-2 ' : 'border-gray-300'
       }`}
     >
       {projectModel.isActive && (

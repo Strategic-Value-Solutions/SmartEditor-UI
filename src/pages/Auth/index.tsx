@@ -1,4 +1,5 @@
 import { UserAuthForm } from './use-auth-form'
+import imageConstants from '@/constants/imageConstants'
 import { Link } from 'react-router-dom'
 
 export const metadata = {
@@ -10,24 +11,10 @@ export default function Auth() {
   return (
     <>
       <div className='container relative hidden h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0'>
-        {/* <div className='absolute right-4 top-4 flex justify-center gap-3 md:right-8 md:top-8'>
-          <Link
-            to='/login'
-            className={cn(buttonVariants({ variant: 'ghost' }))}
-          >
-            Login
-          </Link>
-          <Link
-            to='/login'
-            className={cn(buttonVariants({ variant: 'ghost' }))}
-          >
-            Register
-          </Link>
-        </div> */}
         <div
           className='relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex'
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1466442929976-97f336a657be?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
+            backgroundImage: `url(${imageConstants.logo})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
