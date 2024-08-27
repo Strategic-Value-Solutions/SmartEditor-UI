@@ -173,7 +173,7 @@ export default function Editor() {
   }, [pick.id, pick.fileUrl])
 
   const handleBack = () => {
-    navigate(`/picks/${projectId}`)
+    navigate(`/project/${projectId}`)
   }
 
   useEffect(() => {
@@ -202,12 +202,12 @@ export default function Editor() {
   const skipPick = async (pick: any) => {
     try {
       if (!pick) return toast.error('Please select a pick')
-      if (!pick.isActive) return toast.error('Pick is not active')
-      if (!pick.fileUrl) return toast.error('Upload a file first')
+      if (!pick.isActive) return toast.error('Project Model is not active')
+      // if (!pick.fileUrl) return toast.error('Upload a file first')
       setLoading(true)
 
       await projectApi.skipPick(pick.id, pick.projectId)
-      toast.success('Pick skipped')
+      toast.success('Project Model skipped')
 
       // Create a new array with updated models
       const updatedModels = projectModels.map(
@@ -255,12 +255,12 @@ export default function Editor() {
   const completePick = async (pick: any) => {
     try {
       if (!pick) return toast.error('Please select a pick')
-      if (!pick.isActive) return toast.error('Pick is not active')
+      if (!pick.isActive) return toast.error('Project Model is not active')
       if (!pick.fileUrl) return toast.error('Upload a file first')
       setLoading(true)
 
       await projectApi.completePick(pick.id, pick.projectId)
-      toast.success('Pick completed')
+      toast.success('Project Model completed')
 
       // Create a new array with updated models
       const updatedModels = projectModels.map(
@@ -309,7 +309,6 @@ export default function Editor() {
     setShowPickModal(true)
   }
 
-
   if (loading) return <Loader />
 
   return (
@@ -322,7 +321,10 @@ export default function Editor() {
         projectId={projectId}
       />
       <div className='absolute top-1 right-1/2 flex gap-2 p-1.5 items-center'>
-        <div className='absolute top-0 left-1/2 transform -translate-x-1/2 flex items-center'>
+        <div
+          className='absolute top-0 left-1/2 transform -translate-x-1/2 flex items-center'
+          id='project-model-select'
+        >
           <Select onValueChange={handleNavigate} value={pick?.id}>
             <SelectTrigger
               className={`w-[200px] ${pick?.isActive ? 'border-blue-400' : ''}`}
@@ -356,6 +358,7 @@ export default function Editor() {
       </div>
 
       <button
+        id='back'
         className='rounded-md bg-gray-800 px-6 py-2 text-white absolute top-20 right-2 transform -translate-x-1/2'
         onClick={handleBack}
       >
@@ -367,6 +370,7 @@ export default function Editor() {
           onSelectPick={handleSelectPick}
           onCompletePick={completePick}
           onSkipPick={skipPick}
+          handleSaveAnnotations={handleSaveAnnotations}
         />
       </div>
       {!pick?.fileUrl ? (

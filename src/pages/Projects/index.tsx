@@ -46,9 +46,9 @@ const Projects = () => {
     setOpenDeleteModal(true)
   }
 
-  const handleClick = (project: any) => {
+  const handleRedirectToProjectModelScreen = (project: any) => {
     dispatch(setCurrentProject(project))
-    navigate(`/picks/${project.id}`)
+    navigate(`/project/${project.id}`)
   }
 
   const handleDeleteModalClose = () => {
@@ -160,7 +160,7 @@ const Projects = () => {
           inProgressProjects={inProgressProjects}
           draftProjects={draftProjects}
           completedProjects={completedProjects}
-          handleClick={handleClick}
+          handleRedirectToProjectModelScreen={handleRedirectToProjectModelScreen}
           handleDeleteButtonClick={handleDeleteButtonClick}
           handleEditButtonClick={handleEditButtonClick}
         />
@@ -169,7 +169,7 @@ const Projects = () => {
           inProgressProjects={inProgressProjects}
           draftProjects={draftProjects}
           completedProjects={completedProjects}
-          handleClick={handleClick}
+          handleRedirectToProjectModelScreen={handleRedirectToProjectModelScreen}
           handleDeleteButtonClick={handleDeleteButtonClick}
           handleEditButtonClick={handleEditButtonClick}
         />

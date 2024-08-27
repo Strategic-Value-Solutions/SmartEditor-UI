@@ -13,14 +13,14 @@ type ListViewProps = {
   inProgressProjects: any[]
   draftProjects: any[]
   completedProjects: any[]
-  handleClick: (project: any) => void
+  handleRedirectToProjectModelScreen: (project: any) => void
   handleDeleteButtonClick: (project: any) => void
   handleEditButtonClick: (project: any) => void
 }
 
 type ListProps = {
   projects: any[]
-  handleClick: (project: any) => void
+  handleRedirectToProjectModelScreen: (project: any) => void
   handleDeleteButtonClick: (project: any) => void
   handleEditButtonClick: (project: any) => void
   title: string
@@ -28,7 +28,7 @@ type ListProps = {
 
 const List = ({
   projects,
-  handleClick,
+  handleRedirectToProjectModelScreen,
   handleDeleteButtonClick,
   handleEditButtonClick,
   title,
@@ -48,7 +48,7 @@ const List = ({
             projects.map((project: any, index: any) => (
               <TableRow key={project.id || index}>
                 <TableCell
-                  onClick={() => handleClick(project)}
+                  onClick={() => handleRedirectToProjectModelScreen(project)}
                   className='cursor-pointer'
                 >
                   {project.name}
@@ -86,7 +86,7 @@ const ListView = ({
   inProgressProjects,
   draftProjects,
   completedProjects,
-  handleClick,
+  handleRedirectToProjectModelScreen,
   handleDeleteButtonClick,
   handleEditButtonClick,
 }: ListViewProps) => {
@@ -94,7 +94,7 @@ const ListView = ({
     <>
       <List
         projects={inProgressProjects}
-        handleClick={handleClick}
+        handleRedirectToProjectModelScreen={handleRedirectToProjectModelScreen}
         handleDeleteButtonClick={handleDeleteButtonClick}
         handleEditButtonClick={handleEditButtonClick}
         title='In Progress'
@@ -102,7 +102,7 @@ const ListView = ({
 
       <List
         projects={draftProjects}
-        handleClick={handleClick}
+        handleRedirectToProjectModelScreen={handleRedirectToProjectModelScreen}
         handleDeleteButtonClick={handleDeleteButtonClick}
         handleEditButtonClick={handleEditButtonClick}
         title='Draft'
@@ -110,7 +110,7 @@ const ListView = ({
 
       <List
         projects={completedProjects}
-        handleClick={handleClick}
+        handleRedirectToProjectModelScreen={handleRedirectToProjectModelScreen}
         handleDeleteButtonClick={handleDeleteButtonClick}
         handleEditButtonClick={handleEditButtonClick}
         title='Completed'

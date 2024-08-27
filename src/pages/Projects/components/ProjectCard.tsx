@@ -4,7 +4,7 @@ import StatusCapsule from '@/components/ui/status-capsule'
 import { File, Pencil, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-const ProjectCard = ({ project, handleClick, onEdit, onConfirm }: any) => {
+const ProjectCard = ({ project, handleRedirectToProjectModelScreen, onEdit, onConfirm }: any) => {
   const navigate = useNavigate()
   const { name } = project
 
@@ -13,7 +13,7 @@ const ProjectCard = ({ project, handleClick, onEdit, onConfirm }: any) => {
       <div className='flex flex-col rounded-lg bg-white p-4'>
         <div
           className='flex h-36 items-center justify-center overflow-hidden rounded-md bg-blue-200 cursor-pointer'
-          onClick={() => handleClick(project)}
+          onClick={() => handleRedirectToProjectModelScreen(project)}
         >
           <File className='text-9xl text-white' size={50} />
         </div>
@@ -22,7 +22,7 @@ const ProjectCard = ({ project, handleClick, onEdit, onConfirm }: any) => {
           <div className='mt-2 flex items-center justify-between'>
             <StatusCapsule
               status={project.status}
-              redirectTo={() => handleClick(project)}
+              redirectTo={() => handleRedirectToProjectModelScreen(project)}
             />
             <div className='flex items-center gap-2'>
               <button

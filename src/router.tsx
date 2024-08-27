@@ -31,15 +31,15 @@ export const paths = {
     isAuth: true,
     component: Projects,
   },
-  templates: {
-    name: 'Configs',
-    path: '/configs',
-    isAuth: true,
-    component: Templates,
-  },
+  // templates: {
+  //   name: 'Configs',
+  //   path: '/configs',
+  //   isAuth: true,
+  //   component: Templates,
+  // },
   picks: {
     name: 'Picks',
-    path: '/picks/:projectId',
+    path: '/project/:projectId',
     isAuth: true,
     component: Picks,
   },

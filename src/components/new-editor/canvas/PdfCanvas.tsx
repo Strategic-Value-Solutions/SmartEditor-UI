@@ -1,5 +1,6 @@
 // @ts-nocheck
 import Loader from '../Loader'
+import { useTour } from '@reactour/tour'
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,6 +11,7 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react'
+import { useState } from 'react'
 import { Document, Page } from 'react-pdf'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
@@ -24,6 +26,12 @@ function PdfCanvas({
   pick,
   handleSaveAnnotations,
 }: any) {
+  const [pdfPageDimensions, setPdfPageDimensions] = useState({
+    width: 0,
+    height: 0,
+  })
+  const { setIsOpen } = useTour()
+  const isTourCompleted = localStorage.getItem('tourCompleted') === 'true'
   function onDocumentLoadSuccess({
     numPages,
     originalHeight,
@@ -38,7 +46,8 @@ function PdfCanvas({
     const scaleFactor = maxWidth / originalWidth
     const width = originalWidth * scaleFactor
     const height = originalHeight * scaleFactor
-
+    setPdfPageDimensions({ width, height })
+    if (!isTourCompleted) setIsOpen(true)
     setPageDimensions({ width, height })
     editor.addPdfDimensions({ width, height })
     editor.setCanvas(initCanvas(width, height))
@@ -81,6 +90,7 @@ function PdfCanvas({
               </div>
             </>
           )}
+
           <Document
             file={pick.fileUrl}
             onLoadSuccess={(pdf) =>
@@ -137,7 +147,10 @@ function PdfCanvas({
                         <ChevronLeft />
                       </button>
                     )}
-                    <div className='rounded-md bg-gray-800 px-4 py-2 text-white'>
+                    <div
+                      className='rounded-md bg-gray-800 px-4 py-2 text-white'
+                      id='total-pages'
+                    >
                       Page {editor.currPage} of {editor.numPages}
                     </div>
                     {editor.currPage < editor.numPages && (
@@ -151,16 +164,19 @@ function PdfCanvas({
                     <button
                       onClick={() => zoomIn()} // Trigger zoom in
                       className='rounded-md bg-gray-800 px-4 py-2 text-white'
+                      id='zoom-in'
                     >
                       <ZoomIn />
                     </button>
                     <button
                       onClick={() => zoomOut()} // Trigger zoom out
                       className='rounded-md bg-gray-800 px-4 py-2 text-white'
+                      id='zoom-out'
                     >
                       <ZoomOut />
                     </button>
                     <button
+                      id='pan'
                       type='button'
                       title='Zoom in'
                       onClick={() =>
@@ -178,6 +194,7 @@ function PdfCanvas({
                       pick?.status !== 'Skipped' &&
                       pick?.isActive && (
                         <button
+                          id='saveAnnotations'
                           className='rounded-md bg-gray-800 px-4 py-2 text-white'
                           onClick={handleSaveAnnotations}
                         >
@@ -186,6 +203,7 @@ function PdfCanvas({
                       )}
                     <button
                       onClick={() => resetTransform()} // Reset zoom
+                      id='rotate-ccw'
                       className='rounded-md bg-gray-800 px-4 py-2 text-white'
                     >
                       <RotateCcw />

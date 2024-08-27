@@ -70,7 +70,7 @@ const Picks = () => {
 
   const handleRedirectToEditor = (pick: any) => {
     if (!pick) {
-      toast.error('Pick not found')
+      toast.error('Project Model not found')
       return
     }
     // if (!pick.fileUrl) {
@@ -84,12 +84,12 @@ const Picks = () => {
   const skipPick = async (pick: any) => {
     try {
       if (!pick) return toast.error('Please select a pick')
-      if (!pick.isActive) return toast.error('Pick is not active')
-      if (!pick.fileUrl) return toast.error('Upload a file first')
+      if (!pick.isActive) return toast.error('Project Model is not active')
+      // if (!pick.fileUrl) return toast.error('Upload a file first')
       setLoading(true)
 
       await projectApi.skipPick(pick.id, pick.projectId)
-      toast.success('Pick skipped')
+      toast.success('Project Model skipped')
 
       // Create a new array with updated models
       const updatedModels = projectModels.map(
@@ -136,12 +136,12 @@ const Picks = () => {
   const completePick = async (pick: any) => {
     try {
       if (!pick) return toast.error('Please select a pick')
-      if (!pick.isActive) return toast.error('Pick is not active')
+      if (!pick.isActive) return toast.error('Project Model is not active')
       if (!pick.fileUrl) return toast.error('Upload a file first')
       setLoading(true)
 
       await projectApi.completePick(pick.id, pick.projectId)
-      toast.success('Pick completed')
+      toast.success('Project Model completed')
 
       // Create a new array with updated models
       const updatedModels = projectModels.map(
@@ -184,6 +184,7 @@ const Picks = () => {
       setLoading(false)
     }
   }
+  
 
   if (loading) return <Loader />
 
@@ -222,7 +223,7 @@ const Picks = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Pick Name</TableHead>
+                <TableHead>Project Model Name</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -287,7 +288,7 @@ const Picks = () => {
                     </button>
                     <button
                       className='h-6 rounded bg-red-400 p-1 text-white'
-                      onClick={() => toast.error('Not implemented yet')}
+                      onClick={() => toast.info('Coming soon')}
                     >
                       <Trash2 size={15} />
                     </button>

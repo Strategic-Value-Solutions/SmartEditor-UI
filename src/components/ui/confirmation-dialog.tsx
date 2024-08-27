@@ -8,17 +8,35 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import React from 'react'
 
-const DeleteTemplate = ({
+interface ConfirmationDialogProps {
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  trigger?: React.ReactNode
+  title?: string
+  message?: string
+  children?: React.ReactElement
+  showCancelButton?: boolean
+  confirmButtonText?: string
+  showChildren?: boolean
+}
+
+const ConfirmationDialog = ({
   open,
   onClose,
   onConfirm,
   trigger,
   title,
   message,
-}: any) => {
+  children = <></>,
+  showCancelButton = true,
+  confirmButtonText = 'Confirm',
+  showChildren = true,
+}: ConfirmationDialogProps) => {
   return (
-    <Dialog open={open}>
+    <Dialog open={open} onOpenChange={onClose}>
       <DialogTrigger>{trigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -26,13 +44,14 @@ const DeleteTemplate = ({
         </DialogHeader>
         <DialogDescription>{message}</DialogDescription>
         <DialogFooter>
-          <Button onClick={onClose}>Cancel</Button>
+          {showChildren && children}
+          {showCancelButton && <Button onClick={onClose}>Cancel</Button>}
           <Button
             onClick={onConfirm}
             color='destructive'
             className='bg-red-500'
           >
-            Confirm
+            {confirmButtonText}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -40,4 +59,4 @@ const DeleteTemplate = ({
   )
 }
 
-export default DeleteTemplate
+export default ConfirmationDialog

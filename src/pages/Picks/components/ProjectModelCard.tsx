@@ -1,7 +1,6 @@
-import ActionButtons from './ActionButtons'
 import StatusCapsule from '@/components/ui/status-capsule'
 import { Document, Page } from 'react-pdf'
-import { toast } from 'sonner'
+import ActionButtons from './ActionButtons'
 
 const ProjectModelCard = ({
   projectModel,
@@ -12,11 +11,20 @@ const ProjectModelCard = ({
 }: any) => {
   return (
     <div
-      className={`border rounded-lg p-4 ${
-        projectModel.isActive ? 'border-blue-500' : 'border-gray-300'
+      className={`relative border rounded-lg p-4 ${
+        projectModel.isActive
+          ? 'border-blue-500 border-2 '
+          : 'border-gray-300'
       }`}
     >
-      <div className='flex justify-center items-center h-40 bg-gray-100'>
+      {projectModel.isActive && (
+        <div className='absolute top-0 right-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-bl-lg'>
+          Active
+        </div>
+      )}
+      <div
+        className={`flex justify-center items-center h-40 ${projectModel?.fileUrl ? '' : 'bg-gray-100'}`}
+      >
         {projectModel.fileUrl ? (
           <div className='mb-2 text-gray-500 flex justify-center w-full items-center cursor-pointer'>
             <Document
@@ -26,9 +34,11 @@ const ProjectModelCard = ({
             >
               <Page
                 pageNumber={1}
-                width={100}
+                width={100} // Set a fixed width
+                height={20} // Set a fixed height
                 renderTextLayer={false}
                 renderAnnotationLayer={false}
+                className='max-w-full max-h-full object-contain'
               />
             </Document>
           </div>
@@ -36,7 +46,6 @@ const ProjectModelCard = ({
           <div
             onClick={() => handleRedirectToEditor(projectModel)}
             className='text-center w-full flex justify-center items-center flex-col cursor-pointer'
-            // onClick={() => toast.error('Please upload a file')}
           >
             <div className='mb-2 text-gray-500 flex justify-center w-full items-center'>
               No file available
@@ -59,6 +68,7 @@ const ProjectModelCard = ({
           onSelectPick={handleSelectPick}
           onCompletePick={completePick}
           onSkipPick={skipPick}
+          showChildren={false}
         />
       </div>
     </div>

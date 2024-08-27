@@ -36,12 +36,12 @@ export const sideLinks: SideLink[] = [
   //   href: '/templates',
   //   icon: <FileIcon size={18} />,
   // },
-  {
-    title: 'Configs',
-    label: '',
-    href: '/configs',
-    icon: <SettingsIcon size={18} />,
-  },
+  // {
+  //   title: 'Configs',
+  //   label: '',
+  //   href: '/configs',
+  //   icon: <SettingsIcon size={18} />,
+  // },
   // {
   //   title: 'Home',
   //   label: '',

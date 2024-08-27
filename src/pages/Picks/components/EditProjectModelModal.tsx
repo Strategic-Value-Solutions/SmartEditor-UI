@@ -35,7 +35,7 @@ function EditProjectModelModal({
     },
     accept: {
       'application/pdf': ['.pdf'],
-      'image/*': ['.jpeg', '.jpg', '.png'],
+      // 'image/*': ['.jpeg', '.jpg', '.png'],
     },
   })
   const dispatch = useDispatch()
@@ -73,7 +73,7 @@ function EditProjectModelModal({
     >
       <DialogContent className='max-w-lg'>
         <DialogHeader>
-          <DialogTitle>Pick</DialogTitle>
+          <DialogTitle>Project Model</DialogTitle>
         </DialogHeader>
         <DialogDescription>
           <div

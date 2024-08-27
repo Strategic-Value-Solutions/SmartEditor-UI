@@ -55,7 +55,7 @@ function SelectPick({
     },
     accept: {
       'application/pdf': ['.pdf'],
-      'image/*': ['.jpeg', '.jpg', '.png'],
+      // 'image/*': ['.jpeg', '.jpg', '.png'],
     },
   })
 

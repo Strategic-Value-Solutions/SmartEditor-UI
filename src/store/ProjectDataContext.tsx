@@ -47,34 +47,7 @@ interface ProviderProps {
 const ProjectDataContextProvider = ({ children }: ProviderProps) => {
   const [projectsData, setProjectsData] = useState<Project[]>(() => {
     const storedProjectsData = localStorage.getItem('projectsData')
-    return storedProjectsData
-      ? JSON.parse(storedProjectsData)
-      : [
-          {
-            id: 101,
-            title: 'Project 1',
-            client: 'Client 1',
-            project_type: 'Type 1',
-            edition: 'Edition 1',
-            version: '1.0',
-            sequence_number: '123',
-            description: 'Description for Project 1',
-            span: 'Span 1',
-            pick: 'Pick 1',
-          },
-          {
-            id: 102,
-            title: 'Project 2',
-            client: 'Client 2',
-            project_type: 'Type 2',
-            edition: 'Edition 2',
-            version: '2.0',
-            sequence_number: '456',
-            description: 'Description for Project 2',
-            span: 'Span 2',
-            pick: 'Pick 2',
-          },
-        ]
+    return storedProjectsData ? JSON.parse(storedProjectsData) : []
   })
 
   const [name, setProjectName] = useState<string>(() => {

@@ -1,3 +1,9 @@
+import TourProviderComponent from './Tours/TourProvider'
+import { ThemeProvider } from './components/custom/theme-provider'
+import Router from './router'
+import userApi from './service/userApi'
+import { store } from './store'
+import { setUser } from './store/slices/authSlice'
 import '@/global.css'
 import { useEffect } from 'react'
 import { pdfjs } from 'react-pdf'
@@ -5,11 +11,6 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css'
 import 'react-pdf/dist/esm/Page/TextLayer.css'
 import { Provider } from 'react-redux'
 import { Toaster } from 'sonner'
-import { ThemeProvider } from './components/custom/theme-provider'
-import Router from './router'
-import userApi from './service/userApi'
-import { store } from './store'
-import { setUser } from './store/slices/authSlice'
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -33,7 +34,9 @@ const App = () => {
   return (
     <Provider store={store}>
       <ThemeProvider defaultTheme='light' storageKey='vite-ui-theme'>
-        <Router />
+        <TourProviderComponent>
+          <Router />
+        </TourProviderComponent>
         <Toaster richColors position='bottom-right' duration={2000} />
       </ThemeProvider>
     </Provider>

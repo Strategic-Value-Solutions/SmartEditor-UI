@@ -5,14 +5,14 @@ type GridViewProps = {
   inProgressProjects: any[]
   draftProjects: any[]
   completedProjects: any[]
-  handleClick: (project: any) => void
+  handleRedirectToProjectModelScreen: (project: any) => void
   handleDeleteButtonClick: (project: any) => void
   handleEditButtonClick: (project: any) => void
 }
 
 type GridProps = {
   projects: any[]
-  handleClick: (project: any) => void
+  handleRedirectToProjectModelScreen: (project: any) => void
   handleDeleteButtonClick: (project: any) => void
   handleEditButtonClick: (project: any) => void
   title: string
@@ -20,7 +20,7 @@ type GridProps = {
 
 const Grid = ({
   projects,
-  handleClick,
+  handleRedirectToProjectModelScreen,
   handleDeleteButtonClick,
   handleEditButtonClick,
   title,
@@ -34,7 +34,7 @@ const Grid = ({
             <ProjectCard
               project={project}
               key={project.id}
-              handleClick={handleClick}
+              handleRedirectToProjectModelScreen={handleRedirectToProjectModelScreen}
               onConfirm={handleDeleteButtonClick}
               onEdit={handleEditButtonClick}
               index={index}
@@ -52,7 +52,7 @@ const GridView = ({
   inProgressProjects,
   draftProjects,
   completedProjects,
-  handleClick,
+  handleRedirectToProjectModelScreen,
   handleDeleteButtonClick,
   handleEditButtonClick,
 }: GridViewProps) => {
@@ -60,7 +60,7 @@ const GridView = ({
     <>
       <Grid
         projects={inProgressProjects}
-        handleClick={handleClick}
+        handleRedirectToProjectModelScreen={handleRedirectToProjectModelScreen}
         handleDeleteButtonClick={handleDeleteButtonClick}
         handleEditButtonClick={handleEditButtonClick}
         title='In Progress'
@@ -70,7 +70,7 @@ const GridView = ({
 
       <Grid
         projects={draftProjects}
-        handleClick={handleClick}
+        handleRedirectToProjectModelScreen={handleRedirectToProjectModelScreen}
         handleDeleteButtonClick={handleDeleteButtonClick}
         handleEditButtonClick={handleEditButtonClick}
         title='Draft'
@@ -80,7 +80,7 @@ const GridView = ({
 
       <Grid
         projects={completedProjects}
-        handleClick={handleClick}
+        handleRedirectToProjectModelScreen={handleRedirectToProjectModelScreen}
         handleDeleteButtonClick={handleDeleteButtonClick}
         handleEditButtonClick={handleEditButtonClick}
         title='Completed'
