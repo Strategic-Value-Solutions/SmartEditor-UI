@@ -1,4 +1,4 @@
-import { useEditor } from '@/components/new-editor/CanvasContext'
+import { useEditor } from '@/components/Editor/CanvasContext'
 import { tools } from '@/constants'
 import imageConstants from '@/constants/imageConstants'
 import { RootState } from '@/store'

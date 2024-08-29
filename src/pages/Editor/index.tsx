@@ -1,4 +1,4 @@
-import Whiteboard from '@/components/new-editor/fabric'
+import Whiteboard from '@/components/Editor/fabric'
 
 const Editor = () => {
   return (
