@@ -96,6 +96,9 @@
     "typescript": "^5.4.5",
     "vite": "^5.3.5"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.9.5"
+  },
   "lint-staged": {
     "*.{js,jsx}": "eslint --cache --fix",
     "*.{js|css|md|vue|json|ts|tsx|jsx}": "prettier --write"
