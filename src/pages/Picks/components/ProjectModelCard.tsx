@@ -12,20 +12,21 @@ const ProjectModelCard = ({
   return (
     <div
       id='project-model-card'
-      className={`relative border rounded-lg p-4 ${
-        projectModel.isActive ? 'border-blue-500 border-2 ' : 'border-gray-300'
+      className={`relative border rounded-md p-2 w-56 ${
+        projectModel.isActive
+          ? 'border-blue-700 bg-blue-50 shadow-lg dark:border-white dark:bg-gray-800'
+          : 'border-gray-300 bg-white dark:bg-gray-500 dark:border-gray-700'
       }`}
+      style={{ marginBottom: '0.5rem' }} // Minimal bottom margin
     >
       {projectModel.isActive && (
-        <div className='absolute top-0 right-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-bl-lg'>
+        <div className='absolute top-0 right-0 rounded-tr-md rounded-bl-md bg-blue-700 text-white text-xs px-2 py-1 shadow-md dark:bg-gray-700'>
           Active
         </div>
       )}
-      <div
-        className={`flex justify-center items-center h-40 ${projectModel?.fileUrl ? '' : 'bg-gray-100'}`}
-      >
+      <div className={`flex justify-center items-center h-32 bg-gray-100`}>
         {projectModel.fileUrl ? (
-          <div className='mb-2 text-gray-500 flex justify-center w-full items-center cursor-pointer'>
+          <div className='mb-1 text-gray-500 flex justify-center w-full items-center cursor-pointer'>
             <Document
               onClick={() => handleRedirectToEditor(projectModel)}
               file={projectModel.fileUrl}
@@ -33,8 +34,8 @@ const ProjectModelCard = ({
             >
               <Page
                 pageNumber={1}
-                width={100} // Set a fixed width
-                height={20} // Set a fixed height
+                width={80} // Smaller width
+                height={16} // Smaller height
                 renderTextLayer={false}
                 renderAnnotationLayer={false}
                 className='max-w-full max-h-full object-contain'
@@ -46,18 +47,18 @@ const ProjectModelCard = ({
             onClick={() => handleRedirectToEditor(projectModel)}
             className='text-center w-full flex justify-center items-center flex-col cursor-pointer'
           >
-            <div className='mb-2 text-gray-500 flex justify-center w-full items-center'>
+            <div className='mb-1 text-gray-500 flex justify-center w-full items-center text-sm'>
               No file available
             </div>
-            <div className='h-20 w-20 bg-gray-300 rounded flex items-center justify-center'>
-              <span className='text-gray-400 text-sm'>No PDF</span>
+            <div className='h-16 w-16 bg-gray-300 rounded flex items-center justify-center'>
+              <span className='text-gray-400 text-xs'>No PDF</span>
             </div>
           </div>
         )}
       </div>
-      <h4 className='mt-2 text-lg'>{projectModel?.pickModel?.name}</h4>
+      <h4 className='mt-1 text-base'>{projectModel?.pickModel?.name}</h4>
 
-      <div className='mt-2 flex items-center justify-between gap-2'>
+      <div className='mt-1 flex items-center justify-between gap-1'>
         <StatusCapsule
           status={projectModel.status}
           redirectTo={() => handleRedirectToEditor(projectModel)}

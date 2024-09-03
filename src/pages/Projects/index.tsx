@@ -1,11 +1,14 @@
+//@ts-nocheck
 import NewProject from './components/Dialog/NewProject'
 import Header from './components/Header'
 import GridView from './components/Views/GridView'
 import ListView from './components/Views/ListView'
+import { projectsTour } from '@/Tours/constants'
 import LandingPage from '@/components/Landing/Landing'
 import Loader from '@/components/ui/Loader'
 import ConfirmationDialog from '@/components/ui/confirmation-dialog'
 import { Separator } from '@/components/ui/separator'
+import imageConstants from '@/constants/imageConstants'
 import projectApi from '@/service/projectApi'
 import superStructureApi from '@/service/superStructureApi'
 import { RootState } from '@/store'
@@ -16,6 +19,7 @@ import {
 } from '@/store/slices/projectSlice'
 import { setSuperStructureData } from '@/store/slices/superStructureSlice'
 import { getErrorMessage } from '@/utils'
+import { useTour } from '@reactour/tour'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
@@ -35,7 +39,9 @@ const Projects = () => {
   const [openProjectModal, setOpenProjectModal] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
   const [loading, setLoading] = useState(false)
-
+  const { setIsOpen, setSteps, afterOpen } = useTour()
+  const isProjectTourCompleted =
+    localStorage.getItem('projectTourCompleted')?.toString() === 'true'
   const handleEditButtonClick = (project: any) => {
     setSelectedProject(project)
     setIsEdit(true)
@@ -102,6 +108,7 @@ const Projects = () => {
       try {
         setLoading(true)
         const response = await superStructureApi.getSuperStructures()
+
         dispatch(setSuperStructureData(response))
       } catch (error) {
         toast.error(getErrorMessage(error))
@@ -117,6 +124,11 @@ const Projects = () => {
       try {
         setLoading(true)
         const response = await projectApi.getProjects()
+        if (!isProjectTourCompleted) {
+          setSteps(projectsTour)
+          setIsOpen(true)
+          localStorage.setItem('projectTourCompleted', 'true')
+        }
         dispatch(setProjectsData(response))
       } catch (error) {
         toast.error(getErrorMessage(error))
@@ -141,25 +153,33 @@ const Projects = () => {
     (project: any) => project.status === 'Completed'
   )
 
-  if (loading) return <Loader />
-  return (
-    <div className='flex flex-col'>
-      <h3 className='flex h-8 flex-col pb-1 text-2xl'>Projects</h3>
-      <Header
-        setViewType={setViewType}
-        viewType={viewType}
-        onHandleAddProject={onHandleAddProject}
-        setSearch={setSearch}
-        search={search}
-      />
 
-      <Separator className='my-4' />
+  const renderMainContent = () => {
+    if (projectsData.length === 0) {
+      return (
+        <div className='flex flex-col md:flex-row items-center justify-between'>
+          <div className='text-center md:text-left mb-4 md:mb-0 flex flex-col items-center md:w-1/2'>
+            <h3 className='text-2xl font-bold'>No Projects Yet</h3>
+            <p className='text-sm text-gray-600'>
+              You haven’t created any projects. Start by creating your first
+              project.
+            </p>
+          </div>
 
-      {projectsData.length === 0 ? (
-        <LandingPage 
-        
-        />
-      ) : viewType === 'grid' ? (
+          <div className='w-full md:w-1/2'>
+            <img
+              src={imageConstants.noData}
+              alt='No projects illustration'
+              className='mx-auto md:ml-auto lg:max-w-[500px] w-full'
+            />
+            <p className='text-center text-sm text-gray-600 mt-4'>
+              No Data Available
+            </p>
+          </div>
+        </div>
+      )
+    } else {
+      return viewType === 'grid' ? (
         <GridView
           inProgressProjects={inProgressProjects}
           draftProjects={draftProjects}
@@ -181,8 +201,25 @@ const Projects = () => {
           handleDeleteButtonClick={handleDeleteButtonClick}
           handleEditButtonClick={handleEditButtonClick}
         />
-      )}
+      )
+    }
+  }
 
+  if (loading) return <Loader />
+
+  return (
+    <div className='flex flex-col'>
+      <h3 className='flex h-8 flex-col pb-1 text-2xl'>Projects</h3>
+      <Header
+        setViewType={setViewType}
+        viewType={viewType}
+        onHandleAddProject={onHandleAddProject}
+        setSearch={setSearch}
+        search={search}
+      />
+
+      <Separator className='my-4' />
+      {renderMainContent()}
       <ConfirmationDialog
         title='Delete Project'
         message='Are you sure you want to delete this project?'

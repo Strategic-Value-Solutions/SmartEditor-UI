@@ -34,7 +34,9 @@ const Grid = ({
             <ProjectCard
               project={project}
               key={project.id}
-              handleRedirectToProjectModelScreen={handleRedirectToProjectModelScreen}
+              handleRedirectToProjectModelScreen={
+                handleRedirectToProjectModelScreen
+              }
               onConfirm={handleDeleteButtonClick}
               onEdit={handleEditButtonClick}
               index={index}

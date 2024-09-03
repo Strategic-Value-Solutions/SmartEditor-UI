@@ -46,7 +46,9 @@ export function UserNav() {
                 <span className='text-xs truncate text-ellipsis'>
                   {user?.email}
                 </span>
-                <span className='text-xs text-muted-foreground'>Admin</span>
+                <span className='text-xs text-muted-foreground'>
+                  {user?.role}
+                </span>
               </div>
             </div>
           ) : (
@@ -70,6 +72,7 @@ export function UserNav() {
                 {user?.email}
               </p>
             </div>
+            
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>

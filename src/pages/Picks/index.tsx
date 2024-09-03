@@ -1,32 +1,17 @@
 //@ts-nocheck
-import EditProjectModelModal from './components/EditProjectModelModal'
+import ProjectTabs from './Tabs/ProjectTab'
+import SettingsTab from './Tabs/SettingsTab/SettingsTab'
 import Header from './components/Header'
-import ProjectModelCard from './components/ProjectModelCard'
+import { projectModelTour } from '@/Tours/constants'
 import Loader from '@/components/ui/Loader'
-import StatusCapsule from '@/components/ui/status-capsule'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import projectApi from '@/service/projectApi'
 import { RootState } from '@/store'
 import {
   setCurrentProjectModel,
   setProjectModels,
 } from '@/store/slices/projectModelSlice'
-import {
-  formatText,
-  getStatusDotColor,
-  getStatusStyles,
-  getErrorMessage,
-} from '@/utils'
-import { red } from '@mui/material/colors'
+import { getErrorMessage } from '@/utils'
 import { useTour } from '@reactour/tour'
-import { Check, Ban, Pencil, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -39,9 +24,10 @@ const Picks = () => {
   const [selectedPick, setSelectedPick] = useState<any>(null)
   const [viewType, setViewType] = useState('grid')
   const [search, setSearch] = useState('')
+  const [activeTab, setActiveTab] = useState('projectModels')
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { setIsOpen } = useTour()
+  const { setIsOpen, setSteps } = useTour()
   const { projectModels } = useSelector(
     (state: RootState) => state.projectModels
   )
@@ -49,13 +35,19 @@ const Picks = () => {
     dispatch(setProjectModels(projectModels))
     setLoading(false)
   }
+  const isProjectModelTourCompleted =
+    localStorage.getItem('projectModelTourCompleted')?.toString() === 'true'
 
   useEffect(() => {
     const fetchProjectModels = async () => {
       try {
         setLoading(true)
         const response = await projectApi.getProjectModels(projectId)
-        setIsOpen(true)
+        if (!isProjectModelTourCompleted) {
+          setSteps(projectModelTour)
+          setIsOpen(true)
+          localStorage.setItem('projectModelTourCompleted', 'true')
+        }
         handleSetProjectModels(response)
       } catch (error) {
         toast.error(getErrorMessage(error))
@@ -76,10 +68,6 @@ const Picks = () => {
       toast.error('Project Model not found')
       return
     }
-    // if (!pick.fileUrl) {
-    //   toast.error('No file available')
-    //   return
-    // }
     dispatch(setCurrentProjectModel(pick))
     navigate(`/project/${projectId}/pick/${pick.id}`)
   }
@@ -190,6 +178,31 @@ const Picks = () => {
     }
   }
 
+  const renderTabs = () => {
+    switch (activeTab) {
+      case 'projectModels':
+        return (
+          <ProjectTabs
+            showPickModal={showPickModal}
+            setShowPickModal={setShowPickModal}
+            selectedPick={selectedPick}
+            setSelectedPick={setSelectedPick}
+            projectId={projectId}
+            viewType={viewType}
+            projectModels={projectModels}
+            handleSelectPick={handleSelectPick}
+            handleRedirectToEditor={handleRedirectToEditor}
+            skipPick={skipPick}
+            completePick={completePick}
+          />
+        )
+      case 'settings':
+        return <SettingsTab />
+      default:
+        return <div>Coming soon</div>
+    }
+  }
+
   if (loading) return <Loader />
 
   return (
@@ -200,112 +213,10 @@ const Picks = () => {
         setViewType={setViewType}
         setSearch={setSearch}
         search={search}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
       />
-      <EditProjectModelModal
-        showPickModal={showPickModal}
-        setShowPickModal={setShowPickModal}
-        selectedPick={selectedPick}
-        setSelectedPick={setSelectedPick}
-        projectId={projectId}
-      />
-
-      {viewType === 'grid' ? (
-        <div
-          className='mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5'
-     
-        >
-          {projectModels.map((projectModel: any) => (
-            <ProjectModelCard
-              key={projectModel.id}
-              handleSelectPick={handleSelectPick}
-              handleRedirectToEditor={handleRedirectToEditor}
-              skipPick={skipPick}
-              completePick={completePick}
-              projectModel={projectModel}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className='mt-4'>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Project Model Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {projectModels.map((projectModel: any) => (
-                <TableRow
-                  key={projectModel.id}
-                  className={`${projectModel.isActive ? 'bg-blue-100' : 'bg-gray-100'}`}
-                >
-                  <TableCell
-                    onClick={() => handleRedirectToEditor(projectModel)}
-                    className='cursor-pointer'
-                  >
-                    {projectModel?.pickModel?.name}
-                  </TableCell>
-                  <TableCell>
-                    <StatusCapsule
-                      status={projectModel.status}
-                      redirectTo={() => handleRedirectToEditor(projectModel)}
-                    />
-                  </TableCell>
-                  <TableCell className='flex items-center justify-end gap-2'>
-                    <button
-                      className={`h-6 rounded p-1 text-green-400 ${
-                        projectModel.isActive
-                          ? ''
-                          : 'opacity-50 cursor-not-allowed'
-                      }`}
-                      onClick={() =>
-                        projectModel.isActive && completePick(projectModel)
-                      }
-                      disabled={!projectModel.isActive}
-                    >
-                      <Check size={15} />
-                    </button>
-                    <button
-                      className={`h-6 rounded p-1 text-red-400 ${
-                        projectModel.isActive
-                          ? ''
-                          : 'opacity-50 cursor-not-allowed'
-                      }`}
-                      onClick={() =>
-                        projectModel.isActive && skipPick(projectModel)
-                      }
-                      disabled={!projectModel.isActive}
-                    >
-                      <Ban size={15} />
-                    </button>
-                    <button
-                      className={`h-6 rounded p-1 ${
-                        projectModel.isActive
-                          ? ''
-                          : 'opacity-50 cursor-not-allowed'
-                      }`}
-                      onClick={() =>
-                        projectModel.isActive && handleSelectPick(projectModel)
-                      }
-                      disabled={!projectModel.isActive}
-                    >
-                      <Pencil size={15} />
-                    </button>
-                    <button
-                      className='h-6 rounded bg-red-400 p-1 text-white'
-                      onClick={() => toast.info('Coming soon')}
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      {renderTabs()}
     </div>
   )
 }

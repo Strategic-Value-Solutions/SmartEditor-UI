@@ -34,11 +34,13 @@ import RectangleIcon from '../assets/images/icons.svg'
 import linebreak from '../assets/images/linebreak.svg'
 import logo from '../assets/images/logo.png'
 import lookingAhead from '../assets/images/looking-ahead.png'
+import noData from '../assets/images/nodata.svg'
 import pilot from '../assets/images/pilot.png'
 import reflecting from '../assets/images/reflecting.png'
 import removeCursor from '../assets/images/remove.svg'
 
 export default {
+  noData,
   cubeLeg,
   growth,
   lookingAhead,

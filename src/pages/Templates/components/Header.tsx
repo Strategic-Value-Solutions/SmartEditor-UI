@@ -3,6 +3,7 @@ import NewTemplate from './Dialog/NewTemplate'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import ViewTypeButtons from '@/components/ui/view-type-buttons'
 import { Grid2X2, List, Plus } from 'lucide-react'
 
 const Header = ({
@@ -31,27 +32,10 @@ const Header = ({
           New Template
           <Plus size={20} />
         </Button>
-        <Tabs
-          orientation='vertical'
-          defaultValue='overview'
-          className='space-y-4'
-          value={viewType}
-          onValueChange={handleViewChange}
-        >
-          <div className='w-full overflow-x-auto'>
-            <TabsList>
-              <TabsTrigger value='list'>
-                {' '}
-                <List />
-              </TabsTrigger>
-              <TabsTrigger value='grid'>
-                {' '}
-                <Grid2X2 />
-              </TabsTrigger>
-            </TabsList>
-          </div>
-          {/* <TabsContent value='overview' className='space-y-4'></TabsContent> */}
-        </Tabs>
+        <ViewTypeButtons
+          handleViewChange={handleViewChange}
+          viewType={viewType}
+        />
       </div>
     </div>
   )

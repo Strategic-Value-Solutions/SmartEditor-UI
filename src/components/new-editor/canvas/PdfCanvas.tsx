@@ -1,5 +1,6 @@
 // @ts-nocheck
 import Loader from '../Loader'
+import { editorSteps } from '@/Tours/constants'
 import { useTour } from '@reactour/tour'
 import {
   ChevronLeft,
@@ -30,8 +31,9 @@ function PdfCanvas({
     width: 0,
     height: 0,
   })
-  const { setIsOpen } = useTour()
-  const isTourCompleted = localStorage.getItem('tourCompleted') === 'true'
+  const { setIsOpen, setSteps, beforeClose } = useTour()
+  const isEditorTourCompleted =
+    localStorage.getItem('editorTourCompleted')?.toString() === 'true'
   function onDocumentLoadSuccess({
     numPages,
     originalHeight,
@@ -42,12 +44,16 @@ function PdfCanvas({
     editor.setCurrPage(1)
 
     // Calculate dimensions
-    const maxWidth = window.innerWidth * 0.4 // Adjust the scale factor as needed
+    const maxWidth = window.innerWidth * 0.4
     const scaleFactor = maxWidth / originalWidth
     const width = originalWidth * scaleFactor
     const height = originalHeight * scaleFactor
     setPdfPageDimensions({ width, height })
-    if (!isTourCompleted) setIsOpen(true)
+    if (!isEditorTourCompleted) {
+      setSteps(editorSteps)
+      setIsOpen(true)
+      localStorage.setItem('editorTourCompleted', 'true')
+    }
     setPageDimensions({ width, height })
     editor.addPdfDimensions({ width, height })
     editor.setCanvas(initCanvas(width, height))
