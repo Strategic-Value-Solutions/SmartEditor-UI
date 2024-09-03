@@ -142,6 +142,16 @@ export const CanvasProvider = ({ children }) => {
           scaleY: 1,
         })
 
+        img.toObject = (function (toObject) {
+          return function () {
+            return Object.assign(toObject.call(this), {
+              // TODO: Add properties here once components are dynamic
+              name: 'suresh',
+              _id: uuidv4(),
+            })
+          }
+        })(img.toObject)
+
         canvas.add(img)
       }
 
@@ -155,6 +165,7 @@ export const CanvasProvider = ({ children }) => {
         strokeWidth: 2,
         selectable: false,
       })
+
       canvas.add(rect)
 
       const onMouseMove = function (event) {
@@ -727,7 +738,14 @@ export const CanvasProvider = ({ children }) => {
         selectable: false,
       })
 
-      drawInstance._id = uuidv4() // Set a unique id for the object
+      drawInstance.toObject = (function (toObject) {
+        return function () {
+          return fabric.util.object.extend(toObject.call(this), {
+            name: 'suresh',
+            _id: uuidv4(),
+          })
+        }
+      })(drawInstance.toObject)
 
       canvas.add(drawInstance)
     }

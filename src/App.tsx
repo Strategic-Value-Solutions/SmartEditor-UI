@@ -1,4 +1,4 @@
-import TourProviderComponent from './Tours/TourProvider'
+import TourProviderComponent from './tours/TourProvider'
 import { ThemeProvider } from './components/custom/theme-provider'
 import Router from './router'
 import userApi from './service/userApi'
