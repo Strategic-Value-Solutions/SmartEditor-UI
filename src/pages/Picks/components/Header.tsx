@@ -1,50 +1,74 @@
-//@ts-nocheck
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Grid2X2, List, Plus } from 'lucide-react'
-import { useState } from 'react'
+import ViewTypeButtons from '@/components/ui/view-type-buttons'
+import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
-const Header = ({ setViewType, viewType, setSearch, search }) => {
-  const handleViewChange = (value) => {
+interface HeaderProps {
+  setViewType: (value: string) => void
+  viewType: string
+  setSearch: (value: string) => void
+  search: string
+  activeTab: string
+  setActiveTab: (value: string) => void
+}
+
+const Header = ({
+  setViewType,
+  viewType,
+  setSearch,
+  search,
+  activeTab,
+  setActiveTab,
+}: HeaderProps) => {
+  const handleViewChange = (value: string) => {
     setViewType(value)
   }
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+  }
+
   return (
-    <div className='p-y-3 mt-4 flex w-full flex-row justify-between'>
-      <Input
-        placeholder='Search project model...'
-        className='w-[20vw]'
-        onFocus={() => toast.info('Coming soon')}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-      <div className='flex flex-row items-center justify-end gap-2'>
-        <Button
-          onClick={() => toast.info('Coming soon')}
-          className='flex h-8 items-center justify-center gap-2 p-2'
-        >
-          New Project Model
-          <Plus size={20} />
-        </Button>
+    <div className='mt-4 w-full'>
+      {/* Top Section: Search, New Project Button, View Type Buttons */}
+      <div className='flex flex-row justify-between'>
+        <Input
+          placeholder='Search project model...'
+          className='w-[20vw]'
+          onFocus={() => toast.info('Coming soon')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        {activeTab === 'projectModels' && (
+          <div className='flex flex-row items-center justify-end gap-2'>
+            <Button
+              onClick={() => toast.info('Coming soon')}
+              className='flex h-8 items-center justify-center gap-2 p-2'
+            >
+              New Project Model
+              <Plus size={20} />
+            </Button>
+            <ViewTypeButtons
+              handleViewChange={handleViewChange}
+              viewType={viewType}
+            />
+          </div>
+        )}
+      </div>
+      <div className='mt-4'>
         <Tabs
-          orientation='vertical'
-          defaultValue={viewType}
-          onValueChange={handleViewChange}
-          className='space-y-4'
+          orientation='horizontal'
+          defaultValue={activeTab}
+          onValueChange={handleTabChange}
         >
           <div className='w-full overflow-x-auto'>
-            <TabsList>
-              <TabsTrigger value='list'>
-                <List />
-              </TabsTrigger>
-              <TabsTrigger value='grid'>
-                <Grid2X2 />
-              </TabsTrigger>
+            <TabsList className='flex justify-start space-x-4 border-b border-gray-200'>
+              <TabsTrigger value='projectModels'>Project Models</TabsTrigger>
+              <TabsTrigger value='settings'>Settings</TabsTrigger>
             </TabsList>
           </div>
-          {/* <TabsContent value='overview' className='space-y-4'></TabsContent> */}
         </Tabs>
       </div>
     </div>

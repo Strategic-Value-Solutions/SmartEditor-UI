@@ -1,16 +1,20 @@
 // @ts-nocheck
-import { Card } from '@/components/ui/card'
 import StatusCapsule from '@/components/ui/status-capsule'
 import { File, Pencil, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-const ProjectCard = ({ project, handleRedirectToProjectModelScreen, onEdit, onConfirm }: any) => {
+const ProjectCard = ({
+  project,
+  handleRedirectToProjectModelScreen,
+  onEdit,
+  onConfirm,
+}: any) => {
   const navigate = useNavigate()
   const { name } = project
 
   return (
-    <Card className='w-52 capitalize'>
-      <div className='flex flex-col rounded-lg bg-white p-4'>
+    <div className='rounded-lg border bg-card text-card-foreground shadow-sm w-52 capitalize'>
+      <div className='flex flex-col rounded-lg bg-white dark:bg-gray-700 p-4'>
         <div
           className='flex h-36 items-center justify-center overflow-hidden rounded-md bg-blue-200 cursor-pointer'
           onClick={() => handleRedirectToProjectModelScreen(project)}
@@ -41,7 +45,7 @@ const ProjectCard = ({ project, handleRedirectToProjectModelScreen, onEdit, onCo
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   )
 }
 

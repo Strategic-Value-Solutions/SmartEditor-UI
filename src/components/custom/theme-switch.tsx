@@ -1,6 +1,7 @@
 // import { IconMoon, IconSun } from '@tabler/icons-react'
 import { Button } from '../ui/button'
 import { useTheme } from './theme-provider'
+import { Moon, Sun } from 'lucide-react'
 import { useEffect } from 'react'
 
 export default function ThemeSwitch() {
@@ -21,8 +22,8 @@ export default function ThemeSwitch() {
       className='rounded-full'
       onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
     >
-      {theme === 'light' ? 'dark' : 'light'}
-      {/* {theme === 'light' ? <IconMoon size={20} /> : <IconSun size={20} />} */}
+      {/* {theme === 'light' ? 'dark' : 'light'} */}
+      {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
     </Button>
   )
 }

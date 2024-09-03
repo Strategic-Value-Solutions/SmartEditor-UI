@@ -5,8 +5,8 @@ import { Navigate } from 'react-router-dom'
 
 const AuthenticationRoute = ({ children }: any) => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth)
-
-  if (isAuthenticated) {
+  const pathname = window.location.pathname
+  if (isAuthenticated && pathname === '/auth') {
     return <Navigate to='/projects' replace />
   }
 

@@ -1,103 +1,124 @@
+//@ts-nocheck
+import TourProviderComponent from './Tours/TourProvider'
+import { ROLES } from './constants/otherConstants'
+import SuperStructure from './pages/Admin/SuperStructure'
 import Auth from './pages/Auth'
 import Editor from './pages/Editor/index'
 import Error from './pages/Error/Error'
+import Landing from './pages/Landing/src/main'
 import Picks from './pages/Picks'
 import Projects from './pages/Projects'
-import Templates from './pages/Templates/index'
+import AdminRoute from './routes/AdminRoute'
 import AuthenticationRoute from './routes/AuthenticationRoute'
 import PrivateRoute from './routes/PrivateRoute'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 export const paths = {
   root: {
-    name: 'Authentication',
+    name: 'Landing',
     path: '/',
-    isAuth: false,
-    isProtected: false,
-    isAuthentication: true,
-    component: Auth,
+    roles: [], // accessible by anyone
+    component: Landing,
   },
   auth: {
     name: 'Authentication',
     path: '/auth',
-    isAuth: false,
-    isProtected: false,
-    isAuthentication: true,
+    isAuthenticationRoute: true, // Marked as an authentication route
+    roles: [], // accessible by anyone
     component: Auth,
   },
   editor: {
     name: 'Editor',
     path: '/project/:projectId/pick/:pickId',
-    isAuth: true,
-    isProtected: true,
-    isAuthentication: false,
+    roles: [ROLES.USER],
     component: Editor,
   },
   projects: {
     name: 'Projects',
     path: '/projects',
-    isAuth: true,
-    isProtected: true,
-    isAuthentication: false,
+    roles: [ROLES.USER],
     component: Projects,
   },
   projectModel: {
     name: 'Project Model',
     path: '/project/:projectId',
-    isAuth: true,
-    isProtected: true,
-    isAuthentication: false,
+    roles: [ROLES.USER],
     component: Picks,
+  },
+  adminDashboard: {
+    name: 'Admin Dashboard',
+    path: '/admin',
+    roles: [ROLES.ADMIN], // only admin can access
+    component: SuperStructure, // Replace with your actual admin component
   },
 }
 
 const Router = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        {Object.values(paths)
-          .filter((path) => path.isAuthentication)
-          .map((path) => (
-            <Route
-              key={path.path}
-              path={path.path}
-              element={
-                <AuthenticationRoute>
-                  <path.component />
-                </AuthenticationRoute>
-              }
-            />
-          ))}
+      <TourProviderComponent>
+        <Routes>
+          {/* Public Routes */}
+          {Object.values(paths)
+            .filter(
+              (path) => path.roles.length === 0 && !path.isAuthenticationRoute
+            )
+            .map((path) => (
+              <Route
+                key={path.path}
+                path={path.path}
+                element={<path.component />}
+              />
+            ))}
 
-        {Object.values(paths)
-          .filter((path) => path.isProtected)
-          .map((path) => (
-            <Route
-              key={path.path}
-              path={path.path}
-              element={
-                <PrivateRoute>
-                  {path.component ? (
+          {/* Authentication Routes */}
+          {Object.values(paths)
+            .filter((path) => path.isAuthenticationRoute)
+            .map((path) => (
+              <Route
+                key={path.path}
+                path={path.path}
+                element={
+                  <AuthenticationRoute>
                     <path.component />
-                  ) : (
-                    <Navigate to='/' replace />
-                  )}
-                </PrivateRoute>
-              }
-            />
-          ))}
+                  </AuthenticationRoute>
+                }
+              />
+            ))}
 
-        {Object.values(paths)
-          .filter((path) => !path.isAuthentication && !path.isProtected)
-          .map((path) => (
-            <Route
-              key={path.path}
-              path={path.path}
-              element={<path.component />}
-            />
-          ))}
-        <Route path='*' element={<Error />} />
-      </Routes>
+          {/* User Routes */}
+          {Object.values(paths)
+            .filter((path) => path.roles.includes(ROLES.USER))
+            .map((path) => (
+              <Route
+                key={path.path}
+                path={path.path}
+                element={
+                  <PrivateRoute>
+                    <path.component />
+                  </PrivateRoute>
+                }
+              />
+            ))}
+
+          {/* Admin Routes */}
+          {Object.values(paths)
+            .filter((path) => path.roles.includes(ROLES.ADMIN))
+            .map((path) => (
+              <Route
+                key={path.path}
+                path={path.path}
+                element={
+                  <AdminRoute>
+                    <path.component />
+                  </AdminRoute>
+                }
+              />
+            ))}
+
+          <Route path='*' element={<Error />} />
+        </Routes>
+      </TourProviderComponent>
     </BrowserRouter>
   )
 }

@@ -34,9 +34,7 @@ const App = () => {
   return (
     <Provider store={store}>
       <ThemeProvider defaultTheme='light' storageKey='vite-ui-theme'>
-        <TourProviderComponent>
-          <Router />
-        </TourProviderComponent>
+        <Router />
         <Toaster richColors position='bottom-right' duration={2000} />
       </ThemeProvider>
     </Provider>

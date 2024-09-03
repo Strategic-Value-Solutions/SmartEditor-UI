@@ -1,6 +1,6 @@
 import { UserAuthForm } from './use-auth-form'
 import imageConstants from '@/constants/imageConstants'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 export const metadata = {
   title: 'Authentication',
@@ -8,6 +8,12 @@ export const metadata = {
 }
 
 export default function Auth() {
+  const navigate = useNavigate()
+
+  const redirectToLandingPage = () => {
+    navigate('/')
+  }
+
   return (
     <>
       <div className='container relative hidden h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0'>
@@ -20,7 +26,10 @@ export default function Auth() {
             backgroundRepeat: 'no-repeat',
           }}
         >
-          <div className='relative z-20 flex items-center text-lg font-medium'>
+          <div
+            className='relative z-20 flex items-center text-lg font-medium cursor-pointer'
+            onClick={redirectToLandingPage}
+          >
             <svg
               xmlns='http://www.w3.org/2000/svg'
               viewBox='0 0 24 24'
