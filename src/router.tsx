@@ -6,7 +6,8 @@ import Auth from './pages/Auth'
 import Editor from './pages/Editor/index'
 import Error from './pages/Error/Error'
 import Landing from './pages/Landing/src/main'
-import Picks from './pages/Picks'
+import ProjectDetails from './pages/ProjectDetails'
+import Invitations from './pages/ProjectInvitations'
 import Projects from './pages/Projects'
 import AdminRoute from './routes/AdminRoute'
 import AuthenticationRoute from './routes/AuthenticationRoute'
@@ -39,11 +40,17 @@ export const paths = {
     roles: [ROLES.USER],
     component: Projects,
   },
+  invitations: {
+    name: 'Invitations',
+    path: '/invitations',
+    roles: [ROLES.USER],
+    component: Invitations,
+  },
   projectModel: {
     name: 'Project Model',
     path: '/project/:projectId',
     roles: [ROLES.USER],
-    component: Picks,
+    component: ProjectDetails,
   },
   adminDashboard: {
     name: 'Admin Dashboard',

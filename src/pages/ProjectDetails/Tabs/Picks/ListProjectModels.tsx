@@ -1,5 +1,5 @@
-import EditProjectModelModal from '../components/EditProjectModelModal'
-import ProjectModelCard from '../components/ProjectModelCard'
+import EditProjectModelModal from './components/EditProjectModelModal'
+import ProjectModelCard from './components/ProjectModelCard'
 import StatusCapsule from '@/components/ui/status-capsule'
 import {
   Table,
@@ -12,7 +12,7 @@ import {
 import { Ban, Check, Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
-interface ProjectTabsProps {
+interface ListProjectModelsProps {
   showPickModal: boolean
   setShowPickModal: (value: boolean) => void
   selectedPick: any
@@ -26,7 +26,7 @@ interface ProjectTabsProps {
   completePick: (projectModel: any) => void
 }
 
-const ProjectTabs = ({
+const ListProjectModels = ({
   showPickModal,
   setShowPickModal,
   selectedPick,
@@ -38,7 +38,7 @@ const ProjectTabs = ({
   handleRedirectToEditor,
   skipPick,
   completePick,
-}: ProjectTabsProps) => {
+}: ListProjectModelsProps) => {
   return (
     <>
       <EditProjectModelModal
@@ -147,4 +147,4 @@ const ProjectTabs = ({
   )
 }
 
-export default ProjectTabs
+export default ListProjectModels

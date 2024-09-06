@@ -5,6 +5,7 @@ type GridViewProps = {
   inProgressProjects: any[]
   draftProjects: any[]
   completedProjects: any[]
+  sharedProjects: any[]
   handleRedirectToProjectModelScreen: (project: any) => void
   handleDeleteButtonClick: (project: any) => void
   handleEditButtonClick: (project: any) => void
@@ -54,6 +55,7 @@ const GridView = ({
   inProgressProjects,
   draftProjects,
   completedProjects,
+  sharedProjects,
   handleRedirectToProjectModelScreen,
   handleDeleteButtonClick,
   handleEditButtonClick,
@@ -69,6 +71,21 @@ const GridView = ({
       />
 
       <Separator className='my-4' />
+
+      {sharedProjects.length > 0 && (
+        <>
+          <Grid
+            projects={sharedProjects}
+            handleRedirectToProjectModelScreen={
+              handleRedirectToProjectModelScreen
+            }
+            handleDeleteButtonClick={handleDeleteButtonClick}
+            handleEditButtonClick={handleEditButtonClick}
+            title='Shared'
+          />
+          <Separator className='my-4' />
+        </>
+      )}
 
       <Grid
         projects={draftProjects}

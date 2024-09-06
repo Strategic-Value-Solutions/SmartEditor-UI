@@ -13,8 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import ActionButtons from '@/pages/Picks/components/ActionButtons'
-import EditProjectModelModal from '@/pages/Picks/components/EditProjectModelModal'
+import ActionButtons from '@/pages/ProjectDetails/Tabs/Picks/components/ActionButtons'
+import EditProjectModelModal from '@/pages/ProjectDetails/Tabs/Picks/components/EditProjectModelModal'
 import annotationApi from '@/service/annotationApi'
 import projectApi from '@/service/projectApi'
 import { RootState } from '@/store'

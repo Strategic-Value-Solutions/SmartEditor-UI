@@ -1,6 +1,5 @@
 //@ts-nocheck
-import ProjectTabs from './Tabs/ProjectTab'
-import SettingsTab from './Tabs/SettingsTab/SettingsTab'
+import ListProjectModels from './ListProjectModels'
 import Header from './components/Header'
 import { projectModelTour } from '@/Tours/constants'
 import Loader from '@/components/ui/Loader'
@@ -17,14 +16,13 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
-const Picks = () => {
+const ProjectModels = () => {
   const { projectId } = useParams()
   const [loading, setLoading] = useState(true)
   const [showPickModal, setShowPickModal] = useState(false)
   const [selectedPick, setSelectedPick] = useState<any>(null)
   const [viewType, setViewType] = useState('grid')
   const [search, setSearch] = useState('')
-  const [activeTab, setActiveTab] = useState('projectModels')
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { setIsOpen, setSteps } = useTour()
@@ -178,47 +176,32 @@ const Picks = () => {
     }
   }
 
-  const renderTabs = () => {
-    switch (activeTab) {
-      case 'projectModels':
-        return (
-          <ProjectTabs
-            showPickModal={showPickModal}
-            setShowPickModal={setShowPickModal}
-            selectedPick={selectedPick}
-            setSelectedPick={setSelectedPick}
-            projectId={projectId}
-            viewType={viewType}
-            projectModels={projectModels}
-            handleSelectPick={handleSelectPick}
-            handleRedirectToEditor={handleRedirectToEditor}
-            skipPick={skipPick}
-            completePick={completePick}
-          />
-        )
-      case 'settings':
-        return <SettingsTab />
-      default:
-        return <div>Coming soon</div>
-    }
-  }
-
   if (loading) return <Loader />
 
   return (
     <div className='flex flex-col'>
-      <h3 className='ml-3 flex h-8 flex-col pb-1 text-2xl'>Project Models</h3>
+      {/* <h3 className='ml-3 flex h-8 flex-col pb-1 text-2xl'>Project Models</h3> */}
       <Header
         viewType={viewType}
         setViewType={setViewType}
         setSearch={setSearch}
         search={search}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
       />
-      {renderTabs()}
+      <ListProjectModels
+        showPickModal={showPickModal}
+        setShowPickModal={setShowPickModal}
+        selectedPick={selectedPick}
+        setSelectedPick={setSelectedPick}
+        projectId={projectId}
+        viewType={viewType}
+        projectModels={projectModels}
+        handleSelectPick={handleSelectPick}
+        handleRedirectToEditor={handleRedirectToEditor}
+        skipPick={skipPick}
+        completePick={completePick}
+      />
     </div>
   )
 }
 
-export default Picks
+export default ProjectModels

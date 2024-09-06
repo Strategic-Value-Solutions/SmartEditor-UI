@@ -34,12 +34,14 @@ const Projects = () => {
   const [viewType, setViewType] = useState('grid')
   const [search, setSearch] = useState('')
   const [filteredProjects, setFilteredProjects] = useState([])
+  const [sharedProjects, setSharedProjects] = useState([])
   const [openDeleteModal, setOpenDeleteModal] = useState(false)
   const [selectedProject, setSelectedProject] = useState<any>(null)
   const [openProjectModal, setOpenProjectModal] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
   const [loading, setLoading] = useState(false)
   const { setIsOpen, setSteps, afterOpen } = useTour()
+
   const isProjectTourCompleted =
     localStorage.getItem('projectTourCompleted')?.toString() === 'true'
   const handleEditButtonClick = (project: any) => {
@@ -123,6 +125,25 @@ const Projects = () => {
     const fetchProjects = async () => {
       try {
         setLoading(true)
+        const response = await Promise.all([
+          projectApi.getSharedProjects(),
+          projectApi.getRecentProjects(),
+          projectApi.getCompletedProjects(),
+        ])
+        setSharedProjects(response[0])
+      } catch (error) {
+        toast.error(getErrorMessage(error))
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProjects()
+  }, [])
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true)
         const response = await projectApi.getProjects()
         if (!isProjectTourCompleted) {
           setSteps(projectsTour)
@@ -153,27 +174,22 @@ const Projects = () => {
     (project: any) => project.status === 'Completed'
   )
 
-
   const renderMainContent = () => {
-    if (projectsData.length === 0) {
+    if (projectsData.length === 0 && sharedProjects.length === 0) {
       return (
-        <div className='flex flex-col md:flex-row items-center justify-between'>
-          <div className='text-center md:text-left mb-4 md:mb-0 flex flex-col items-center md:w-1/2'>
-            <h3 className='text-2xl font-bold'>No Projects Yet</h3>
-            <p className='text-sm text-gray-600'>
-              You haven’t created any projects. Start by creating your first
-              project.
-            </p>
-          </div>
-
+        <div className='flex flex-col items-center justify-center h-[75vh]'>
           <div className='w-full md:w-1/2'>
             <img
               src={imageConstants.noData}
               alt='No projects illustration'
-              className='mx-auto md:ml-auto lg:max-w-[500px] w-full'
+              className='mx-auto md:ml-auto lg:max-w-[200px] w-full'
             />
-            <p className='text-center text-sm text-gray-600 mt-4'>
-              No Data Available
+          </div>
+          <div className='text-center md:text-left mt-6 md:mb-0 flex flex-col items-center md:w-1/2'>
+            <h3 className='text-2xl'>No Projects there</h3>
+            <p className='text-sm text-gray-600'>
+              You haven’t created any projects. Start by creating your first
+              project.
             </p>
           </div>
         </div>
@@ -184,6 +200,7 @@ const Projects = () => {
           inProgressProjects={inProgressProjects}
           draftProjects={draftProjects}
           completedProjects={completedProjects}
+          sharedProjects={sharedProjects}
           handleRedirectToProjectModelScreen={
             handleRedirectToProjectModelScreen
           }
@@ -195,6 +212,7 @@ const Projects = () => {
           inProgressProjects={inProgressProjects}
           draftProjects={draftProjects}
           completedProjects={completedProjects}
+          sharedProjects={sharedProjects}
           handleRedirectToProjectModelScreen={
             handleRedirectToProjectModelScreen
           }

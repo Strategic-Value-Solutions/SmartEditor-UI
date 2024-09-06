@@ -5,6 +5,21 @@ const getProjects = async (query = '') => {
   return response.data.data
 }
 
+const getCompletedProjects = async (query = '') => {
+  const response = await api.get(`/project/completed?${query}`)
+  return response.data.data
+}
+
+const getRecentProjects = async (query = '') => {
+  const response = await api.get(`/project/recent?${query}`)
+  return response.data.data
+}
+
+const getSharedProjects = async (query = '') => {
+  const response = await api.get(`/project/shared?${query}`)
+  return response.data.data
+}
+
 const getProject = async (query = '') => {
   const response = await api.get(`/project/${query}`)
   return response.data.data
@@ -68,6 +83,9 @@ export default {
   createProject,
   updateProject,
   getProjects,
+  getCompletedProjects,
+  getRecentProjects,
+  getSharedProjects,
   getProject,
   deleteProject,
   getProjectModels,

@@ -13,6 +13,7 @@ type ListViewProps = {
   inProgressProjects: any[]
   draftProjects: any[]
   completedProjects: any[]
+  sharedProjects: any[]
   handleRedirectToProjectModelScreen: (project: any) => void
   handleDeleteButtonClick: (project: any) => void
   handleEditButtonClick: (project: any) => void
@@ -86,6 +87,7 @@ const ListView = ({
   inProgressProjects,
   draftProjects,
   completedProjects,
+  sharedProjects,
   handleRedirectToProjectModelScreen,
   handleDeleteButtonClick,
   handleEditButtonClick,
@@ -99,6 +101,20 @@ const ListView = ({
         handleEditButtonClick={handleEditButtonClick}
         title='In Progress'
       />
+
+      {sharedProjects.length > 0 && (
+        <>
+          <List
+            projects={sharedProjects}
+            handleRedirectToProjectModelScreen={
+              handleRedirectToProjectModelScreen
+            }
+            handleDeleteButtonClick={handleDeleteButtonClick}
+            handleEditButtonClick={handleEditButtonClick}
+            title='Shared'
+          />
+        </>
+      )}
 
       <List
         projects={draftProjects}

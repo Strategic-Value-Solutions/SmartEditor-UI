@@ -1,5 +1,5 @@
 import { ROLES } from '@/constants/otherConstants'
-import { ArrowDownFromLineIcon, Box, LayoutDashboardIcon } from 'lucide-react'
+import { ArrowDownFromLineIcon, Box, LayoutDashboardIcon, MailCheck } from 'lucide-react'
 
 // Ensure you have installed lucide-react and are importing the correct icons
 
@@ -17,10 +17,17 @@ export interface SideLink extends NavLink {
 }
 export const sideLinks: SideLink[] = [
   {
-    title: 'Dashboard',
+    title: 'Projects',
     label: '',
     href: '/projects',
     icon: <LayoutDashboardIcon size={18} />,
+    roles: [ROLES.USER],
+  },
+  {
+    title: 'Invitations',
+    label: '',
+    href: '/invitations',
+    icon: <MailCheck size={18} />,
     roles: [ROLES.USER],
   },
   {

@@ -41,35 +41,19 @@ const Header = ({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        {activeTab === 'projectModels' && (
-          <div className='flex flex-row items-center justify-end gap-2'>
-            <Button
-              onClick={() => toast.info('Coming soon')}
-              className='flex h-8 items-center justify-center gap-2 p-2'
-            >
-              New Project Model
-              <Plus size={20} />
-            </Button>
-            <ViewTypeButtons
-              handleViewChange={handleViewChange}
-              viewType={viewType}
-            />
-          </div>
-        )}
-      </div>
-      <div className='mt-4'>
-        <Tabs
-          orientation='horizontal'
-          defaultValue={activeTab}
-          onValueChange={handleTabChange}
-        >
-          <div className='w-full overflow-x-auto'>
-            <TabsList className='flex justify-start space-x-4 border-b border-gray-200'>
-              <TabsTrigger value='projectModels'>Project Models</TabsTrigger>
-              <TabsTrigger value='settings'>Settings</TabsTrigger>
-            </TabsList>
-          </div>
-        </Tabs>
+        <div className='flex flex-row items-center justify-end gap-2'>
+          <Button
+            onClick={() => toast.info('Coming soon')}
+            className='flex h-8 items-center justify-center gap-2 p-2'
+          >
+            New Project Model
+            <Plus size={20} />
+          </Button>
+          <ViewTypeButtons
+            handleViewChange={handleViewChange}
+            viewType={viewType}
+          />
+        </div>
       </div>
     </div>
   )

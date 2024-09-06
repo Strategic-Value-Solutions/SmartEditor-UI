@@ -10,4 +10,9 @@ const update = async (data: any) => {
   return response.data.data
 }
 
-export default { get, update }
+const getInvitations = async () => {
+  const response = await api.get(`/user/project/invitations`)
+  return response.data.data
+}
+
+export default { get, update, getInvitations }
