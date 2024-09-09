@@ -1,7 +1,10 @@
 // @ts-nocheck
 import Loader from '../Loader'
 import { editorSteps } from '@/Tours/constants'
+import { RootState } from '@/store'
+import { hasPickWriteAccess } from '@/utils'
 import { useTour } from '@reactour/tour'
+import { current } from '@reduxjs/toolkit'
 import {
   ChevronLeft,
   ChevronRight,
@@ -14,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { Document, Page } from 'react-pdf'
+import { useSelector } from 'react-redux'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
 function PdfCanvas({
@@ -27,6 +31,9 @@ function PdfCanvas({
   pick,
   handleSaveAnnotations,
 }: any) {
+  const currentProject = useSelector(
+    (state: RootState) => state.project.currentProject
+  )
   const [pdfPageDimensions, setPdfPageDimensions] = useState({
     width: 0,
     height: 0,
@@ -198,7 +205,10 @@ function PdfCanvas({
                     </button>
                     {pick?.status !== 'Completed' &&
                       pick?.status !== 'Skipped' &&
-                      pick?.isActive && (
+                      hasPickWriteAccess(
+                        currentProject?.permission,
+                        pick?.ProjectModelAccess?.[0]?.permission
+                      ) && (
                         <button
                           id='saveAnnotations'
                           className='rounded-md bg-gray-800 px-4 py-2 text-white'

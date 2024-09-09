@@ -8,7 +8,7 @@ interface ProjectModel {
 
 const loadState = () => {
   try {
-    const serializedState = localStorage.getItem('projectsData')
+    const serializedState = localStorage.getItem('projectModels')
     if (serializedState === null) {
       return {
         projectModels: [], // Ensure this is `projectModels`
@@ -28,7 +28,7 @@ const loadState = () => {
 const saveState = (state: any) => {
   try {
     const serializedState = JSON.stringify(state)
-    localStorage.setItem('projectsData', serializedState)
+    localStorage.setItem('projectModels', serializedState)
   } catch (err) {
     console.error('Could not save state to localStorage', err)
   }

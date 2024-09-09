@@ -73,10 +73,7 @@ const ProjectModels = () => {
   const skipPick = async (pick: any) => {
     try {
       if (!pick) return toast.error('Please select a pick')
-      if (!pick.isActive)
-        return toast.error(
-          'Project Model is not active but you can upload the file'
-        )
+
       setLoading(true)
 
       await projectApi.skipPick(pick.id, pick.projectId)
@@ -109,12 +106,6 @@ const ProjectModels = () => {
         }
       )
 
-      const activePickExists = updatedModels.some((model) => model.isActive)
-
-      if (!activePickExists) {
-        toast.success('Project has been completed')
-      }
-
       // Update the state with the new project models
       handleSetProjectModels(updatedModels)
     } catch (error) {
@@ -127,7 +118,7 @@ const ProjectModels = () => {
   const completePick = async (pick: any) => {
     try {
       if (!pick) return toast.error('Please select a pick')
-      if (!pick.isActive) return toast.error('Project Model is not active')
+
       if (!pick.fileUrl) return toast.error('Upload a file first')
       setLoading(true)
 
@@ -160,12 +151,6 @@ const ProjectModels = () => {
           return projectModel // Return other models unchanged
         }
       )
-
-      const activePickExists = updatedModels.some((model) => model.isActive)
-
-      if (!activePickExists) {
-        toast.success('Project has been completed')
-      }
 
       // Update the state with the new project models
       handleSetProjectModels(updatedModels)

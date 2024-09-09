@@ -12,18 +12,9 @@ const ProjectModelCard = ({
   return (
     <div
       id='project-model-card'
-      className={`relative border rounded-md p-2 w-56 ${
-        projectModel.isActive
-          ? 'border-blue-700 bg-blue-50 shadow-lg dark:border-white dark:bg-gray-800'
-          : 'border-gray-300 bg-white dark:bg-gray-500 dark:border-gray-700'
-      }`}
+      className={`relative border rounded-md p-2 w-56 ${'border-gray-300 bg-white dark:bg-gray-500 dark:border-gray-700'}`}
       style={{ marginBottom: '0.5rem' }} // Minimal bottom margin
     >
-      {projectModel.isActive && (
-        <div className='absolute top-0 right-0 rounded-tr-md rounded-bl-md bg-blue-700 text-white text-xs px-2 py-1 shadow-md dark:bg-gray-700'>
-          Active
-        </div>
-      )}
       <div className={`flex justify-center items-center h-32 bg-gray-100`}>
         {projectModel.fileUrl ? (
           <div className='mb-1 text-gray-500 flex justify-center w-full items-center cursor-pointer'>

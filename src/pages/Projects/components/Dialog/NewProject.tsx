@@ -52,6 +52,7 @@ const NewProject = ({
   selectedProject,
   onClose,
   open,
+  setFilteredProjects,
 }: any) => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -101,10 +102,12 @@ const NewProject = ({
           selectedProject.id,
           projectData
         )
+
         dispatch(setCurrentProject(response))
         dispatch(updateProject(response))
       } else {
         const response = await projectApi.createProject(projectData)
+        console.log(response, 'NEW PROJECT RESPONSE 2')
         dispatch(setCurrentProject(response))
         dispatch(addProject(response))
       }

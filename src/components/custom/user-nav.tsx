@@ -23,7 +23,19 @@ export function UserNav() {
   const { isCollapsed } = useSelector((state: RootState) => state.sidebar)
 
   const logout = () => {
-    localStorage.clear()
+    const keysToKeep = [
+      'editorTourCompleted',
+      'projectModelTourCompleted',
+      'projectTourCompleted',
+    ]
+
+    // Iterate over localStorage keys and remove all except the keysToKeep
+    Object.keys(localStorage).forEach((key) => {
+      if (!keysToKeep.includes(key)) {
+        localStorage.removeItem(key)
+      }
+    })
+
     dispatch(resetAuth())
     navigate(paths.auth.path)
   }
@@ -72,7 +84,6 @@ export function UserNav() {
                 {user?.email}
               </p>
             </div>
-            
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>

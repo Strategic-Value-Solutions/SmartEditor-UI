@@ -1,7 +1,10 @@
 import { Button } from '@/components/ui/button'
 import ConfirmationDialog from '@/components/ui/confirmation-dialog'
-import { Check, Ban, Pencil, Trash2 } from 'lucide-react'
+import { RootState } from '@/store'
+import { hasPickWriteAccess } from '@/utils'
+import { Ban, Check, Pencil } from 'lucide-react'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
 interface ActionButtonsProps {
@@ -23,20 +26,25 @@ const ActionButtons = ({
 }: ActionButtonsProps) => {
   const [showSkipModal, setShowSkipModal] = useState(false)
   const [showCompleteModal, setShowCompleteModal] = useState(false)
+  const currentProject = useSelector(
+    (state: RootState) => state.project.currentProject
+  )
 
   const handleShowSkipModal = () => {
-    if (!projectModel.isActive)
-      return toast.error('Project Model is not active')
     setShowSkipModal(true)
   }
 
   const handleShowCompleteModal = () => {
-    if (!projectModel.isActive)
-      return toast.error('Project Model is not active')
     if (!projectModel.fileUrl) return toast.error('No file available')
     setShowCompleteModal(true)
   }
-
+  if (
+    !hasPickWriteAccess(
+      currentProject?.permission,
+      projectModel?.ProjectModelAccess?.[0]?.permission
+    )
+  )
+    return null
   return (
     <div id='project-model-toolbar'>
       <ConfirmationDialog
@@ -61,20 +69,15 @@ const ActionButtons = ({
         </Button>
       </ConfirmationDialog>
       <button
-        className={`h-6 rounded p-1 text-green-400 ${
-          projectModel.isActive ? '' : 'opacity-50 cursor-not-allowed'
+        className={`h-6 rounded p-1 text-green-400 
         }`}
         onClick={handleShowCompleteModal}
-        disabled={!projectModel.isActive}
       >
         <Check size={20} id='complete-button' />
       </button>
       <button
-        className={`h-6 rounded p-1 text-red-400 ${
-          projectModel.isActive ? '' : 'opacity-50 cursor-not-allowed'
-        }`}
+        className={`h-6 rounded p-1 text-red-400 `}
         onClick={handleShowSkipModal}
-        disabled={!projectModel.isActive}
       >
         <Ban size={15} id='skip-button' />
       </button>

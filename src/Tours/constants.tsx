@@ -143,3 +143,9 @@ export const customStyles = {
     padding: '4px',
   }),
 }
+
+export const PROJECT_ACCESS_ROLES = {
+  VIEWER: 'VIEWER',
+  EDITOR: 'EDITOR',
+  OWNER: 'OWNER',
+}

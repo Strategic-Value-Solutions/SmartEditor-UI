@@ -18,14 +18,13 @@ function ExtendedToolbar({
     (state: RootState) => state.projectModels
   )
   const editor = useEditor() as any
-  if (!pick?.isActive) return null
 
   return (
     <div
       className={`grid grid-cols-2 items-center justify-center gap-3 fixed z-50 bg-gradient-to-br border bg-blue-950 border-gray-400 h-[80vh] rounded-lg invert-lg w-24 p-1 transition-all duration-300 ${
         isCollapsed ? 'left-24 top-24' : 'left-64 top-24'
       }`}
-      id="toolbar"
+      id='toolbar'
     >
       {tools.map((button: any, index: any) => {
         if (pick?.pickModel?.name === button.pickName) {
@@ -142,7 +141,7 @@ function ExtendedToolbar({
           )
         }
       })}
-      
+
       <button
         type='button'
         onClick={() => toggleExtendedToolbar()}

@@ -5,6 +5,7 @@ import Components from './Components'
 import ExtendedToolbar from './ExtendedToolbar'
 import SelectPick from './SelectPick'
 import PdfCanvas from './canvas/PdfCanvas'
+import { PROJECT_ACCESS_ROLES } from '@/Tours/constants'
 import Loader from '@/components/ui/Loader'
 import {
   Select,
@@ -22,7 +23,11 @@ import {
   setCurrentProjectModelById,
   setProjectModels,
 } from '@/store/slices/projectModelSlice'
-import { getErrorMessage } from '@/utils'
+import {
+  getErrorMessage,
+  hasPickWriteAccess,
+  hasProjectWriteAccess,
+} from '@/utils'
 import * as fabric from 'fabric'
 import { MoveLeft } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -36,6 +41,10 @@ export default function Editor() {
   const currentProject = useSelector(
     (state: RootState) => state.project.currentProject
   )
+  const currentProjectModel = useSelector(
+    (state: RootState) => state.projectModels.currentProjectModel
+  )
+
   const { pickId, projectId } = useParams()
   const location = useLocation()
 
@@ -44,7 +53,7 @@ export default function Editor() {
   const { currentProjectModel: pick, projectModels } = useSelector(
     (state: RootState) => state.projectModels
   )
-
+ 
   const [selectedFile, setSelectedFile] = useState('')
   const [isDocLoading, setIsDocLoading] = useState(false)
   const [showExtendedToolbar, setShowExtendedToolbar] = useState(true)
@@ -55,6 +64,9 @@ export default function Editor() {
     width: 1000,
     height: 820,
   })
+  useEffect(() => {
+    setSelectedFile(pick?.fileUrl)
+  }, [pick])
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
@@ -190,7 +202,6 @@ export default function Editor() {
   const skipPick = async (pick: any) => {
     try {
       if (!pick) return toast.error('Please select a pick')
-      if (!pick.isActive) return toast.error('Project Model is not active')
       setLoading(true)
 
       await projectApi.skipPick(pick.id, pick.projectId)
@@ -223,12 +234,6 @@ export default function Editor() {
         }
       )
 
-      const activePickExists = updatedModels.some((model) => model.isActive)
-
-      if (!activePickExists) {
-        toast.success('Project has been completed')
-      }
-
       // Update the state with the new project models
       handleSetProjectModels(updatedModels)
       await fetchAnnotations()
@@ -242,7 +247,6 @@ export default function Editor() {
   const completePick = async (pick: any) => {
     try {
       if (!pick) return toast.error('Please select a pick')
-      if (!pick.isActive) return toast.error('Project Model is not active')
       if (!pick.fileUrl) return toast.error('Upload a file first')
       setLoading(true)
 
@@ -276,12 +280,6 @@ export default function Editor() {
         }
       )
 
-      const activePickExists = updatedModels.some((model) => model.isActive)
-
-      if (!activePickExists) {
-        toast.success('Project has been completed')
-      }
-
       // Update the state with the new project models
       handleSetProjectModels(updatedModels)
       await fetchAnnotations()
@@ -297,7 +295,7 @@ export default function Editor() {
   }
 
   if (loading) return <Loader />
-  if (!pick?.isActive) toast.error('You can only edit active project models')
+
   return (
     <div className='flex flex-col w-full h-full justify-center items-center'>
       <EditProjectModelModal
@@ -307,19 +305,14 @@ export default function Editor() {
         setSelectedPick={setSelectedPick}
         projectId={projectId}
       />
-      <div className='absolute top-1 right-1/2 flex gap-2 p-1.5 items-center'>
+      {/* <div className='absolute top-1 right-1/2 flex gap-2 p-1.5 items-center'>
         <div
           className='absolute top-0 left-1/2 transform -translate-x-1/2 flex items-center'
           id='project-model-select'
         >
           <Select onValueChange={handleNavigate} value={pick?.id}>
-            <SelectTrigger
-              className={`w-[200px] ${pick?.isActive ? 'border-blue-400' : ''}`}
-            >
-              <SelectValue
-                placeholder='Select a page'
-                className={`${pick?.isActive ? 'text-blue-400' : ''}`}
-              />
+            <SelectTrigger>
+              <SelectValue placeholder='Select a page' />
             </SelectTrigger>
             <SelectContent>
               {projectModels.map((model, index) => (
@@ -327,11 +320,7 @@ export default function Editor() {
                   key={model.id}
                   value={model.id}
                   disabled={model.id === pick?.id}
-                  className={`${
-                    model.isActive
-                      ? 'border-blue-400 bg-blue-50'
-                      : 'border-transparent'
-                  } border`}
+                  className={'border-transparent border'}
                 >
                   <div className='flex items-center justify-between w-full gap-2'>
                     <span>{model.pickModel?.name}</span>
@@ -342,7 +331,7 @@ export default function Editor() {
             </SelectContent>
           </Select>
         </div>
-      </div>
+      </div> */}
 
       <button
         id='back'
@@ -384,12 +373,16 @@ export default function Editor() {
             />
           </div>
 
-          {showExtendedToolbar && (
-            <ExtendedToolbar
-              toggleExtendedToolbar={toggleExtendedToolbar}
-              pick={pick}
-            />
-          )}
+          {showExtendedToolbar &&
+            hasPickWriteAccess(
+              currentProject?.permission,
+              currentProjectModel?.ProjectModelAccess?.[0]?.permission
+            ) && (
+              <ExtendedToolbar
+                toggleExtendedToolbar={toggleExtendedToolbar}
+                pick={pick}
+              />
+            )}
         </div>
       )}
     </div>

@@ -53,9 +53,7 @@ function EditProjectModelModal({
       )
       setSelectedPick(null)
       const updatedModels = projectModels.map((projectModel: any) =>
-        projectModel.id === selectedPick.id
-          ? { ...response, isActive: selectedPick.isActive }
-          : projectModel
+        projectModel.id === selectedPick.id ? response : projectModel
       )
       dispatch(setProjectModels(updatedModels))
       setShowPickModal(false)

@@ -76,7 +76,9 @@ const ListProjectModels = ({
               {projectModels.map((projectModel: any) => (
                 <TableRow
                   key={projectModel.id}
-                  className={`${projectModel.isActive ? 'bg-blue-100 dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-800'}`}
+                  className={`
+                     ${'bg-gray-100 dark:bg-gray-800'}
+                    `}
                 >
                   <TableCell
                     onClick={() => handleRedirectToEditor(projectModel)}
@@ -92,41 +94,20 @@ const ListProjectModels = ({
                   </TableCell>
                   <TableCell className='flex items-center justify-end gap-2'>
                     <button
-                      className={`h-6 rounded p-1 text-green-400 ${
-                        projectModel.isActive
-                          ? ''
-                          : 'opacity-50 cursor-not-allowed'
-                      }`}
-                      onClick={() =>
-                        projectModel.isActive && completePick(projectModel)
-                      }
-                      disabled={!projectModel.isActive}
+                      className={`h-6 rounded p-1 text-green-400 `}
+                      onClick={() => completePick(projectModel)}
                     >
                       <Check size={15} />
                     </button>
                     <button
-                      className={`h-6 rounded p-1 text-red-400 ${
-                        projectModel.isActive
-                          ? ''
-                          : 'opacity-50 cursor-not-allowed'
-                      }`}
-                      onClick={() =>
-                        projectModel.isActive && skipPick(projectModel)
-                      }
-                      disabled={!projectModel.isActive}
+                      className={`h-6 rounded p-1 text-red-400 `}
+                      onClick={() => skipPick(projectModel)}
                     >
                       <Ban size={15} />
                     </button>
                     <button
-                      className={`h-6 rounded p-1 ${
-                        projectModel.isActive
-                          ? ''
-                          : 'opacity-50 cursor-not-allowed'
-                      }`}
-                      onClick={() =>
-                        projectModel.isActive && handleSelectPick(projectModel)
-                      }
-                      disabled={!projectModel.isActive}
+                      className={`h-6 rounded p-1 `}
+                      onClick={() => handleSelectPick(projectModel)}
                     >
                       <Pencil size={15} />
                     </button>

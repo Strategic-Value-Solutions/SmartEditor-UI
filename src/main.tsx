@@ -4,7 +4,7 @@ import '@/global.css'
 import ReactDOM from 'react-dom/client'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <ThemeProvider defaultTheme='dark'>
+  <ThemeProvider defaultTheme='light'>
     <App />
   </ThemeProvider>
 )

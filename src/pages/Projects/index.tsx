@@ -249,6 +249,7 @@ const Projects = () => {
         open={openProjectModal}
         onClose={handleCloseProjectModal}
         isEdit={isEdit}
+        setFilteredProjects={setFilteredProjects}
         selectedProject={selectedProject}
         setOpen={setOpenProjectModal}
       />

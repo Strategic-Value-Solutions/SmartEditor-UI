@@ -81,11 +81,9 @@ function SelectPick({
         currentProjectModel.id,
         selectedFile
       )
-      setSelectedFile(null)
+      setSelectedFile(response?.fileUrl)
       const updatedModels = projectModels.map((projectModel: any) =>
-        projectModel.id === currentProjectModel.id
-          ? { ...response, isActive: currentProjectModel.isActive }
-          : projectModel
+        projectModel.id === currentProjectModel.id ? response : projectModel
       )
 
       dispatch(setProjectModels(updatedModels))

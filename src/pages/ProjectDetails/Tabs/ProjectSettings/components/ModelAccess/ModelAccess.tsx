@@ -48,7 +48,8 @@ const ModelAccess = () => {
   }
 
   const getCollaboratorProjectModelAccess = async (collaborator) => {
-    const query = collaborator?.user?.id
+    // const query = collaborator?.user?.id
+    const query = `?userId=${collaborator?.user?.id}`
     try {
       const response = await projectAccessApi.getProjectModelAccess(
         projectId,

@@ -1,10 +1,12 @@
 // @ts-nocheck
 import imageConstants from '@/constants/imageConstants'
+import { RootState } from '@/store'
 import * as fabric from 'fabric'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import { degrees, PDFDocument, rgb } from 'pdf-lib'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -19,7 +21,6 @@ export const CanvasProvider = ({ children }) => {
   const initialPage = parseInt(localStorage.getItem('currentPage'), 10) || 1
   const [currPage, setCurrPage] = useState(initialPage)
   const [numPages, setNumPages] = useState(null)
-  const [selectedFile, setSelectedFile] = useState(null)
   const [isExporting, setExporting] = useState(false)
   const [hideCanvas, setHiddenCanvas] = useState(false)
   const [canvas, setCanvas] = useState<fabric.Canvas>(null)
@@ -33,7 +34,10 @@ export const CanvasProvider = ({ children }) => {
   const [annotations, setAnnotations] = useState({})
   const [isSelectFilePDF, setIsSelectFilePDF] = useState(false)
   const [allowPinchZoom, setAllowPinchZoom] = useState(false)
-
+  const [selectedFile, setSelectedFile] = useState(null)
+  const currentProjectModel = useSelector(
+    (state: RootState) => state.projectModels.currentProjectModel
+  )
   useEffect(() => {
     activeIconRef.current = activeIcon
     updateCursorStyle()
@@ -501,6 +505,7 @@ export const CanvasProvider = ({ children }) => {
   }
 
   const downloadPDFWithAnnotations = async () => {
+    let selectedFile = currentProjectModel?.fileUrl
     if (
       !canvas ||
       !pdfDimensions.width ||
@@ -642,6 +647,7 @@ export const CanvasProvider = ({ children }) => {
         link.click()
       }
     } catch (error) {
+      console.log(error)
       toast.error('Failed to download the PDF.')
     }
   }
