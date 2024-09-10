@@ -53,7 +53,6 @@ export default function Editor() {
   const { currentProjectModel: pick, projectModels } = useSelector(
     (state: RootState) => state.projectModels
   )
- 
   const [selectedFile, setSelectedFile] = useState('')
   const [isDocLoading, setIsDocLoading] = useState(false)
   const [showExtendedToolbar, setShowExtendedToolbar] = useState(true)
@@ -340,15 +339,20 @@ export default function Editor() {
       >
         <MoveLeft />
       </button>
-      <div className='absolute top-36 right-10 flex gap-2 p-1.5 items-center border border-gray-300 rounded-md bg-gray-100 shadow-lg'>
-        <ActionButtons
-          projectModel={pick}
-          onSelectPick={handleSelectPick}
-          onCompletePick={completePick}
-          onSkipPick={skipPick}
-          handleSaveAnnotations={handleSaveAnnotations}
-        />
-      </div>
+      {hasPickWriteAccess(
+        currentProject?.permission,
+        currentProjectModel?.ProjectModelAccess?.[0]?.permission
+      ) && (
+        <div className='absolute top-36 right-10 flex gap-2 p-1.5 items-center border border-gray-300 rounded-md bg-gray-100 shadow-lg'>
+          <ActionButtons
+            projectModel={pick}
+            onSelectPick={handleSelectPick}
+            onCompletePick={completePick}
+            onSkipPick={skipPick}
+            handleSaveAnnotations={handleSaveAnnotations}
+          />
+        </div>
+      )}
       {!pick?.fileUrl ? (
         <SelectPick
           projectId={projectId}

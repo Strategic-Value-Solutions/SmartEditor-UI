@@ -1,6 +1,10 @@
 import ActionButtons from './ActionButtons'
 import StatusCapsule from '@/components/ui/status-capsule'
+import { RootState } from '@/store'
+import { hasPickWriteAccess, hasProjectWriteAccess } from '@/utils'
 import { Document, Page } from 'react-pdf'
+import { useSelector } from 'react-redux'
+import { toast } from 'sonner'
 
 const ProjectModelCard = ({
   projectModel,
@@ -9,6 +13,10 @@ const ProjectModelCard = ({
   skipPick,
   completePick,
 }: any) => {
+  const currentProject = useSelector(
+    (state: RootState) => state.project.currentProject
+  )
+
   return (
     <div
       id='project-model-card'
@@ -35,7 +43,16 @@ const ProjectModelCard = ({
           </div>
         ) : (
           <div
-            onClick={() => handleRedirectToEditor(projectModel)}
+            onClick={() => {
+              if (
+                !hasPickWriteAccess(
+                  currentProject?.permission,
+                  projectModel?.ProjectModelAccess?.[0]?.permission
+                )
+              ) {
+                toast.error('You do not have write access to this project.')
+              } else handleRedirectToEditor(projectModel)
+            }}
             className='text-center w-full flex justify-center items-center flex-col cursor-pointer'
           >
             <div className='mb-1 text-gray-500 flex justify-center w-full items-center text-sm'>

@@ -67,7 +67,6 @@ export const hasPickWriteAccess = (projectRole: string, pickRole: string) => {
 //@ts-ignore
 export const hasProjectWriteAccess = (projectRole: string) => {
   if (!projectRole) return true
-  console.log(projectRole)
   if (
     projectRole === PROJECT_ACCESS_ROLES.OWNER ||
     projectRole === PROJECT_ACCESS_ROLES.EDITOR

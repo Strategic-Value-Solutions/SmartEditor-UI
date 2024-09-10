@@ -107,7 +107,6 @@ const NewProject = ({
         dispatch(updateProject(response))
       } else {
         const response = await projectApi.createProject(projectData)
-        console.log(response, 'NEW PROJECT RESPONSE 2')
         dispatch(setCurrentProject(response))
         dispatch(addProject(response))
       }

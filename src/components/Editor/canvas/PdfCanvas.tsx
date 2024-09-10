@@ -46,24 +46,40 @@ function PdfCanvas({
     originalHeight,
     originalWidth,
   }: any) {
-    // editor.setAnnotations([])
     editor.setNumPages(numPages)
     editor.setCurrPage(1)
 
-    // Calculate dimensions
-    const maxWidth = window.innerWidth * 0.4
-    const scaleFactor = maxWidth / originalWidth
-    const width = originalWidth * scaleFactor
-    const height = originalHeight * scaleFactor
+    // Get available screen width and height
+    const maxWidth = window.innerWidth * 0.9 // 90% of window width for a more flexible layout
+    const maxHeight = window.innerHeight * 0.8 // Adjust this value as necessary to leave space for the buttons
+
+    // Calculate aspect ratio
+    const aspectRatio = originalWidth / originalHeight
+
+    // Calculate width and height based on aspect ratio and available space
+    let width = maxWidth
+    let height = width / aspectRatio
+
+    // If calculated height exceeds maxHeight, adjust width accordingly
+    if (height > maxHeight) {
+      height = maxHeight
+      width = height * aspectRatio
+    }
+
+    // Set dimensions
     setPdfPageDimensions({ width, height })
+    setPageDimensions({ width, height })
+    editor.addPdfDimensions({ width, height })
+
+    // Initialize canvas with the calculated dimensions
+    editor.setCanvas(initCanvas(width, height))
+
     if (!isEditorTourCompleted) {
       setSteps(editorSteps)
       setIsOpen(true)
       localStorage.setItem('editorTourCompleted', 'true')
     }
-    setPageDimensions({ width, height })
-    editor.addPdfDimensions({ width, height })
-    editor.setCanvas(initCanvas(width, height))
+
     setTimeout(() => setIsDocLoading(false), 1000)
   }
 
@@ -155,13 +171,13 @@ function PdfCanvas({
                     {editor.currPage > 1 && (
                       <button
                         onClick={() => changePage(-1)}
-                        className='rounded-md bg-gray-800 px-4 py-2 text-white'
+                        className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
                       >
                         <ChevronLeft />
                       </button>
                     )}
                     <div
-                      className='rounded-md bg-gray-800 px-4 py-2 text-white'
+                      className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
                       id='total-pages'
                     >
                       Page {editor.currPage} of {editor.numPages}
@@ -169,21 +185,21 @@ function PdfCanvas({
                     {editor.currPage < editor.numPages && (
                       <button
                         onClick={() => changePage(1)}
-                        className='rounded-md bg-gray-800 px-4 py-2 text-white'
+                        className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
                       >
                         <ChevronRight />
                       </button>
                     )}
                     <button
                       onClick={() => zoomIn()} // Trigger zoom in
-                      className='rounded-md bg-gray-800 px-4 py-2 text-white'
+                      className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
                       id='zoom-in'
                     >
                       <ZoomIn />
                     </button>
                     <button
                       onClick={() => zoomOut()} // Trigger zoom out
-                      className='rounded-md bg-gray-800 px-4 py-2 text-white'
+                      className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
                       id='zoom-out'
                     >
                       <ZoomOut />
@@ -195,7 +211,7 @@ function PdfCanvas({
                       onClick={() =>
                         editor.setAllowPinchZoom(!editor.allowPinchZoom)
                       }
-                      className='rounded-md bg-gray-800 px-4 py-2 text-white'
+                      className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
                     >
                       {editor.allowPinchZoom ? (
                         <Pause className='w-6 h-6 text-white' />
@@ -211,7 +227,7 @@ function PdfCanvas({
                       ) && (
                         <button
                           id='saveAnnotations'
-                          className='rounded-md bg-gray-800 px-4 py-2 text-white'
+                          className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
                           onClick={handleSaveAnnotations}
                         >
                           <Save />
@@ -220,7 +236,7 @@ function PdfCanvas({
                     <button
                       onClick={() => resetTransform()} // Reset zoom
                       id='rotate-ccw'
-                      className='rounded-md bg-gray-800 px-4 py-2 text-white'
+                      className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
                     >
                       <RotateCcw />
                     </button>

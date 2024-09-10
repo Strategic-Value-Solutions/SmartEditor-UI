@@ -47,7 +47,7 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
 
   // Filter links based on the user role
   const filteredLinks = sideLinks.filter((link) => {
-    if (link.roles && link.roles.includes(user?.role)) {
+    if (link.roles && link.roles.includes(user?.role as string)) {
       return true
     }
     return false
@@ -96,7 +96,7 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
                 <span className='text-xs'>Architecture</span>
               </div>
             </div>
-            <ThemeSwitch />
+          
           </div>
 
           {/* Toggle Button in mobile */}

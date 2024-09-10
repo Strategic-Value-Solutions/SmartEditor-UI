@@ -1,6 +1,7 @@
 // @ts-nocheck
 import imageConstants from '@/constants/imageConstants'
 import { RootState } from '@/store'
+import { hasPickWriteAccess } from '@/utils'
 import * as fabric from 'fabric'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
@@ -26,7 +27,7 @@ export const CanvasProvider = ({ children }) => {
   const [canvas, setCanvas] = useState<fabric.Canvas>(null)
   const [borderColor] = useState('#f4a261')
   const [color] = useState('#000000')
-  const [mode, setMode] = useState('select')
+  const [mode, setMode] = useState('')
   const [activeIcon, setActiveIcon] = useState(null)
   const activeIconRef = useRef(activeIcon)
   const [exportPages, setExportPages] = useState([])
@@ -35,9 +36,65 @@ export const CanvasProvider = ({ children }) => {
   const [isSelectFilePDF, setIsSelectFilePDF] = useState(false)
   const [allowPinchZoom, setAllowPinchZoom] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
+  const currentProject = useSelector(
+    (state: RootState) => state.project.currentProject
+  )
   const currentProjectModel = useSelector(
     (state: RootState) => state.projectModels.currentProjectModel
   )
+  const hasWriteAccess = hasPickWriteAccess(
+    currentProject?.permission,
+    currentProjectModel?.ProjectModelAccess?.[0]?.permission
+  )
+
+  const disableCanvasInteractions = () => {
+    if (canvas && !hasWriteAccess) {
+      // Disable group selection
+      canvas.selection = false
+
+      // Disable selection and movement for all objects on the canvas
+      canvas.forEachObject((obj) => {
+        obj.selectable = false // Disable object selection
+        obj.evented = false // Disable object interaction (e.g., dragging)
+        obj.hasControls = false // Disable resizing/rotating controls
+      })
+
+      // Change the cursor to indicate a non-interactive state
+      canvas.defaultCursor = 'not-allowed'
+      canvas.hoverCursor = 'not-allowed'
+
+      canvas.renderAll()
+    }
+  }
+
+  const enableCanvasInteractions = () => {
+    if (canvas && hasWriteAccess) {
+      // Enable group selection
+      canvas.selection = true
+
+      // Enable selection and movement for all objects on the canvas
+      canvas.forEachObject((obj) => {
+        obj.selectable = true // Enable object selection
+        obj.evented = true // Enable object interaction (e.g., dragging)
+        obj.hasControls = true // Enable resizing/rotating controls
+      })
+
+      // Restore the default cursor
+      canvas.defaultCursor = 'default'
+      canvas.hoverCursor = 'pointer'
+
+      canvas.renderAll()
+    }
+  }
+
+  useEffect(() => {
+    if (hasWriteAccess) {
+      enableCanvasInteractions()
+    } else {
+      disableCanvasInteractions()
+    }
+  }, [canvas, hasWriteAccess])
+
   useEffect(() => {
     activeIconRef.current = activeIcon
     updateCursorStyle()
@@ -88,6 +145,10 @@ export const CanvasProvider = ({ children }) => {
   }
 
   const handleCanvasClick = async (event) => {
+    if (!hasWriteAccess) {
+      toast.error('You do not have write access to edit this canvas.')
+      return
+    }
     if (allowPinchZoom) {
       return
     }
@@ -328,36 +389,53 @@ export const CanvasProvider = ({ children }) => {
     }
   }, [currPage, canvas])
 
-  const downloadPageAsImage = () => {
-    if (!canvas || !pdfDimensions.width || !pdfDimensions.height) {
-      toast.error('Canvas or PDF dimensions are not available.')
-      return
-    }
-
-    setExporting(true)
-
-    const doc = document.querySelector('#singlePageExport')
-
-    html2canvas(doc, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-    })
-      .then((canvasEl) => {
-        const imgData = canvasEl.toDataURL('image/png')
-
-        const link = document.createElement('a')
-        link.href = imgData
-        link.download = `annotated_page_${currPage}.png`
-        link.click()
-
-        setExporting(false)
-      })
-      .catch((error) => {
-        toast.error('Failed to download the image.')
-        setExporting(false)
-      })
+const downloadPageAsImage = () => {
+  if (!canvas || !pdfDimensions.width || !pdfDimensions.height) {
+    toast.error('Canvas or PDF dimensions are not available.');
+    return;
   }
+
+  setExporting(true);
+
+  // Hide the buttons temporarily
+  const buttons = document.querySelectorAll('.export-exclude');
+  buttons.forEach(button => {
+    button.style.visibility = 'hidden';  // Hide buttons
+  });
+
+  const doc = document.querySelector('#singlePageExport');
+
+  html2canvas(doc, {
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+  })
+    .then((canvasEl) => {
+      const imgData = canvasEl.toDataURL('image/png');
+
+      const link = document.createElement('a');
+      link.href = imgData;
+      link.download = `annotated_page_${currPage}.png`;
+      link.click();
+
+      setExporting(false);
+
+      // Show the buttons again
+      buttons.forEach(button => {
+        button.style.visibility = 'visible';  // Show buttons
+      });
+    })
+    .catch((error) => {
+      toast.error('Failed to download the image.');
+      setExporting(false);
+
+      // Show the buttons again if an error occurs
+      buttons.forEach(button => {
+        button.style.visibility = 'visible';  // Show buttons
+      });
+    });
+};
+
 
   const downloadPageAsPDF = () => {
     if (!canvas || !pdfDimensions.width || !pdfDimensions.height) {
@@ -485,22 +563,42 @@ export const CanvasProvider = ({ children }) => {
   }
 
   const addRect = () => {
+    if (!hasWriteAccess) {
+      toast.error('You do not have write access to add shapes.')
+      return
+    }
     setMode('create-rect')
   }
 
   const addCircle = () => {
+    if (!hasWriteAccess) {
+      toast.error('You do not have write access to add shapes.')
+      return
+    }
     setMode('create-circle')
   }
 
   const addText = () => {
+    if (!hasWriteAccess) {
+      toast.error('You do not have write access to add shapes.')
+      return
+    }
     setMode('create-text')
   }
 
   const selectMode = () => {
+    if (!hasWriteAccess) {
+      toast.error('You do not have write access to add shapes.')
+      return
+    }
     setMode('select')
   }
 
   const moveMode = () => {
+    if (!hasWriteAccess) {
+      toast.error('You do not have write access to add shapes.')
+      return
+    }
     setMode('move')
   }
 
@@ -520,134 +618,135 @@ export const CanvasProvider = ({ children }) => {
     try {
       const json = canvas.toJSON()
 
-      const fileReader = new FileReader()
-      fileReader.readAsArrayBuffer(selectedFile)
+      // Fetch the PDF from the URL
+      const response = await fetch(selectedFile)
+      if (!response.ok) {
+        toast.error('Failed to fetch the PDF from the URL.')
+        return
+      }
 
-      fileReader.onload = async function () {
-        const originalPdfBytes = fileReader.result
-        const originalPdfDoc = await PDFDocument.load(originalPdfBytes)
-        const pdfDoc = await PDFDocument.create()
+      const originalPdfBytes = await response.arrayBuffer()
+      const originalPdfDoc = await PDFDocument.load(originalPdfBytes)
+      const pdfDoc = await PDFDocument.create()
 
-        for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-          const [originalPage] = await pdfDoc.copyPages(originalPdfDoc, [
-            pageNum - 1,
-          ])
-          const page = pdfDoc.addPage(originalPage)
+      for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+        const [originalPage] = await pdfDoc.copyPages(originalPdfDoc, [
+          pageNum - 1,
+        ])
+        const page = pdfDoc.addPage(originalPage)
 
-          setCurrPage(pageNum)
-          loadCanvasState(pageNum)
-          await new Promise((resolve) => setTimeout(resolve, 500))
-
-          canvas.renderAll()
-
-          if (!json.objects || json.objects.length === 0) {
-            toast.error('No objects found on the canvas for page ' + pageNum)
-            return
-          }
-
-          for (const obj of json.objects) {
-            const type = obj.type.toLowerCase()
-
-            switch (type) {
-              case 'rect':
-                page.drawRectangle({
-                  x: obj.left,
-                  y: pdfDimensions.height - obj.top - obj.height,
-                  width: obj.width,
-                  height: obj.height,
-                  borderColor: rgb(
-                    obj.stroke ? obj.stroke.r / 255 || 0 : 0,
-                    obj.stroke ? obj.stroke.g / 255 || 0 : 0,
-                    obj.stroke ? obj.stroke.b / 255 || 0 : 0
-                  ),
-                  borderWidth: obj.strokeWidth || 1,
-                  color: rgb(
-                    obj.fill ? obj.fill.r / 255 || 0 : 0,
-                    obj.fill ? obj.fill.g / 255 || 0 : 0,
-                    obj.fill ? obj.fill.b / 255 || 0 : 0
-                  ),
-                })
-                break
-
-              case 'circle':
-                page.drawEllipse({
-                  x: obj.left + obj.radius,
-                  y: pdfDimensions.height - obj.top - obj.radius,
-                  xScale: obj.radius,
-                  yScale: obj.radius,
-                  borderColor: rgb(
-                    obj.stroke ? obj.stroke.r / 255 || 0 : 0,
-                    obj.stroke ? obj.stroke.g / 255 || 0 : 0,
-                    obj.stroke ? obj.stroke.b / 255 || 0 : 0
-                  ),
-                  borderWidth: obj.strokeWidth || 1,
-                  color: rgb(
-                    obj.fill ? obj.fill.r / 255 || 0 : 0,
-                    obj.fill ? obj.fill.g / 255 || 0 : 0,
-                    obj.fill ? obj.fill.b / 255 || 0 : 0
-                  ),
-                })
-                break
-
-              case 'textbox':
-              case 'text':
-                page.drawText(obj.text, {
-                  x: obj.left,
-                  y: pdfDimensions.height - obj.top - obj.fontSize,
-                  size: obj.fontSize || 16,
-                })
-                break
-
-              case 'image':
-                const svgToPng = async (svgData) => {
-                  const img = new Image()
-                  img.src = svgData
-                  await new Promise((resolve) => (img.onload = resolve))
-
-                  const canvas = document.createElement('canvas')
-                  canvas.width = img.width
-                  canvas.height = img.height
-
-                  const ctx = canvas.getContext('2d')
-                  ctx.drawImage(img, 0, 0)
-
-                  return canvas.toDataURL('image/png')
-                }
-
-                const pngDataUrl = await svgToPng(obj.src)
-                const pngBytes = await fetch(pngDataUrl).then((res) =>
-                  res.arrayBuffer()
-                )
-                const pngImage = await pdfDoc.embedPng(pngBytes)
-
-                const { left, top, width, height, scaleX, scaleY, angle } = obj
-
-                page.drawImage(pngImage, {
-                  x: left,
-                  y: pdfDimensions.height - top - height * scaleY,
-                  width: width * scaleX,
-                  height: height * scaleY,
-                  rotate: degrees(angle),
-                })
-                break
-
-              default:
-                console.warn('Unhandled type:', type)
-                break
-            }
-          }
-        }
+        setCurrPage(pageNum)
+        loadCanvasState(pageNum)
+        await new Promise((resolve) => setTimeout(resolve, 500))
 
         canvas.renderAll()
-        const pdfBytes = await pdfDoc.save()
-        const blob = new Blob([pdfBytes], { type: 'application/pdf' })
-        const link = document.createElement('a')
-        link.href = URL.createObjectURL(blob)
-        link.download = 'annotated_document.pdf'
-        link.click()
+
+        if (!json.objects || json.objects.length === 0) {
+          toast.error('No objects found on the canvas for page ' + pageNum)
+          return
+        }
+
+        for (const obj of json.objects) {
+          const type = obj.type.toLowerCase()
+
+          switch (type) {
+            case 'rect':
+              page.drawRectangle({
+                x: obj.left,
+                y: pdfDimensions.height - obj.top - obj.height,
+                width: obj.width,
+                height: obj.height,
+                borderColor: rgb(
+                  obj.stroke ? obj.stroke.r / 255 || 0 : 0,
+                  obj.stroke ? obj.stroke.g / 255 || 0 : 0,
+                  obj.stroke ? obj.stroke.b / 255 || 0 : 0
+                ),
+                borderWidth: obj.strokeWidth || 1,
+                color: rgb(
+                  obj.fill ? obj.fill.r / 255 || 0 : 0,
+                  obj.fill ? obj.fill.g / 255 || 0 : 0,
+                  obj.fill ? obj.fill.b / 255 || 0 : 0
+                ),
+              })
+              break
+
+            case 'circle':
+              page.drawEllipse({
+                x: obj.left + obj.radius,
+                y: pdfDimensions.height - obj.top - obj.radius,
+                xScale: obj.radius,
+                yScale: obj.radius,
+                borderColor: rgb(
+                  obj.stroke ? obj.stroke.r / 255 || 0 : 0,
+                  obj.stroke ? obj.stroke.g / 255 || 0 : 0,
+                  obj.stroke ? obj.stroke.b / 255 || 0 : 0
+                ),
+                borderWidth: obj.strokeWidth || 1,
+                color: rgb(
+                  obj.fill ? obj.fill.r / 255 || 0 : 0,
+                  obj.fill ? obj.fill.g / 255 || 0 : 0,
+                  obj.fill ? obj.fill.b / 255 || 0 : 0
+                ),
+              })
+              break
+
+            case 'textbox':
+            case 'text':
+              page.drawText(obj.text, {
+                x: obj.left,
+                y: pdfDimensions.height - obj.top - obj.fontSize,
+                size: obj.fontSize || 16,
+              })
+              break
+
+            case 'image':
+              const svgToPng = async (svgData) => {
+                const img = new Image()
+                img.src = svgData
+                await new Promise((resolve) => (img.onload = resolve))
+
+                const canvas = document.createElement('canvas')
+                canvas.width = img.width
+                canvas.height = img.height
+
+                const ctx = canvas.getContext('2d')
+                ctx.drawImage(img, 0, 0)
+
+                return canvas.toDataURL('image/png')
+              }
+
+              const pngDataUrl = await svgToPng(obj.src)
+              const pngBytes = await fetch(pngDataUrl).then((res) =>
+                res.arrayBuffer()
+              )
+              const pngImage = await pdfDoc.embedPng(pngBytes)
+
+              const { left, top, width, height, scaleX, scaleY, angle } = obj
+
+              page.drawImage(pngImage, {
+                x: left,
+                y: pdfDimensions.height - top - height * scaleY,
+                width: width * scaleX,
+                height: height * scaleY,
+                rotate: degrees(angle),
+              })
+              break
+
+            default:
+              console.warn('Unhandled type:', type)
+              break
+          }
+        }
       }
+
+      canvas.renderAll()
+      const pdfBytes = await pdfDoc.save()
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = 'annotated_document.pdf'
+      link.click()
     } catch (error) {
-      console.log(error)
       toast.error('Failed to download the PDF.')
     }
   }
@@ -758,6 +857,10 @@ export const CanvasProvider = ({ children }) => {
   }
 
   const addIcon = (icon) => {
+    if (!hasWriteAccess) {
+      toast.error('You do not have write access to add shapes.')
+      return
+    }
     setMode('addIcon')
     setActiveIcon(icon)
   }
@@ -813,6 +916,10 @@ export const CanvasProvider = ({ children }) => {
   }
 
   const enablePan = () => {
+    if (!hasWriteAccess) {
+      toast.error('You do not have write access to modify this canvas.')
+      return
+    }
     if (canvas) {
       canvas.isDrawingMode = false
       canvas.selection = false
@@ -858,8 +965,6 @@ export const CanvasProvider = ({ children }) => {
     if (allowPinchZoom) {
       setMode('freeze')
       canvas.selection = false
-    } else {
-      setMode('select')
     }
   }, [allowPinchZoom])
 
