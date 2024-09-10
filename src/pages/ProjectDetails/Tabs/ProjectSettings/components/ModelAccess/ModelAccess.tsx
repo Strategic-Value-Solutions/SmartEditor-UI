@@ -1,12 +1,12 @@
 //@ts-nocheck
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/Select'
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
