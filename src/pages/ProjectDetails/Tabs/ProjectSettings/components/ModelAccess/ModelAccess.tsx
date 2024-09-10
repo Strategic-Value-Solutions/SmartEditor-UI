@@ -14,7 +14,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/Table'
+} from '@/components/ui/table'
 import projectAccessApi from '@/service/projectAccessApi'
 import { Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
