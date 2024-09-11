@@ -20,7 +20,7 @@ const ProjectModelCard = ({
   return (
     <div
       id='project-model-card'
-      className={`relative border rounded-md p-2 w-56 ${'border-gray-300 bg-white dark:bg-gray-500 dark:border-gray-700'}`}
+      className={`relative border rounded-md p-2 ${'border-gray-300 bg-white dark:bg-gray-500 dark:border-gray-700'}`}
       style={{ marginBottom: '0.5rem' }} // Minimal bottom margin
     >
       <div className={`flex justify-center items-center h-32 bg-gray-100`}>
