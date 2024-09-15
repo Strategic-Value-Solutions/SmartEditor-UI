@@ -1,7 +1,3 @@
-import { Button } from '../ui/button'
-import { Layout } from './layout'
-import Nav from './nav'
-import ThemeSwitch from './theme-switch'
 import imageConstants from '@/constants/imageConstants'
 import { sideLinks } from '@/data/sidelinks'
 import { AppDispatch, RootState } from '@/store'
@@ -10,6 +6,9 @@ import { ChevronDown, ChevronsLeft, ChevronUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import { Button } from '../ui/button'
+import { Layout } from './layout'
+import Nav from './nav'
 
 interface SidebarProps extends React.HTMLAttributes<HTMLElement> {
   isCollapsed: boolean

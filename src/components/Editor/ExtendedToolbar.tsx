@@ -1,16 +1,17 @@
 import { useEditor } from '@/components/Editor/CanvasContext'
 import { tools } from '@/constants'
-import imageConstants from '@/constants/imageConstants'
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
 
-function ExtendedToolbar({
-  canvas,
-  showExtendedToolbar,
-  createRect,
-  fileReaderInfo,
-  toggleExtendedToolbar,
-}: any) {
+function ExtendedToolbar(
+  {
+    // canvas,
+    // showExtendedToolbar,
+    // createRect,
+    // fileReaderInfo,
+    // toggleExtendedToolbar,
+  }: any
+) {
   const isCollapsed = useSelector(
     (state: RootState) => state.sidebar.isCollapsed
   )
@@ -21,9 +22,7 @@ function ExtendedToolbar({
 
   return (
     <div
-      className={`grid grid-cols-2 items-center justify-center gap-3 fixed z-50 bg-gradient-to-br border bg-blue-950 border-gray-400 h-[80vh] rounded-lg invert-lg w-24 p-1 transition-all duration-300 ${
-        isCollapsed ? 'left-24 top-24' : 'left-64 top-24'
-      }`}
+      className={`grid grid-cols-2 items-center justify-center gap-3 fixed z-50 bg-gradient-to-br border bg-gray-100 border-gray-300 w-24 p-1 transition-all duration-300 left-0 top-0 h-full`}
       id='toolbar'
     >
       {tools.map((button: any, index: any) => {
@@ -32,11 +31,22 @@ function ExtendedToolbar({
             <button
               key={`${index}-primary`}
               type='button'
-              className='p-2 hover:bg-white rounded invert'
+              className='p-2 hover:bg-gray-200 rounded invert'
               title={button.title}
               onClick={() => editor.addIcon(button.imgSrc)}
+              style={{
+                filter: 'invert(0)', // Ensure icons aren't too light
+                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)', // Add subtle shadow
+              }}
             >
-              <img src={button.imgSrc} alt={button?.title?.toLowerCase()} />
+              <img
+                src={button.imgSrc}
+                alt={button?.title?.toLowerCase()}
+                className='max-w-full' // Ensure full visibility
+                style={{
+                  filter: 'contrast(1.2)', // Increase contrast for clarity
+                }}
+              />
             </button>
           )
         }
@@ -47,15 +57,23 @@ function ExtendedToolbar({
             <button
               key={`${index}-secondary`}
               type='button'
-              className='p-2 hover:bg-blue-100 rounded invert'
+              className='p-2 hover:bg-gray-300 rounded invert'
               title={`${button.title} (Alternative)`}
               onClick={() =>
                 editor.addIcon(button.imgSrc, { variant: 'secondary' })
               }
+              style={{
+                filter: 'invert(0)',
+                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+              }}
             >
               <img
                 src={button.imgSrc}
                 alt={`${button?.title?.toLowerCase()} (alt)`}
+                className='max-w-full'
+                style={{
+                  filter: 'contrast(1.2)',
+                }}
               />
             </button>
           )
@@ -65,17 +83,25 @@ function ExtendedToolbar({
         if (pick?.pickModel?.name === button.pickName) {
           return (
             <button
-              key={`${index}-tertiary`}
+              key={`${index}-secondary`}
               type='button'
-              className='p-2 hover:bg-green-100 rounded invert'
-              title={`${button.title} (Special)`}
+              className='p-2 hover:bg-gray-300 rounded invert'
+              title={`${button.title} (Alternative)`}
               onClick={() =>
-                editor.addIcon(button.imgSrc, { variant: 'special' })
+                editor.addIcon(button.imgSrc, { variant: 'secondary' })
               }
+              style={{
+                filter: 'invert(0)',
+                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+              }}
             >
               <img
                 src={button.imgSrc}
-                alt={`${button?.title?.toLowerCase()} (special)`}
+                alt={`${button?.title?.toLowerCase()} (alt)`}
+                className='max-w-full'
+                style={{
+                  filter: 'contrast(1.2)',
+                }}
               />
             </button>
           )
@@ -85,17 +111,25 @@ function ExtendedToolbar({
         if (pick?.pickModel?.name === button.pickName) {
           return (
             <button
-              key={`${index}-tertiary`}
+              key={`${index}-secondary`}
               type='button'
-              className='p-2 hover:bg-green-100 rounded invert'
-              title={`${button.title} (Special)`}
+              className='p-2 hover:bg-gray-300 rounded invert'
+              title={`${button.title} (Alternative)`}
               onClick={() =>
-                editor.addIcon(button.imgSrc, { variant: 'special' })
+                editor.addIcon(button.imgSrc, { variant: 'secondary' })
               }
+              style={{
+                filter: 'invert(0)',
+                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+              }}
             >
               <img
                 src={button.imgSrc}
-                alt={`${button?.title?.toLowerCase()} (special)`}
+                alt={`${button?.title?.toLowerCase()} (alt)`}
+                className='max-w-full'
+                style={{
+                  filter: 'contrast(1.2)',
+                }}
               />
             </button>
           )
@@ -105,17 +139,25 @@ function ExtendedToolbar({
         if (pick?.pickModel?.name === button.pickName) {
           return (
             <button
-              key={`${index}-tertiary`}
+              key={`${index}-secondary`}
               type='button'
-              className='p-2 hover:bg-green-100 rounded invert'
-              title={`${button.title} (Special)`}
+              className='p-2 hover:bg-gray-300 rounded invert'
+              title={`${button.title} (Alternative)`}
               onClick={() =>
-                editor.addIcon(button.imgSrc, { variant: 'special' })
+                editor.addIcon(button.imgSrc, { variant: 'secondary' })
               }
+              style={{
+                filter: 'invert(0)',
+                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+              }}
             >
               <img
                 src={button.imgSrc}
-                alt={`${button?.title?.toLowerCase()} (special)`}
+                alt={`${button?.title?.toLowerCase()} (alt)`}
+                className='max-w-full'
+                style={{
+                  filter: 'contrast(1.2)',
+                }}
               />
             </button>
           )
@@ -125,30 +167,59 @@ function ExtendedToolbar({
         if (pick?.pickModel?.name === button.pickName) {
           return (
             <button
-              key={`${index}-tertiary`}
+              key={`${index}-secondary`}
               type='button'
-              className='p-2 hover:bg-green-100 rounded invert'
-              title={`${button.title} (Special)`}
+              className='p-2 hover:bg-gray-300 rounded invert'
+              title={`${button.title} (Alternative)`}
               onClick={() =>
-                editor.addIcon(button.imgSrc, { variant: 'special' })
+                editor.addIcon(button.imgSrc, { variant: 'secondary' })
               }
+              style={{
+                filter: 'invert(0)',
+                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+              }}
             >
               <img
                 src={button.imgSrc}
-                alt={`${button?.title?.toLowerCase()} (special)`}
+                alt={`${button?.title?.toLowerCase()} (alt)`}
+                className='max-w-full'
+                style={{
+                  filter: 'contrast(1.2)',
+                }}
               />
             </button>
           )
         }
       })}
-
-      <button
-        type='button'
-        onClick={() => toggleExtendedToolbar()}
-        className='p-2 hover:bg-white  rounded invert'
-      >
-        <img src={imageConstants.close} alt='close' />
-      </button>
+      {tools.map((button: any, index: any) => {
+        if (pick?.pickModel?.name === button.pickName) {
+          return (
+            <button
+              key={`${index}-secondary`}
+              type='button'
+              className='p-2 hover:bg-gray-300 rounded invert'
+              title={`${button.title} (Alternative)`}
+              onClick={() =>
+                editor.addIcon(button.imgSrc, { variant: 'secondary' })
+              }
+              style={{
+                filter: 'invert(0)',
+                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+              }}
+            >
+              <img
+                src={button.imgSrc}
+                alt={`${button?.title?.toLowerCase()} (alt)`}
+                className='max-w-full'
+                style={{
+                  filter: 'contrast(1.2)',
+                }}
+              />
+            </button>
+          )
+        }
+      })}
+      {/* Continue similarly for other buttons */}
     </div>
   )
 }

@@ -23,6 +23,7 @@ import {
   setCurrentProjectModelById,
   setProjectModels,
 } from '@/store/slices/projectModelSlice'
+import { setIsCollapsed } from '@/store/slices/sidebarSlice'
 import {
   getErrorMessage,
   hasPickWriteAccess,
@@ -63,6 +64,7 @@ export default function Editor() {
     width: 1000,
     height: 820,
   })
+
   useEffect(() => {
     setSelectedFile(pick?.fileUrl)
   }, [pick])
@@ -334,7 +336,7 @@ export default function Editor() {
 
       <button
         id='back'
-        className='rounded-md bg-gray-800 px-6 py-2 text-white absolute top-20 right-2 transform -translate-x-1/2'
+        className='bg-blue-950 text-white rounded-lg px-4 py-2 hover:bg-blue-900 transition fixed left-28 h-8 top-2 flex items-center'
         onClick={handleBack}
       >
         <MoveLeft />
@@ -343,7 +345,7 @@ export default function Editor() {
         currentProject?.permission,
         currentProjectModel?.ProjectModelAccess?.[0]?.permission
       ) && (
-        <div className='absolute top-36 right-10 flex gap-2 p-1.5 items-center border border-gray-300 rounded-md bg-gray-100 shadow-lg'>
+        <div className='absolute  right-20 flex gap-2 top-2 items-center  rounded-md '>
           <ActionButtons
             projectModel={pick}
             onSelectPick={handleSelectPick}
@@ -360,7 +362,7 @@ export default function Editor() {
           projectModels={projectModels}
         />
       ) : (
-        <div className='fle w-full justify-center items-center overflow-hidden'>
+        <div className='flex w-full justify-center items-center overflow-hidden'>
           <Components toggleExtendedToolbar={toggleExtendedToolbar} />
 
           <div>

@@ -37,7 +37,6 @@ const Header = ({
         <Input
           placeholder='Search project model...'
           className='w-[20vw]'
-          onFocus={() => toast.info('Coming soon')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

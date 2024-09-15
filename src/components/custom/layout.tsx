@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils'
 import { RootState } from '@/store'
 import * as React from 'react'
 import { useSelector } from 'react-redux'
+import { useLocation } from 'react-router-dom'
 
 const LayoutContext = React.createContext<{
   offset: number
@@ -86,16 +87,23 @@ const Body = React.forwardRef<
   if (contextVal === null) {
     throw new Error(`Layout.Body must be used within ${Layout.displayName}.`)
   }
+
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.isAuthenticated
   )
+  const location = useLocation()
+
+  // Check if both "project" and "pick" are included in the pathname
+  const shouldApplyPadding =
+    !location.pathname.includes('project') ||
+    !location.pathname.includes('pick')
 
   return (
     <div
       ref={ref}
       data-layout='body'
       className={cn(
-        `${isAuthenticated && 'px-4 py-6 md:px-8'} overflow-auto h-[var(--body-height)]`,
+        `${isAuthenticated && shouldApplyPadding && 'px-4 py-6 md:px-8'} overflow-auto h-[var(--body-height)]`,
         contextVal && contextVal.fixed && 'flex-1',
         className
       )}
@@ -103,6 +111,7 @@ const Body = React.forwardRef<
     />
   )
 })
+
 Body.displayName = 'Body'
 
 Layout.Header = Header

@@ -1,7 +1,7 @@
 // @ts-nocheck
 import imageConstants from '@/constants/imageConstants'
 import { RootState } from '@/store'
-import { hasPickWriteAccess } from '@/utils'
+import { getErrorMessage, hasPickWriteAccess } from '@/utils'
 import * as fabric from 'fabric'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
@@ -36,6 +36,10 @@ export const CanvasProvider = ({ children }) => {
   const [isSelectFilePDF, setIsSelectFilePDF] = useState(false)
   const [allowPinchZoom, setAllowPinchZoom] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
+  const [originalPdfDimensions, setOriginalPdfDimensions] = useState({
+    originalWidth: 0,
+    originalHeight: 0,
+  })
   const currentProject = useSelector(
     (state: RootState) => state.project.currentProject
   )
@@ -389,53 +393,52 @@ export const CanvasProvider = ({ children }) => {
     }
   }, [currPage, canvas])
 
-const downloadPageAsImage = () => {
-  if (!canvas || !pdfDimensions.width || !pdfDimensions.height) {
-    toast.error('Canvas or PDF dimensions are not available.');
-    return;
-  }
+  const downloadPageAsImage = () => {
+    if (!canvas || !pdfDimensions.width || !pdfDimensions.height) {
+      toast.error('Canvas or PDF dimensions are not available.')
+      return
+    }
 
-  setExporting(true);
+    setExporting(true)
 
-  // Hide the buttons temporarily
-  const buttons = document.querySelectorAll('.export-exclude');
-  buttons.forEach(button => {
-    button.style.visibility = 'hidden';  // Hide buttons
-  });
-
-  const doc = document.querySelector('#singlePageExport');
-
-  html2canvas(doc, {
-    scale: 2,
-    useCORS: true,
-    allowTaint: true,
-  })
-    .then((canvasEl) => {
-      const imgData = canvasEl.toDataURL('image/png');
-
-      const link = document.createElement('a');
-      link.href = imgData;
-      link.download = `annotated_page_${currPage}.png`;
-      link.click();
-
-      setExporting(false);
-
-      // Show the buttons again
-      buttons.forEach(button => {
-        button.style.visibility = 'visible';  // Show buttons
-      });
+    // Hide the buttons temporarily
+    const buttons = document.querySelectorAll('.export-exclude')
+    buttons.forEach((button) => {
+      button.style.visibility = 'hidden' // Hide buttons
     })
-    .catch((error) => {
-      toast.error('Failed to download the image.');
-      setExporting(false);
 
-      // Show the buttons again if an error occurs
-      buttons.forEach(button => {
-        button.style.visibility = 'visible';  // Show buttons
-      });
-    });
-};
+    const doc = document.querySelector('#singlePageExport')
 
+    html2canvas(doc, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+    })
+      .then((canvasEl) => {
+        const imgData = canvasEl.toDataURL('image/png')
+
+        const link = document.createElement('a')
+        link.href = imgData
+        link.download = `annotated_page_${currPage}.png`
+        link.click()
+
+        setExporting(false)
+
+        // Show the buttons again
+        buttons.forEach((button) => {
+          button.style.visibility = 'visible' // Show buttons
+        })
+      })
+      .catch((error) => {
+        toast.error('Failed to download the image.')
+        setExporting(false)
+
+        // Show the buttons again if an error occurs
+        buttons.forEach((button) => {
+          button.style.visibility = 'visible' // Show buttons
+        })
+      })
+  }
 
   const downloadPageAsPDF = () => {
     if (!canvas || !pdfDimensions.width || !pdfDimensions.height) {
@@ -616,9 +619,7 @@ const downloadPageAsImage = () => {
     }
 
     try {
-      const json = canvas.toJSON()
-
-      // Fetch the PDF from the URL
+      // Fetch the original PDF
       const response = await fetch(selectedFile)
       if (!response.ok) {
         toast.error('Failed to fetch the PDF from the URL.')
@@ -629,25 +630,39 @@ const downloadPageAsImage = () => {
       const originalPdfDoc = await PDFDocument.load(originalPdfBytes)
       const pdfDoc = await PDFDocument.create()
 
+      // Helper function to convert SVG to PNG
+      const svgToPng = async (svgData) => {
+        const img = new Image()
+        img.src = svgData
+        await new Promise((resolve) => (img.onload = resolve))
+
+        const canvasEl = document.createElement('canvas')
+        canvasEl.width = img.width
+        canvasEl.height = img.height
+
+        const ctx = canvasEl.getContext('2d')
+        ctx.drawImage(img, 0, 0)
+
+        return canvasEl.toDataURL('image/png')
+      }
+
       for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+        // Load the correct page state
+        setCurrPage(pageNum)
+        await loadCanvasState(pageNum)
+        await new Promise((resolve) => setTimeout(resolve, 1000)) // Ensure state is loaded
+
+        const json = canvas.toJSON() // Now capture the state with annotations
+
         const [originalPage] = await pdfDoc.copyPages(originalPdfDoc, [
           pageNum - 1,
         ])
         const page = pdfDoc.addPage(originalPage)
 
-        setCurrPage(pageNum)
-        loadCanvasState(pageNum)
-        await new Promise((resolve) => setTimeout(resolve, 500))
-
-        canvas.renderAll()
-
-        if (!json.objects || json.objects.length === 0) {
-          toast.error('No objects found on the canvas for page ' + pageNum)
-          return
-        }
-
+        // Loop through the objects
         for (const obj of json.objects) {
           const type = obj.type.toLowerCase()
+          console.log('Object type:', type)
 
           switch (type) {
             case 'rect':
@@ -657,15 +672,21 @@ const downloadPageAsImage = () => {
                 width: obj.width,
                 height: obj.height,
                 borderColor: rgb(
-                  obj.stroke ? obj.stroke.r / 255 || 0 : 0,
-                  obj.stroke ? obj.stroke.g / 255 || 0 : 0,
-                  obj.stroke ? obj.stroke.b / 255 || 0 : 0
+                  (obj.stroke && obj.stroke.r !== undefined
+                    ? obj.stroke.r
+                    : 0) / 255,
+                  (obj.stroke && obj.stroke.g !== undefined
+                    ? obj.stroke.g
+                    : 0) / 255,
+                  (obj.stroke && obj.stroke.b !== undefined
+                    ? obj.stroke.b
+                    : 0) / 255
                 ),
                 borderWidth: obj.strokeWidth || 1,
                 color: rgb(
-                  obj.fill ? obj.fill.r / 255 || 0 : 0,
-                  obj.fill ? obj.fill.g / 255 || 0 : 0,
-                  obj.fill ? obj.fill.b / 255 || 0 : 0
+                  (obj.fill && obj.fill.r !== undefined ? obj.fill.r : 0) / 255,
+                  (obj.fill && obj.fill.g !== undefined ? obj.fill.g : 0) / 255,
+                  (obj.fill && obj.fill.b !== undefined ? obj.fill.b : 0) / 255
                 ),
               })
               break
@@ -677,15 +698,21 @@ const downloadPageAsImage = () => {
                 xScale: obj.radius,
                 yScale: obj.radius,
                 borderColor: rgb(
-                  obj.stroke ? obj.stroke.r / 255 || 0 : 0,
-                  obj.stroke ? obj.stroke.g / 255 || 0 : 0,
-                  obj.stroke ? obj.stroke.b / 255 || 0 : 0
+                  (obj.stroke && obj.stroke.r !== undefined
+                    ? obj.stroke.r
+                    : 0) / 255,
+                  (obj.stroke && obj.stroke.g !== undefined
+                    ? obj.stroke.g
+                    : 0) / 255,
+                  (obj.stroke && obj.stroke.b !== undefined
+                    ? obj.stroke.b
+                    : 0) / 255
                 ),
                 borderWidth: obj.strokeWidth || 1,
                 color: rgb(
-                  obj.fill ? obj.fill.r / 255 || 0 : 0,
-                  obj.fill ? obj.fill.g / 255 || 0 : 0,
-                  obj.fill ? obj.fill.b / 255 || 0 : 0
+                  (obj.fill && obj.fill.r !== undefined ? obj.fill.r : 0) / 255,
+                  (obj.fill && obj.fill.g !== undefined ? obj.fill.g : 0) / 255,
+                  (obj.fill && obj.fill.b !== undefined ? obj.fill.b : 0) / 255
                 ),
               })
               break
@@ -699,47 +726,85 @@ const downloadPageAsImage = () => {
               })
               break
 
+            case 'group':
+              obj.objects.forEach(async (groupObj) => {
+                const type = groupObj.type.toLowerCase()
+                if (type === 'rect') {
+                  page.drawRectangle({
+                    x: groupObj.left,
+                    y:
+                      pdfDimensions.height -
+                      groupObj.top -
+                      groupObj.height * groupObj.scaleY,
+                    width: groupObj.width * groupObj.scaleX,
+                    height: groupObj.height * groupObj.scaleY,
+                    borderColor: rgb(
+                      (groupObj.stroke && groupObj.stroke.r !== undefined
+                        ? groupObj.stroke.r
+                        : 0) / 255,
+                      (groupObj.stroke && groupObj.stroke.g !== undefined
+                        ? groupObj.stroke.g
+                        : 0) / 255,
+                      (groupObj.stroke && groupObj.stroke.b !== undefined
+                        ? groupObj.stroke.b
+                        : 0) / 255
+                    ),
+                    borderWidth: groupObj.strokeWidth || 1,
+                    color: rgb(
+                      (groupObj.fill && groupObj.fill.r !== undefined
+                        ? groupObj.fill.r
+                        : 0) / 255,
+                      (groupObj.fill && groupObj.fill.g !== undefined
+                        ? groupObj.fill.g
+                        : 0) / 255,
+                      (groupObj.fill && groupObj.fill.b !== undefined
+                        ? groupObj.fill.b
+                        : 0) / 255
+                    ),
+                  })
+                } else if (type === 'image') {
+                  const pngDataUrl = await svgToPng(groupObj.src)
+                  const pngBytes = await fetch(pngDataUrl).then((res) =>
+                    res.arrayBuffer()
+                  )
+                  const pngImage = await pdfDoc.embedPng(pngBytes)
+
+                  page.drawImage(pngImage, {
+                    x: groupObj.left,
+                    y:
+                      pdfDimensions.height -
+                      groupObj.top -
+                      groupObj.height * groupObj.scaleY,
+                    width: groupObj.width * groupObj.scaleX,
+                    height: groupObj.height * groupObj.scaleY,
+                  })
+                }
+              })
+              break
+
             case 'image':
-              const svgToPng = async (svgData) => {
-                const img = new Image()
-                img.src = svgData
-                await new Promise((resolve) => (img.onload = resolve))
-
-                const canvas = document.createElement('canvas')
-                canvas.width = img.width
-                canvas.height = img.height
-
-                const ctx = canvas.getContext('2d')
-                ctx.drawImage(img, 0, 0)
-
-                return canvas.toDataURL('image/png')
-              }
-
+              // Handle the image outside of a group
               const pngDataUrl = await svgToPng(obj.src)
               const pngBytes = await fetch(pngDataUrl).then((res) =>
                 res.arrayBuffer()
               )
               const pngImage = await pdfDoc.embedPng(pngBytes)
 
-              const { left, top, width, height, scaleX, scaleY, angle } = obj
-
               page.drawImage(pngImage, {
-                x: left,
-                y: pdfDimensions.height - top - height * scaleY,
-                width: width * scaleX,
-                height: height * scaleY,
-                rotate: degrees(angle),
+                x: obj.left,
+                y: pdfDimensions.height - obj.top - obj.height * obj.scaleY,
+                width: obj.width * obj.scaleX,
+                height: obj.height * obj.scaleY,
               })
               break
 
             default:
-              console.warn('Unhandled type:', type)
+              toast.error('Unhandled type:', type)
               break
           }
         }
       }
 
-      canvas.renderAll()
       const pdfBytes = await pdfDoc.save()
       const blob = new Blob([pdfBytes], { type: 'application/pdf' })
       const link = document.createElement('a')
@@ -976,7 +1041,10 @@ const downloadPageAsImage = () => {
       })
     }
   }, [pdfDimensions])
-
+  console.log({
+    originalPdfDimensions,
+    pdfDimensions,
+  })
   return (
     <editorFunctions.Provider
       value={{
@@ -1016,6 +1084,8 @@ const downloadPageAsImage = () => {
         allowPinchZoom,
         loadCanvasState,
         setAllowPinchZoom,
+        setOriginalPdfDimensions,
+        originalPdfDimensions,
       }}
     >
       {children}

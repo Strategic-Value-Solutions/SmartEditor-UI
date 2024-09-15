@@ -2,10 +2,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 interface SidebarState {
   isCollapsed: boolean
+  showSidebar?: boolean
 }
 
 const initialState: SidebarState = {
   isCollapsed: true,
+  showSidebar: true,
 }
 
 export const sidebarSlice = createSlice({
@@ -20,6 +22,9 @@ export const sidebarSlice = createSlice({
     },
     setCollapsedBasedOnWidth: (state) => {
       state.isCollapsed = window.innerWidth < 768
+    },
+    setShowSidebar: (state, action: PayloadAction<boolean>) => {
+      state.showSidebar = action.payload
     },
   },
 })

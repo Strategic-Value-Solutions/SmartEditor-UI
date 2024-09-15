@@ -1,8 +1,8 @@
+import { RootState } from '@/store'
+import { useSelector } from 'react-redux'
 import { ScrollArea } from '../ui/scroll-area'
 import { Layout } from './layout'
 import Sidebar from './sidebar'
-import { RootState } from '@/store'
-import { useSelector } from 'react-redux'
 
 export default function AppShell({ children }: any) {
   const isCollapsed = useSelector(

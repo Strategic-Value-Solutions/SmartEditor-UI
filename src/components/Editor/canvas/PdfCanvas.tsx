@@ -1,24 +1,16 @@
 // @ts-nocheck
 import Loader from '../Loader'
+import PdfCanvasButtons from './PdfCanvasButtons'
 import { editorSteps } from '@/Tours/constants'
 import { RootState } from '@/store'
-import { hasPickWriteAccess } from '@/utils'
 import { useTour } from '@reactour/tour'
-import { current } from '@reduxjs/toolkit'
-import {
-  ChevronLeft,
-  ChevronRight,
-  Pause,
-  Play,
-  RotateCcw,
-  Save,
-  ZoomIn,
-  ZoomOut,
-} from 'lucide-react'
 import { useState } from 'react'
 import { Document, Page } from 'react-pdf'
 import { useSelector } from 'react-redux'
+import { Rnd } from 'react-rnd'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
+
+// Import react-rnd
 
 function PdfCanvas({
   editor,
@@ -38,9 +30,10 @@ function PdfCanvas({
     width: 0,
     height: 0,
   })
-  const { setIsOpen, setSteps, beforeClose } = useTour()
+  const { setIsOpen, setSteps } = useTour()
   const isEditorTourCompleted =
     localStorage.getItem('editorTourCompleted')?.toString() === 'true'
+
   function onDocumentLoadSuccess({
     numPages,
     originalHeight,
@@ -49,38 +42,34 @@ function PdfCanvas({
     editor.setNumPages(numPages)
     editor.setCurrPage(1)
 
-    // Get available screen width and height
-    const maxWidth = window.innerWidth * 0.9 // 90% of window width for a more flexible layout
-    const maxHeight = window.innerHeight * 0.8 // Adjust this value as necessary to leave space for the buttons
+    // Set max width to 80% of the window's width
+    const maxWidth = window.innerWidth * 0.8
+    // Set max height to 90% of the window's height
+    const maxHeight = window.innerHeight * 0.9
+    console.log('maxWidth', maxWidth, 'maxHeight', maxHeight)
 
-    // Calculate aspect ratio
+    // Calculate aspect ratio of the original document
     const aspectRatio = originalWidth / originalHeight
 
-    // Calculate width and height based on aspect ratio and available space
+    // Set width to maxWidth, and calculate height based on the aspect ratio
     let width = maxWidth
     let height = width / aspectRatio
 
-    // If calculated height exceeds maxHeight, adjust width accordingly
+    // If the calculated height is more than maxHeight, adjust the width accordingly
     if (height > maxHeight) {
       height = maxHeight
       width = height * aspectRatio
     }
 
-    // Set dimensions
     setPdfPageDimensions({ width, height })
     setPageDimensions({ width, height })
-    editor.addPdfDimensions({ width, height })
-
-    // Initialize canvas with the calculated dimensions
+    editor.addPdfDimensions({ width, height }) // Adds displayed dimensions to editor
     editor.setCanvas(initCanvas(width, height))
 
-    if (!isEditorTourCompleted) {
-      setSteps(editorSteps)
-      setIsOpen(true)
-      localStorage.setItem('editorTourCompleted', 'true')
-    }
+    // Store both original and displayed dimensions in the editor
+    editor.setOriginalPdfDimensions({ originalWidth, originalHeight })
 
-    setTimeout(() => setIsDocLoading(false), 1000)
+    // Other logic here...
   }
 
   return (
@@ -89,8 +78,8 @@ function PdfCanvas({
         editor.theme ? 'bg-[rgb(20,20,20)] text-white' : 'bg-white text-black'
       }`}
       style={{
-        minHeight: '100vh', // Ensure the component takes full viewport height
-        paddingTop: '20px', // Add padding to prevent overflow from the top
+        minHeight: '100vh',
+        paddingTop: '20px',
         boxSizing: 'border-box',
       }}
     >
@@ -108,7 +97,6 @@ function PdfCanvas({
           }`}
           style={{
             maxWidth: '100%',
-            // overflow: 'hidden',
           }}
         >
           {isDocLoading && (
@@ -136,9 +124,9 @@ function PdfCanvas({
           >
             <TransformWrapper
               initialScale={1}
-              wheel={{ disabled: !editor.allowPinchZoom }} // Enable/Disable wheel zoom
-              pinch={{ disabled: !editor.allowPinchZoom }} // Enable/Disable pinch zoom
-              panning={{ disabled: !editor.allowPinchZoom }} // Enable/Disable dragging for pan
+              wheel={{ disabled: !editor.allowPinchZoom }}
+              pinch={{ disabled: !editor.allowPinchZoom }}
+              panning={{ disabled: !editor.allowPinchZoom }}
             >
               {({ zoomIn, zoomOut, resetTransform }) => (
                 <>
@@ -167,80 +155,27 @@ function PdfCanvas({
                       />
                     </div>
                   </TransformComponent>
-                  <div className='fixed bottom-2 z-50 flex w-full items-center justify-center gap-3'>
-                    {editor.currPage > 1 && (
-                      <button
-                        onClick={() => changePage(-1)}
-                        className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
-                      >
-                        <ChevronLeft />
-                      </button>
-                    )}
-                    <div
-                      className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
-                      id='total-pages'
-                    >
-                      Page {editor.currPage} of {editor.numPages}
-                    </div>
-                    {editor.currPage < editor.numPages && (
-                      <button
-                        onClick={() => changePage(1)}
-                        className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
-                      >
-                        <ChevronRight />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => zoomIn()} // Trigger zoom in
-                      className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
-                      id='zoom-in'
-                    >
-                      <ZoomIn />
-                    </button>
-                    <button
-                      onClick={() => zoomOut()} // Trigger zoom out
-                      className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
-                      id='zoom-out'
-                    >
-                      <ZoomOut />
-                    </button>
-                    <button
-                      id='pan'
-                      type='button'
-                      title='Zoom in'
-                      onClick={() =>
-                        editor.setAllowPinchZoom(!editor.allowPinchZoom)
-                      }
-                      className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
-                    >
-                      {editor.allowPinchZoom ? (
-                        <Pause className='w-6 h-6 text-white' />
-                      ) : (
-                        <Play className='w-6 h-6 text-white' />
-                      )}
-                    </button>
-                    {pick?.status !== 'Completed' &&
-                      pick?.status !== 'Skipped' &&
-                      hasPickWriteAccess(
-                        currentProject?.permission,
-                        pick?.ProjectModelAccess?.[0]?.permission
-                      ) && (
-                        <button
-                          id='saveAnnotations'
-                          className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
-                          onClick={handleSaveAnnotations}
-                        >
-                          <Save />
-                        </button>
-                      )}
-                    <button
-                      onClick={() => resetTransform()} // Reset zoom
-                      id='rotate-ccw'
-                      className='rounded-md bg-gray-800 px-4 py-2 text-white export-exclude'
-                    >
-                      <RotateCcw />
-                    </button>
-                  </div>
+                  {/* <Rnd
+                    default={{
+                      x: window.height, // Adjust dynamically based on window width (center horizontally)
+                      y: window.width, // Adjust dynamically based on window height (shift it to the bottom)
+                      width: 'auto',
+                      height: 'auto',
+                    }}
+                    bounds='window' // Restrict dragging to within the window
+                  > */}
+                  {/* <div className='drag-handle'> */}
+                  <PdfCanvasButtons
+                    editor={editor}
+                    changePage={changePage}
+                    pick={pick}
+                    handleSaveAnnotations={handleSaveAnnotations}
+                    zoomIn={zoomIn}
+                    zoomOut={zoomOut}
+                    resetTransform={resetTransform}
+                  />
+                  {/* </div> */}
+                  {/* </Rnd> */}
                 </>
               )}
             </TransformWrapper>

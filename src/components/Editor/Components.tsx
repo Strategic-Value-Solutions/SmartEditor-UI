@@ -1,12 +1,19 @@
 // @ts-nocheck
 import { useEditor } from './CanvasContext'
 import { PROJECT_ACCESS_ROLES } from '@/Tours/constants'
-import imageConstants from '@/constants/imageConstants'
 import { RootState } from '@/store'
 import { updateCurrentProjectDetails } from '@/store/slices/projectSlice'
 import { hasPickWriteAccess } from '@/utils'
 import debounce from 'lodash/debounce'
-import { FileDown, FileJson, ImageDown } from 'lucide-react'
+import {
+  FileDown,
+  FileJson,
+  ImageDown,
+  Move,
+  Eraser,
+  Trash2,
+  Type,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -86,63 +93,56 @@ export default function Components({ toggleExtendedToolbar, getInputProps }) {
     {
       title: 'Move',
       onClick: () => editor.selectMode(),
-      icon: imageConstants.SelectIcon,
+      icon: <Move className='w-6 h-6' />,
       show,
+      isTopFour: true, // Add flag for top four icons
     },
     {
       title: 'Text',
       onClick: () => editor.addText(),
-      icon: imageConstants.TextIcon,
+      icon: <Type className='w-6 h-6' />,
       show,
+      isTopFour: true, // Add flag for top four icons
     },
     {
       title: 'Eraser',
       onClick: () => editor.eraseMode(),
-      icon: imageConstants.EraserIcon,
+      icon: <Eraser className='w-6 h-6' />,
       show,
-    },
-    {
-      title: 'Annotate',
-      onClick: () => toggleExtendedToolbar(),
-      icon: imageConstants.RectangleIcon,
-      show,
+      isTopFour: true, // Add flag for top four icons
     },
     {
       title: 'Clear',
       onClick: () => editor.clearCanvas(),
-      icon: imageConstants.DeleteIcon,
+      icon: <Trash2 className='w-6 h-6' />,
       show,
+      isTopFour: true, // Add flag for top four icons
     },
     {
       title: 'Download JSON',
       onClick: () => editor.downloadJSON(),
-      icon: <FileJson className='w-6 h-6 text-white' />,
+      icon: <FileJson className='w-6 h-6' />,
       show: true,
     },
     {
       title: 'Download Image',
       onClick: () => editor.downloadPageAsImage(),
-      icon: <ImageDown />,
+      icon: <ImageDown className='w-6 h-6' />,
       show: true,
     },
     {
       title: 'Download PDF',
       onClick: () => editor.downloadPDFWithAnnotations(),
-      icon: <FileDown />,
+      icon: <FileDown className='w-6 h-6' />,
       show: true,
     },
   ]
 
-  // Calculate the number of visible items
-  const visibleItems = actions.filter(({ show }) => show).length
-
   return (
     <div
-      className={`flex flex-col items-center justify-center gap-3 fixed ${
-        visibleItems <= 3 ? 'top-48' : 'bottom-20'
-      } right-10 z-50 border bg-blue-950 border-gray-400 p-4 rounded-lg w-fit max-h-[80vh] overflow-y-auto`}
+      className={`flex flex-col items-center  gap-3 fixed  right-0 z-0 border bg-gray-100 border-gray-300 p-4  w-fit h-full overflow-y-auto`}
     >
-      {actions.map(({ title, onClick, icon, className, show }) => {
+      {actions.map(({ title, onClick, icon, show }) => {
         if (!show) return null
         return (
           <button
@@ -151,13 +151,13 @@ export default function Components({ toggleExtendedToolbar, getInputProps }) {
             type='button'
             title={title}
             onClick={onClick}
-            className={`p-2 hover:bg-black rounded text-white`}
+            className={`p-2 hover:bg-gray-200 rounded transition duration-150`}
+            style={{
+              filter: 'invert(0)', // Make top 4 icons black
+              boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+            }}
           >
-            {typeof icon === 'string' ? (
-              <img src={icon} alt={title} className='w-6 h-6' />
-            ) : (
-              icon
-            )}
+            {icon}
           </button>
         )
       })}

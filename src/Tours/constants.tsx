@@ -110,23 +110,23 @@ export const projectsTour = [
 export const customStyles = {
   popover: (base) => ({
     ...base,
-    backgroundColor: '#172554',
-    color: '#fff',
+    backgroundColor: '#f9fafb', // Light background
+    color: '#1f2937', // Darker text for readability
     borderRadius: '8px',
     padding: '20px',
     paddingTop: '40px',
     maxWidth: '500px',
-    boxShadow: '0px 10px 20px rgba(0, 0, 0, 0.2)',
+    boxShadow: '0px 10px 20px rgba(0, 0, 0, 0.1)', // Lighter shadow
   }),
   arrow: (base) => ({
     ...base,
-    color: 'white',
+    color: 'black', // Background color of popover
   }),
   badge: (base) => ({
     ...base,
     display: 'none',
-    backgroundColor: '#fff',
-    color: '#000',
+    backgroundColor: '#e5e7eb', // Lighter gray
+    color: '#1f2937',
   }),
   close: (base) => ({
     ...base,
@@ -134,10 +134,11 @@ export const customStyles = {
     top: '10px',
     right: '10px',
     fontSize: '16px',
+    color: '#1f2937', // Darker close icon color for readability
   }),
   dot: (base, { current }) => ({
     ...base,
-    backgroundColor: current ? '#ef5a3d' : '#fff',
+    backgroundColor: current ? '#ef4444' : '#d1d5db', // Light red when active, gray otherwise
     borderRadius: '50%',
     margin: '0 6px',
     padding: '4px',

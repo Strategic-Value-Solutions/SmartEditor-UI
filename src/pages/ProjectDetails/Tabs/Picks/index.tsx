@@ -17,6 +17,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 const ProjectModels = () => {
+  const [filteredModels, setFilteredModels] = useState([])
   const { projectId } = useParams()
   const [loading, setLoading] = useState(true)
   const [showPickModal, setShowPickModal] = useState(false)
@@ -161,6 +162,17 @@ const ProjectModels = () => {
     }
   }
 
+  useEffect(() => {
+    if (search) {
+      const filtered = projectModels.filter((model: any) =>
+        model?.pickModel?.name?.toLowerCase().includes(search.toLowerCase())
+      )
+      setFilteredModels(filtered)
+    } else {
+      setFilteredModels(projectModels)
+    }
+  }, [search, projectModels])
+
   if (loading) return <Loader />
 
   return (
@@ -172,6 +184,7 @@ const ProjectModels = () => {
         setSearch={setSearch}
         search={search}
       />
+
       <ListProjectModels
         showPickModal={showPickModal}
         setShowPickModal={setShowPickModal}
@@ -179,7 +192,7 @@ const ProjectModels = () => {
         setSelectedPick={setSelectedPick}
         projectId={projectId}
         viewType={viewType}
-        projectModels={projectModels}
+        projectModels={filteredModels} // Pass filteredModels here
         handleSelectPick={handleSelectPick}
         handleRedirectToEditor={handleRedirectToEditor}
         skipPick={skipPick}
