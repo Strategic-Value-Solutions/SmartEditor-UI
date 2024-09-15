@@ -31,8 +31,6 @@ function ExtendedToolbar({
       id='toolbar'
     >
       {tools.map((tool: any, index: any) => {
-        console.log(tool.imageUrl)
-
         return (
           <TooltipProvider key={`${index}-provider`}>
             <Tooltip>

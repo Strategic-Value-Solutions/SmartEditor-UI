@@ -33,6 +33,7 @@ export const CanvasProvider = ({ children }) => {
   const [exportPages, setExportPages] = useState([])
   const [pdfDimensions, setPdfDimensions] = useState({ width: 0, height: 0 })
   const [annotations, setAnnotations] = useState({})
+  const [dbAnnotations, setDbAnnotations] = useState({})
   const [isSelectFilePDF, setIsSelectFilePDF] = useState(false)
   const [allowPinchZoom, setAllowPinchZoom] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
@@ -605,16 +606,19 @@ export const CanvasProvider = ({ children }) => {
     setMode('move')
   }
 
+  console.log(annotations, 'ANNOTATIONS')
+
   const downloadPDFWithAnnotations = async () => {
     let selectedFile = currentProjectModel?.fileUrl
+    console.log(selectedFile, 'SELECTED FILE')
+
     if (
-      !canvas ||
       !pdfDimensions.width ||
       !pdfDimensions.height ||
       !numPages ||
       !selectedFile
     ) {
-      toast.error('Canvas, PDF dimensions, or pages not available.')
+      toast.error('PDF dimensions or pages not available.')
       return
     }
 
@@ -628,9 +632,25 @@ export const CanvasProvider = ({ children }) => {
 
       const originalPdfBytes = await response.arrayBuffer()
       const originalPdfDoc = await PDFDocument.load(originalPdfBytes)
-      const pdfDoc = await PDFDocument.create()
+      const pages = originalPdfDoc.getPages()
 
-      // Helper function to convert SVG to PNG
+      if (!pages || pages.length === 0) {
+        toast.error('No pages found in the PDF.')
+        return
+      }
+
+      const pdfDoc = await PDFDocument.create()
+      const pageHeight = pages[0]?.getHeight() // Check if the first page exists
+      const pageWidth = pages[0]?.getWidth() // Check if the first page exists
+
+      if (!pageHeight || !pageWidth) {
+        toast.error('Unable to get page dimensions.')
+        return
+      }
+
+      const scalingFactor = 1.5 // Adjust this to scale up the annotations
+      const f4a261Color = rgb(244 / 255, 162 / 255, 97 / 255) // Convert hex #f4a261 to rgb
+
       const svgToPng = async (svgData) => {
         const img = new Image()
         img.src = svgData
@@ -646,165 +666,128 @@ export const CanvasProvider = ({ children }) => {
         return canvasEl.toDataURL('image/png')
       }
 
+      // Loop through each page in the annotations object
       for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-        // Load the correct page state
-        setCurrPage(pageNum)
-        await loadCanvasState(pageNum)
-        await new Promise((resolve) => setTimeout(resolve, 1000)) // Ensure state is loaded
+        console.log('PAGE NUMBER', pageNum)
+        const pageAnnotations = dbAnnotations[pageNum]?.objects || []
 
-        const json = canvas.toJSON() // Now capture the state with annotations
+        // Log annotations for debugging
+        console.log('Annotations for Page', pageNum, pageAnnotations)
 
         const [originalPage] = await pdfDoc.copyPages(originalPdfDoc, [
           pageNum - 1,
         ])
+
+        if (!originalPage) {
+          console.warn(`Page ${pageNum} does not exist in the PDF.`)
+          continue
+        }
+
         const page = pdfDoc.addPage(originalPage)
 
-        // Loop through the objects
-        for (const obj of json.objects) {
+        for (const obj of pageAnnotations) {
           const type = obj.type.toLowerCase()
-          console.log('Object type:', type)
+          console.log('Processing annotation type:', type)
+
+          const x = obj.left * scalingFactor
+          const y =
+            pageHeight - obj.top * scalingFactor - obj.height * scalingFactor
 
           switch (type) {
-            case 'rect':
-              page.drawRectangle({
-                x: obj.left,
-                y: pdfDimensions.height - obj.top - obj.height,
-                width: obj.width,
-                height: obj.height,
-                borderColor: rgb(
-                  (obj.stroke && obj.stroke.r !== undefined
-                    ? obj.stroke.r
-                    : 0) / 255,
-                  (obj.stroke && obj.stroke.g !== undefined
-                    ? obj.stroke.g
-                    : 0) / 255,
-                  (obj.stroke && obj.stroke.b !== undefined
-                    ? obj.stroke.b
-                    : 0) / 255
-                ),
-                borderWidth: obj.strokeWidth || 1,
-                color: rgb(
-                  (obj.fill && obj.fill.r !== undefined ? obj.fill.r : 0) / 255,
-                  (obj.fill && obj.fill.g !== undefined ? obj.fill.g : 0) / 255,
-                  (obj.fill && obj.fill.b !== undefined ? obj.fill.b : 0) / 255
-                ),
-              })
-              break
-
-            case 'circle':
-              page.drawEllipse({
-                x: obj.left + obj.radius,
-                y: pdfDimensions.height - obj.top - obj.radius,
-                xScale: obj.radius,
-                yScale: obj.radius,
-                borderColor: rgb(
-                  (obj.stroke && obj.stroke.r !== undefined
-                    ? obj.stroke.r
-                    : 0) / 255,
-                  (obj.stroke && obj.stroke.g !== undefined
-                    ? obj.stroke.g
-                    : 0) / 255,
-                  (obj.stroke && obj.stroke.b !== undefined
-                    ? obj.stroke.b
-                    : 0) / 255
-                ),
-                borderWidth: obj.strokeWidth || 1,
-                color: rgb(
-                  (obj.fill && obj.fill.r !== undefined ? obj.fill.r : 0) / 255,
-                  (obj.fill && obj.fill.g !== undefined ? obj.fill.g : 0) / 255,
-                  (obj.fill && obj.fill.b !== undefined ? obj.fill.b : 0) / 255
-                ),
-              })
-              break
-
-            case 'textbox':
             case 'text':
+              console.log('Drawing text:', obj.text, 'at', { x, y })
               page.drawText(obj.text, {
-                x: obj.left,
-                y: pdfDimensions.height - obj.top - obj.fontSize,
-                size: obj.fontSize || 16,
+                x: x,
+                y: y,
+                size: (obj.fontSize || 16) * scalingFactor,
+                color: rgb(0, 0, 0), // Default black text color
               })
               break
 
-            case 'group':
-              obj.objects.forEach(async (groupObj) => {
-                const type = groupObj.type.toLowerCase()
-                if (type === 'rect') {
-                  page.drawRectangle({
-                    x: groupObj.left,
-                    y:
-                      pdfDimensions.height -
-                      groupObj.top -
-                      groupObj.height * groupObj.scaleY,
-                    width: groupObj.width * groupObj.scaleX,
-                    height: groupObj.height * groupObj.scaleY,
-                    borderColor: rgb(
-                      (groupObj.stroke && groupObj.stroke.r !== undefined
-                        ? groupObj.stroke.r
-                        : 0) / 255,
-                      (groupObj.stroke && groupObj.stroke.g !== undefined
-                        ? groupObj.stroke.g
-                        : 0) / 255,
-                      (groupObj.stroke && groupObj.stroke.b !== undefined
-                        ? groupObj.stroke.b
-                        : 0) / 255
-                    ),
-                    borderWidth: groupObj.strokeWidth || 1,
-                    color: rgb(
-                      (groupObj.fill && groupObj.fill.r !== undefined
-                        ? groupObj.fill.r
-                        : 0) / 255,
-                      (groupObj.fill && groupObj.fill.g !== undefined
-                        ? groupObj.fill.g
-                        : 0) / 255,
-                      (groupObj.fill && groupObj.fill.b !== undefined
-                        ? groupObj.fill.b
-                        : 0) / 255
-                    ),
-                  })
-                } else if (type === 'image') {
-                  const pngDataUrl = await svgToPng(groupObj.src)
-                  const pngBytes = await fetch(pngDataUrl).then((res) =>
-                    res.arrayBuffer()
-                  )
-                  const pngImage = await pdfDoc.embedPng(pngBytes)
-
-                  page.drawImage(pngImage, {
-                    x: groupObj.left,
-                    y:
-                      pdfDimensions.height -
-                      groupObj.top -
-                      groupObj.height * groupObj.scaleY,
-                    width: groupObj.width * groupObj.scaleX,
-                    height: groupObj.height * groupObj.scaleY,
-                  })
-                }
+            case 'rect':
+              console.log('Drawing rectangle at', {
+                x,
+                y,
+                width: obj.width * scalingFactor,
+                height: obj.height * scalingFactor,
+              })
+              page.drawRectangle({
+                x: x,
+                y: y,
+                width: obj.width * scalingFactor,
+                height: obj.height * scalingFactor,
+                borderColor: f4a261Color, // Set border color to #f4a261
+                borderWidth: obj.strokeWidth || 1,
               })
               break
 
             case 'image':
-              // Handle the image outside of a group
               const pngDataUrl = await svgToPng(obj.src)
               const pngBytes = await fetch(pngDataUrl).then((res) =>
                 res.arrayBuffer()
               )
               const pngImage = await pdfDoc.embedPng(pngBytes)
-
               page.drawImage(pngImage, {
-                x: obj.left,
-                y: pdfDimensions.height - obj.top - obj.height * obj.scaleY,
-                width: obj.width * obj.scaleX,
-                height: obj.height * obj.scaleY,
+                x: x,
+                y: y,
+                width: obj.width * scalingFactor,
+                height: obj.height * scalingFactor,
               })
               break
 
+            case 'group':
+              console.log('Handling group object:', obj)
+
+              // Loop through each object inside the group and process it
+              for (const groupObj of obj.objects) {
+                const groupType = groupObj.type.toLowerCase()
+                console.log('Processing group object:', groupType)
+
+                // Calculate the global coordinates by combining the group's and object's coordinates
+                const groupX = (obj.left + groupObj.left) * scalingFactor
+                const groupY =
+                  pageHeight -
+                  obj.top * scalingFactor -
+                  (groupObj.top + groupObj.height) * scalingFactor
+
+                if (groupType === 'rect') {
+                  console.log('Drawing rectangle from group:', groupObj)
+
+                  page.drawRectangle({
+                    x: groupX,
+                    y: groupY,
+                    width: groupObj.width * scalingFactor,
+                    height: groupObj.height * scalingFactor,
+                    borderColor: f4a261Color, // Set group rectangle border color to #f4a261
+                    borderWidth: groupObj.strokeWidth || 1,
+                  })
+                } else if (groupType === 'image') {
+                  console.log('Drawing image from group:', groupObj)
+
+                  const groupPngDataUrl = await svgToPng(groupObj.src)
+                  const groupPngBytes = await fetch(groupPngDataUrl).then(
+                    (res) => res.arrayBuffer()
+                  )
+                  const groupPngImage = await pdfDoc.embedPng(groupPngBytes)
+
+                  page.drawImage(groupPngImage, {
+                    x: groupX,
+                    y: groupY,
+                    width: groupObj.width * scalingFactor,
+                    height: groupObj.height * scalingFactor,
+                  })
+                }
+              }
+              break
+
             default:
-              toast.error('Unhandled type:', type)
+              console.warn('Unhandled annotation type:', type)
               break
           }
         }
       }
 
+      // Save and download the PDF with annotations
       const pdfBytes = await pdfDoc.save()
       const blob = new Blob([pdfBytes], { type: 'application/pdf' })
       const link = document.createElement('a')
@@ -813,6 +796,7 @@ export const CanvasProvider = ({ children }) => {
       link.click()
     } catch (error) {
       toast.error('Failed to download the PDF.')
+      console.error(error)
     }
   }
 
@@ -1086,6 +1070,8 @@ export const CanvasProvider = ({ children }) => {
         setAllowPinchZoom,
         setOriginalPdfDimensions,
         originalPdfDimensions,
+        dbAnnotations,
+        setDbAnnotations,
       }}
     >
       {children}

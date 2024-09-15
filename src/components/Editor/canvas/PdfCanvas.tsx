@@ -46,7 +46,6 @@ function PdfCanvas({
     const maxWidth = window.innerWidth * 0.8
     // Set max height to 90% of the window's height
     const maxHeight = window.innerHeight * 0.9
-    console.log('maxWidth', maxWidth, 'maxHeight', maxHeight)
 
     // Calculate aspect ratio of the original document
     const aspectRatio = originalWidth / originalHeight
