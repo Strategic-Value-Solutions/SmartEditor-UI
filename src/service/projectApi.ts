@@ -45,6 +45,13 @@ const getProjectModels = async (projectId: any) => {
   return response.data.data
 }
 
+const getPickModelComponents = async (projectId: any, projectModelId: any) => {
+  const response = await api.get(
+    `/project/${projectId}/model/${projectModelId}/component`
+  )
+  return response.data.data
+}
+
 const uploadProjectModelPdf = async (
   projectId: string,
   projectModelId: string,
@@ -92,4 +99,5 @@ export default {
   uploadProjectModelPdf,
   skipPick,
   completePick,
+  getPickModelComponents,
 }

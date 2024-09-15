@@ -39,7 +39,7 @@ import pilot from '../assets/images/pilot.png'
 import reflecting from '../assets/images/reflecting.png'
 import removeCursor from '../assets/images/remove.svg'
 
-export default {
+const imageConstants: any = {
   noData,
   cubeLeg,
   growth,
@@ -81,3 +81,5 @@ export default {
   removeCursor,
   pilot,
 }
+
+export default imageConstants

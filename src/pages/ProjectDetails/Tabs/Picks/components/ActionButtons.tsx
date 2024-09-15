@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog'
 import { RootState } from '@/store'
 import { hasPickWriteAccess } from '@/utils'
-import { Ban, Check, Pencil } from 'lucide-react'
+import { Ban, Check, EllipsisVertical, Pencil } from 'lucide-react'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
@@ -82,8 +82,8 @@ const ActionButtons = ({
     <>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
-          <Button className='bg-blue-950 text-white rounded-lg px-4 py-2 hover:bg-blue-900 transition'>
-            Actions
+          <Button variant='ghost' size='icon'>
+            <EllipsisVertical />
           </Button>
         </DialogTrigger>
         <DialogContent className='max-w-md p-6 rounded-lg shadow-lg'>

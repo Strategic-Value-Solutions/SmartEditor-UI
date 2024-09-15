@@ -64,6 +64,7 @@ export default function Editor() {
     width: 1000,
     height: 820,
   })
+  const [components, setComponents] = useState([])
 
   useEffect(() => {
     setSelectedFile(pick?.fileUrl)
@@ -167,9 +168,21 @@ export default function Editor() {
     }
   }
 
+  const fetchComponents = async () => {
+    try {
+      const response = await projectApi.getPickModelComponents(
+        projectId,
+        pickId
+      )
+      setComponents(response)
+    } catch (error) {
+      toast.error(getErrorMessage(error))
+    }
+  }
+
   useEffect(() => {
     if (pick.id) {
-      fetchAnnotations()
+      Promise.all([fetchAnnotations(), fetchComponents()])
     }
   }, [pick.id, pick.fileUrl])
 
@@ -387,6 +400,7 @@ export default function Editor() {
               <ExtendedToolbar
                 toggleExtendedToolbar={toggleExtendedToolbar}
                 pick={pick}
+                tools={components}
               />
             )}
         </div>
