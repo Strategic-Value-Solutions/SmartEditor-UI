@@ -1,6 +1,7 @@
 // import { IconMoon, IconSun } from '@tabler/icons-react'
 import { Button } from '../ui/button'
 import { useTheme } from './theme-provider'
+import { DropdownMenuItem } from '@radix-ui/react-dropdown-menu'
 import { Moon, Sun } from 'lucide-react'
 import { useEffect } from 'react'
 
@@ -16,14 +17,21 @@ export default function ThemeSwitch() {
   }, [theme])
 
   return (
-    <Button
-      size='icon'
-      variant='ghost'
-      className='rounded-full'
+    <DropdownMenuItem
+      className='w-full flex items-center gap-2 outline-none pb-4 cursor-pointer'
       onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
     >
-      {/* {theme === 'light' ? 'dark' : 'light'} */}
-      {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-    </Button>
+      {theme === 'light' ? (
+        <>
+          <Moon size={20} />
+          <span>Dark Mode</span>
+        </>
+      ) : (
+        <>
+          <Sun size={20} />
+          <span>Light Mode</span>
+        </>
+      )}
+    </DropdownMenuItem>
   )
 }

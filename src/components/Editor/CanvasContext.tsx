@@ -124,14 +124,18 @@ export const CanvasProvider = ({ children }) => {
     const canvasJson = annotations[pageNumber]
     if (canvas) {
       if (data) {
-        canvas.loadFromJSON(data, () => {
+        console.log('data', data)
+        canvas.loadFromJSON(data, (res) => {
+          console.log('res', res)
           canvas.renderAll()
           setTimeout(() => {
             canvas.renderAll()
           }, 100)
         })
       } else {
-        canvas.loadFromJSON(annotations[pageNumber], () => {
+        console.log('annotations[pageNumber]', annotations[pageNumber])
+        canvas.loadFromJSON(annotations[pageNumber], (res) => {
+          console.log('res', res)
           canvas.renderAll()
           setTimeout(() => {
             canvas.renderAll()
