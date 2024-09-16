@@ -40,6 +40,7 @@ export const CanvasProvider = ({ children }) => {
     originalWidth: 0,
     originalHeight: 0,
   })
+  const [selectedTool, setSelectedTool] = useState(null)
   const currentProject = useSelector(
     (state: RootState) => state.project.currentProject
   )
@@ -214,8 +215,7 @@ export const CanvasProvider = ({ children }) => {
         img.toObject = (function (toObject) {
           return function () {
             return Object.assign(toObject.call(this), {
-              // TODO: Add properties here once components are dynamic
-              name: 'suresh',
+              // ...selectedTool,
               _id: uuidv4(),
             })
           }
@@ -234,6 +234,17 @@ export const CanvasProvider = ({ children }) => {
         strokeWidth: 2,
         selectable: false,
       })
+
+      rect.toObject = (function (toObject) {
+        return function () {
+          return Object.assign(toObject.call(this), {
+            // ...selectedTool,
+            _id: uuidv4(),
+          })
+        }
+      })(rect.toObject)
+
+      console.log(rect.toObject())
 
       canvas.add(rect)
 
@@ -299,6 +310,23 @@ export const CanvasProvider = ({ children }) => {
           selectable: false,
           hasControls: true,
         })
+
+        const selectedTool = JSON.parse(
+          window.localStorage.getItem('selectedTool')
+        )
+
+        console.log('selectedTool', selectedTool)
+
+        group.toObject = (function (toObject) {
+          return function () {
+            return Object.assign(toObject.call(this), {
+              ...selectedTool,
+              _id: uuidv4(),
+            })
+          }
+        })(group.toObject)
+
+        console.log(group.toObject())
 
         canvas.add(group)
 
@@ -653,6 +681,7 @@ export const CanvasProvider = ({ children }) => {
         await new Promise((resolve) => setTimeout(resolve, 1000)) // Ensure state is loaded
 
         const json = canvas.toJSON() // Now capture the state with annotations
+        console.log(json)
 
         const [originalPage] = await pdfDoc.copyPages(originalPdfDoc, [
           pageNum - 1,
@@ -911,8 +940,8 @@ export const CanvasProvider = ({ children }) => {
       drawInstance.toObject = (function (toObject) {
         return function () {
           return fabric.util.object.extend(toObject.call(this), {
-            name: 'suresh',
             _id: uuidv4(),
+            ...selectedTool,
           })
         }
       })(drawInstance.toObject)
@@ -921,11 +950,12 @@ export const CanvasProvider = ({ children }) => {
     }
   }
 
-  const addIcon = (icon) => {
+  const addIcon = ({ icon, tool }) => {
     if (!hasWriteAccess) {
       toast.error('You do not have write access to add shapes.')
       return
     }
+    setSelectedTool(tool)
     setMode('addIcon')
     setActiveIcon(icon)
   }

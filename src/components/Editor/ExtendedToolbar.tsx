@@ -41,7 +41,16 @@ function ExtendedToolbar({
                   key={`${index}-primary`}
                   type='button'
                   className='p-2 hover:bg-gray-200 rounded invert'
-                  onClick={() => editor.addIcon(imageConstants[tool.imageUrl])}
+                  onClick={() => {
+                    editor.addIcon({
+                      icon: imageConstants[tool.imageUrl],
+                      tool,
+                    })
+                    window.localStorage.setItem(
+                      'selectedTool',
+                      JSON.stringify(tool)
+                    )
+                  }}
                   style={{
                     filter: 'invert(0)', // Ensure icons aren't too light
                     boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)', // Add subtle shadow
