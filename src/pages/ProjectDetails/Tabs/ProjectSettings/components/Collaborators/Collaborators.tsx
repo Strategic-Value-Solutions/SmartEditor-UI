@@ -10,6 +10,7 @@ const Collaborators = () => {
   const { projectId } = useParams()
   const [search, setSearch] = useState('')
   const [collaborators, setCollaborators] = useState([])
+  const [filteredCollaborators, setFilteredCollaborators] = useState([])
   const [openInviteCollaboratorModal, setOpenInviteCollaboratorModal] =
     useState(false)
 
@@ -23,6 +24,7 @@ const Collaborators = () => {
     try {
       const response = await projectAccessApi.getProjectAccess(projectId)
       setCollaborators(response)
+      setFilteredCollaborators(response)
     } catch (error) {
       console.error('Error fetching collaborators:', error)
       // You might want to set an error state or show a notification here
@@ -32,6 +34,17 @@ const Collaborators = () => {
   useEffect(() => {
     getCollaborators()
   }, [projectId])
+
+  useEffect(() => {
+    const filtered = collaborators.filter(
+      (collaborator: any) =>
+        collaborator?.user?.email
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        collaborator?.user?.name.toLowerCase().includes(search.toLowerCase())
+    )
+    setFilteredCollaborators(filtered)
+  }, [search])
 
   return (
     <div className='bg-white dark:bg-gray-800  rounded-lg'>
@@ -56,7 +69,7 @@ const Collaborators = () => {
           />
         </div>
 
-        {collaborators.map((collaborator: any) => (
+        {filteredCollaborators.map((collaborator: any) => (
           <div
             key={collaborator?.id}
             className='flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-300 dark:border-gray-600'
