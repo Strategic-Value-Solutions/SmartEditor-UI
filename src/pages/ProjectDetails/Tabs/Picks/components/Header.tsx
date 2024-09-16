@@ -4,6 +4,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ViewTypeButtons from '@/components/ui/view-type-buttons'
 import projectApi from '@/service/projectApi'
 import { Download, Plus } from 'lucide-react'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
@@ -25,6 +26,9 @@ const Header = ({
   setActiveTab,
 }: HeaderProps) => {
   const { projectId }: any = useParams()
+
+  const [isLoading, setIsLoading] = useState(false)
+
   const handleViewChange = (value: string) => {
     setViewType(value)
   }
@@ -35,7 +39,10 @@ const Header = ({
 
   const downloadReport = async () => {
     try {
+      setIsLoading(true)
       const response = await projectApi.downloadReport(projectId)
+      setIsLoading(false)
+      return response
     } catch (error) {
       console.error(error)
     }
@@ -55,8 +62,9 @@ const Header = ({
           <Button
             onClick={() => downloadReport()}
             className='flex h-8 items-center justify-center gap-2 p-2'
+            disabled={isLoading}
           >
-            Download report
+            {isLoading ? 'Downloading...' : 'Download report'}
             <Download size={20} />
           </Button>
           <Button
