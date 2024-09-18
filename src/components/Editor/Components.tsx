@@ -151,10 +151,10 @@ export default function Components({ toggleExtendedToolbar, getInputProps }) {
             type='button'
             title={title}
             onClick={onClick}
-            className={`p-2 hover:bg-gray-200 rounded transition duration-150`}
+            className='p-1 hover:bg-gray-200 rounded white border border-gray-300 w-10 h-10 flex items-center justify-center bg-white'
             style={{
-              filter: 'invert(0)', // Make top 4 icons black
-              boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+              // filter: 'invert(0)', // Make top 4 icons black
+              // boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
             }}
           >
             {icon}

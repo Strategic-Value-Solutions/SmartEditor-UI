@@ -53,6 +53,7 @@ const Invitations = () => {
 
   const [search, setSearch] = useState('')
   const [invitations, setInvitations] = useState([])
+  const [filteredInvitations, setFilteredInvitations] = useState([])
   const [cancelInvitationLoading, setCancelInvitationLoading] = useState(false)
   const [openInviteCollaboratorModal, setOpenInviteCollaboratorModal] =
     useState(false)
@@ -63,6 +64,7 @@ const Invitations = () => {
     try {
       const response = await projectAccessApi.getProjectInvitations(projectId)
       setInvitations(response)
+      setFilteredInvitations(response)
     } catch (error) {
       console.error('Error getting invitations:', error)
     }
@@ -85,7 +87,12 @@ const Invitations = () => {
     }
     setCancelInvitationLoading(false)
   }
-
+  useEffect(() => {
+    const filtered = invitations.filter((invitation: any) =>
+      invitation?.email.toLowerCase().includes(search.toLowerCase())
+    )
+    setFilteredInvitations(filtered)
+  }, [search])
   return (
     <div className='bg-white dark:bg-gray-800  rounded-lg'>
       <div className='bg-gray-100 dark:bg-gray-700 p-3 sm:p-4 rounded-lg border border-gray-300 dark:border-gray-600'>
@@ -99,7 +106,7 @@ const Invitations = () => {
           />
         </div>
 
-        {invitations.map((invitation: any) => (
+        {filteredInvitations.map((invitation: any) => (
           <div
             key={invitation?.id}
             className='flex flex-row items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-lg mb-2'

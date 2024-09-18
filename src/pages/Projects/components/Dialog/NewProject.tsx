@@ -109,6 +109,7 @@ const NewProject = ({
         const response = await projectApi.createProject(projectData)
         dispatch(setCurrentProject(response))
         dispatch(addProject(response))
+        navigate(`/project/${response.id}`)
       }
 
       onClose()
@@ -116,7 +117,6 @@ const NewProject = ({
     } catch (error) {
       toast.error(getErrorMessage(error))
     }
-    // navigate('/editor')
   }
 
   return (

@@ -2,7 +2,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ViewTypeButtons from '@/components/ui/view-type-buttons'
-import { Plus } from 'lucide-react'
+import projectApi from '@/service/projectApi'
+import { Download, Plus } from 'lucide-react'
+import { useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 interface HeaderProps {
@@ -22,12 +25,27 @@ const Header = ({
   activeTab,
   setActiveTab,
 }: HeaderProps) => {
+  const { projectId }: any = useParams()
+
+  const [isLoading, setIsLoading] = useState(false)
+
   const handleViewChange = (value: string) => {
     setViewType(value)
   }
 
   const handleTabChange = (value: string) => {
     setActiveTab(value)
+  }
+
+  const downloadReport = async () => {
+    try {
+      setIsLoading(true)
+      const response = await projectApi.downloadReport(projectId)
+      setIsLoading(false)
+      return response
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   return (
@@ -41,6 +59,14 @@ const Header = ({
           onChange={(e) => setSearch(e.target.value)}
         />
         <div className='flex flex-row items-center justify-end gap-2'>
+          <Button
+            onClick={() => downloadReport()}
+            className='flex h-8 items-center justify-center gap-2 p-2'
+            disabled={isLoading}
+          >
+            {isLoading ? 'Downloading...' : 'Download report'}
+            <Download size={20} />
+          </Button>
           <Button
             onClick={() => toast.info('Coming soon')}
             className='flex h-8 items-center justify-center gap-2 p-2'

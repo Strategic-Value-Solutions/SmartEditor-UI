@@ -86,6 +86,25 @@ const completePick = async (projectModelId: string, projectId: string) => {
   return response.data.data
 }
 
+const downloadReport = async (projectId: string) => {
+  const response = await api.get(`/project/${projectId}/report`, {
+    responseType: 'blob',
+  })
+
+  const blob = new Blob([response.data], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  })
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.setAttribute('download', `project_${projectId}_report.xlsx`)
+  document.body.appendChild(link)
+  link.click()
+  link?.parentNode?.removeChild(link)
+  window.URL.revokeObjectURL(url)
+  return response.data.data
+}
+
 export default {
   createProject,
   updateProject,
@@ -100,4 +119,5 @@ export default {
   skipPick,
   completePick,
   getPickModelComponents,
+  downloadReport,
 }

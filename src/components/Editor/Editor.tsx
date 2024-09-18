@@ -157,6 +157,7 @@ export default function Editor() {
       if (editor.canvas) {
         editor.canvas.clear() // Clear the canvas
         if (transformedData[editor.currPage]) {
+          console.log(transformedData[editor.currPage])
           editor.loadCanvasState(
             editor.currPage,
             transformedData[editor.currPage]
