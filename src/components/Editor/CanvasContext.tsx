@@ -1,7 +1,7 @@
 // @ts-nocheck
 import imageConstants from '@/constants/imageConstants'
 import { RootState } from '@/store'
-import { getErrorMessage, hasPickWriteAccess } from '@/utils'
+import { changeSvgColor, getErrorMessage, hasPickWriteAccess } from '@/utils'
 import * as fabric from 'fabric'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
@@ -33,7 +33,6 @@ export const CanvasProvider = ({ children }) => {
   const [exportPages, setExportPages] = useState([])
   const [pdfDimensions, setPdfDimensions] = useState({ width: 0, height: 0 })
   const [annotations, setAnnotations] = useState({})
-  const [dbAnnotations, setDbAnnotations] = useState({})
   const [isSelectFilePDF, setIsSelectFilePDF] = useState(false)
   const [allowPinchZoom, setAllowPinchZoom] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
@@ -42,6 +41,8 @@ export const CanvasProvider = ({ children }) => {
     originalHeight: 0,
   })
   const [selectedTool, setSelectedTool] = useState(null)
+  const [showAnnotationModal, setShowAnnotationModal] = useState(false)
+  const [selectedAnnotation, setSelectedAnnotation] = useState(null)
   const currentProject = useSelector(
     (state: RootState) => state.project.currentProject
   )
@@ -106,6 +107,68 @@ export const CanvasProvider = ({ children }) => {
     updateCursorStyle()
   }, [activeIcon])
 
+  const changeAnnotationStatusById = async (
+    annotationId,
+    newStatus,
+    pageNumber = currPage
+  ) => {
+    if (!canvas) return
+
+    // Define colors based on the status
+    const statusColors = {
+      new: 'red',
+      'in progress': 'blue',
+      completed: 'green',
+    }
+
+    // Find all objects in the canvas
+    const objects = canvas.getObjects()
+
+    // Loop through all objects and check their type and _id
+    for (const annotation of objects) {
+      // If it's the matching annotation by its _id
+      if (annotation._id === annotationId) {
+        // Update the status of the selected annotation
+        annotation.set({ status: newStatus })
+
+        // Get the new color based on the status
+        const newColor = statusColors[newStatus] || 'black'
+
+        // If the annotation is a group, process its objects
+        if (annotation.type === 'group') {
+          for (const groupObj of annotation.getObjects()) {
+            // Find the rectangle in the group to change its border color
+            if (groupObj.type === 'rect') {
+              groupObj.set({
+                stroke: newColor, // Change the border color of the rectangle
+              })
+              console.log('Group border color updated:', newColor)
+            }
+          }
+        } else if (annotation.type === 'rect') {
+          // If the annotation is directly a rectangle, apply border color change
+          annotation.set({
+            stroke: newColor, // Change the border color directly
+          })
+          console.log('Annotation border color updated:', newColor)
+        }
+
+        // Re-render the canvas after updates
+        canvas.renderAll()
+
+        // Save the updated canvas state
+        saveCanvasState(pageNumber)
+
+        // Close the modal
+        setShowAnnotationModal(false)
+        return // Stop after finding and updating the matching annotation
+      }
+    }
+
+    // If no matching annotation found, show error
+    toast.error('Annotation not found')
+  }
+
   const saveCanvasState = (pageNumber) => {
     if (canvas) {
       const canvasJson = canvas.toJSON()
@@ -121,28 +184,45 @@ export const CanvasProvider = ({ children }) => {
     localStorage.setItem('currentPage', page) // Save the current page to localStorage
   }
 
-  const loadCanvasState = (pageNumber = currPage, data = null) => {
+  const loadCanvasState = async (pageNumber = currPage, data = null) => {
     const canvasJson = annotations[pageNumber]
+
     if (canvas) {
-      if (data) {
-        console.log('data', data)
-        canvas.loadFromJSON(data, (res) => {
-          console.log('res', res)
-          canvas.renderAll()
-          setTimeout(() => {
-            canvas.renderAll()
-          }, 100)
-        })
-      } else {
-        console.log('annotations[pageNumber]', annotations[pageNumber])
-        canvas.loadFromJSON(annotations[pageNumber], (res) => {
-          console.log('res', res)
-          canvas.renderAll()
-          setTimeout(() => {
-            canvas.renderAll()
-          }, 100)
-        })
+      const modifyObjectsBasedOnStatus = async (canvasData) => {
+        // Loop through all objects and modify them based on their status
+        for (const obj of canvasData.objects) {
+          const type = obj.type.toLowerCase()
+          if (obj.status === 'new' && type === 'image') {
+            // Apply red color for new image objects
+            const redColoredSvg = await changeSvgColor(obj.src, 'red')
+            obj.src = redColoredSvg
+          }
+
+          // If it's a group, check inside the group objects
+          if (type === 'group') {
+            for (const groupObj of obj.objects) {
+              const groupType = groupObj.type.toLowerCase()
+              if (groupType === 'image' && groupObj.status === 'new') {
+                const redColoredSvg = await changeSvgColor(groupObj.src, 'red')
+
+                groupObj.src = redColoredSvg
+              }
+            }
+          }
+        }
+        return canvasData
       }
+
+      const modifiedCanvasJson = await modifyObjectsBasedOnStatus(
+        data || annotations[pageNumber]
+      )
+
+      canvas.loadFromJSON(modifiedCanvasJson, () => {
+        canvas.renderAll()
+        setTimeout(() => {
+          canvas.renderAll()
+        }, 100)
+      })
     }
   }
 
@@ -162,11 +242,37 @@ export const CanvasProvider = ({ children }) => {
     if (allowPinchZoom) {
       return
     }
-
     if (!canvas || mode === 'erase') return
-    const pointer = canvas.getPointer(event.e)
 
-    if (mode === 'create-rect') {
+    const pointer = canvas.getPointer(event.e)
+    const status = 'new'
+
+    if (mode === 'change-status' || mode === '') {
+      const activeObject = canvas.getActiveObject()
+
+      if (activeObject) {
+        // Disable controls for resizing, rotating, and moving
+        activeObject.selectable = false
+        activeObject.hasControls = false
+        activeObject.evented = true // Keep evented true to allow it to trigger click events
+
+        // Optional: Set controls visibility to false, so the user can't see them
+
+        // Ensure the object doesn't move when clicked
+        activeObject.lockMovementX = true
+        activeObject.lockMovementY = true
+
+        // Get the JSON properties of the activeObject and store it
+        const activeObjectJson = activeObject.toObject()
+
+        setSelectedAnnotation(activeObjectJson)
+
+        setShowAnnotationModal(true)
+
+        // Re-render the canvas to reflect changes
+        canvas.renderAll()
+      }
+    } else if (mode === 'create-rect') {
       const rect = new fabric.Rect({
         height: 50,
         width: 50,
@@ -194,19 +300,25 @@ export const CanvasProvider = ({ children }) => {
         top: pointer.y,
         fill: color,
         fontFamily: 'roboto',
-        selectable: true,
+        selectable: false,
         editable: true,
       })
       canvas.add(text)
       canvas.setActiveObject(text)
       text.enterEditing()
     } else if (mode === 'addIcon' && activeIconRef.current) {
-      const pointer = canvas.getPointer(event.e)
       let img
 
+      // Use the actual original URL instead of creating a blob URL
+      const originalIconUrl = activeIconRef.current // Store original icon URL
+
+      // Change the color of the SVG to the desired color (red in this case)
+      const svgWithNewColor = await changeSvgColor(activeIconRef.current, 'red')
+
+      // Create the image element
       const imgElement = document.createElement('img')
       imgElement.crossOrigin = 'anonymous'
-      imgElement.src = activeIconRef.current
+      imgElement.src = svgWithNewColor // This will be used for display purposes
 
       imgElement.onload = function () {
         img = new fabric.Image(imgElement, {
@@ -217,138 +329,51 @@ export const CanvasProvider = ({ children }) => {
           scaleY: 1,
         })
 
+        // Set the original URL instead of the blob URL for the 'src'
         img.toObject = (function (toObject) {
           return function () {
             return Object.assign(toObject.call(this), {
-              // ...selectedTool,
               _id: uuidv4(),
+              status,
+              src: originalIconUrl, // Store the actual URL in the object
             })
           }
         })(img.toObject)
 
-        canvas.add(img)
-      }
-
-      let rect = new fabric.Rect({
-        left: pointer.x,
-        top: pointer.y,
-        width: 0,
-        height: 0,
-        fill: 'transparent',
-        stroke: borderColor,
-        strokeWidth: 2,
-        selectable: false,
-      })
-
-      rect.toObject = (function (toObject) {
-        return function () {
-          return Object.assign(toObject.call(this), {
-            // ...selectedTool,
-            _id: uuidv4(),
-          })
-        }
-      })(rect.toObject)
-
-      console.log(rect.toObject())
-
-      canvas.add(rect)
-
-      const onMouseMove = function (event) {
-        const pointerMove = canvas.getPointer(event.e)
-        let newLeft = pointer.x
-        let newTop = pointer.y
-
-        if (pointerMove.x < pointer.x) {
-          newLeft = pointerMove.x
-        }
-
-        if (pointerMove.y < pointer.y) {
-          newTop = pointerMove.y
-        }
-
-        rect.set({
-          left: newLeft,
-          top: newTop,
-          width: Math.abs(pointerMove.x - pointer.x),
-          height: Math.abs(pointerMove.y - pointer.y),
+        // Create the smallest rectangle around the icon based on the image dimensions
+        const rect = new fabric.Rect({
+          left: pointer.x,
+          top: pointer.y,
+          width: img.width,
+          height: img.height,
+          fill: 'transparent',
+          stroke: borderColor,
+          strokeWidth: 2,
+          selectable: false,
         })
 
-        if (img) {
-          img.set({
-            left: newLeft,
-            top: newTop,
-          })
-
-          img.setCoords()
-        }
-
-        rect.setCoords()
-        canvas.renderAll()
-      }
-
-      const onMouseUp = function () {
-        const rectArea = rect.get('width') * rect.get('height')
-        const imgArea =
-          img.get('scaleX') *
-          img.get('width') *
-          img.get('scaleY') *
-          img.get('height')
-
-        if (rectArea < imgArea) {
-          toast.error(
-            'The rectangle is too small for the icon. Please draw a larger rectangle.'
-          )
-
-          canvas.remove(rect)
-          if (img) {
-            canvas.remove(img)
-          }
-          canvas.renderAll()
-
-          canvas.off('mouse:move', onMouseMove)
-          canvas.off('mouse:up', onMouseUp)
-
-          return
-        }
-
+        // Group the rectangle and image together
         const group = new fabric.Group([rect, img], {
           selectable: false,
-          hasControls: true,
+          hasControls: false,
         })
 
-        const selectedTool = JSON.parse(
-          window.localStorage.getItem('selectedTool')
-        )
-
-        console.log('selectedTool', selectedTool)
-
+        // Assign unique IDs and add the group to the canvas
         group.toObject = (function (toObject) {
           return function () {
             return Object.assign(toObject.call(this), {
-              ...selectedTool,
               _id: uuidv4(),
+              status,
             })
           }
         })(group.toObject)
 
-        console.log(group.toObject())
-
         canvas.add(group)
-
-        canvas.remove(rect)
-        canvas.remove(img)
-
-        canvas.off('mouse:move', onMouseMove)
-        canvas.off('mouse:up', onMouseUp)
+        canvas.renderAll()
       }
-
-      canvas.on('mouse:move', onMouseMove)
-      canvas.on('mouse:up', onMouseUp)
     }
 
-    canvas.renderAll()
-
-    // Save the canvas state immediately after any changes are made
+    // Save the canvas state after any changes
     saveCanvasState(currPage)
   }
 
@@ -408,6 +433,10 @@ export const CanvasProvider = ({ children }) => {
     } else if (mode === 'select' || mode === 'move') {
       canvas.selection = true
       canvas.forEachObject((obj) => (obj.selectable = true))
+    } else if (mode === 'change-status' || mode === '') {
+      canvas.selection = false
+      canvas.forEachObject((obj) => (obj.selectable = false))
+      canvas.on('mouse:down', handleCanvasClick)
     }
 
     updateCursorStyle()
@@ -606,6 +635,14 @@ export const CanvasProvider = ({ children }) => {
     setMode('create-rect')
   }
 
+  const changeStatus = () => {
+    if (!hasWriteAccess) {
+      toast.error('You do not have write access to change status.')
+      return
+    }
+    setMode('change-status')
+  }
+
   const addCircle = () => {
     if (!hasWriteAccess) {
       toast.error('You do not have write access to add shapes.')
@@ -638,11 +675,8 @@ export const CanvasProvider = ({ children }) => {
     setMode('move')
   }
 
-  console.log(annotations, 'ANNOTATIONS')
-
   const downloadPDFWithAnnotations = async () => {
     let selectedFile = currentProjectModel?.fileUrl
-    console.log(selectedFile, 'SELECTED FILE')
 
     if (
       !pdfDimensions.width ||
@@ -706,7 +740,6 @@ export const CanvasProvider = ({ children }) => {
         await new Promise((resolve) => setTimeout(resolve, 1000)) // Ensure state is loaded
 
         const json = canvas.toJSON() // Now capture the state with annotations
-        console.log(json)
 
         const [originalPage] = await pdfDoc.copyPages(originalPdfDoc, [
           pageNum - 1,
@@ -721,7 +754,6 @@ export const CanvasProvider = ({ children }) => {
 
         for (const obj of pageAnnotations) {
           const type = obj.type.toLowerCase()
-          console.log('Processing annotation type:', type)
 
           const x = obj.left * scalingFactor
           const y =
@@ -729,7 +761,6 @@ export const CanvasProvider = ({ children }) => {
 
           switch (type) {
             case 'text':
-              console.log('Drawing text:', obj.text, 'at', { x, y })
               page.drawText(obj.text, {
                 x: x,
                 y: y,
@@ -739,12 +770,6 @@ export const CanvasProvider = ({ children }) => {
               break
 
             case 'rect':
-              console.log('Drawing rectangle at', {
-                x,
-                y,
-                width: obj.width * scalingFactor,
-                height: obj.height * scalingFactor,
-              })
               page.drawRectangle({
                 x: x,
                 y: y,
@@ -770,12 +795,9 @@ export const CanvasProvider = ({ children }) => {
               break
 
             case 'group':
-              console.log('Handling group object:', obj)
-
               // Loop through each object inside the group and process it
               for (const groupObj of obj.objects) {
                 const groupType = groupObj.type.toLowerCase()
-                console.log('Processing group object:', groupType)
 
                 // Calculate the global coordinates by combining the group's and object's coordinates
                 const groupX = (obj.left + groupObj.left) * scalingFactor
@@ -785,8 +807,6 @@ export const CanvasProvider = ({ children }) => {
                   (groupObj.top + groupObj.height) * scalingFactor
 
                 if (groupType === 'rect') {
-                  console.log('Drawing rectangle from group:', groupObj)
-
                   page.drawRectangle({
                     x: groupX,
                     y: groupY,
@@ -796,8 +816,6 @@ export const CanvasProvider = ({ children }) => {
                     borderWidth: groupObj.strokeWidth || 1,
                   })
                 } else if (groupType === 'image') {
-                  console.log('Drawing image from group:', groupObj)
-
                   const groupPngDataUrl = await svgToPng(groupObj.src)
                   const groupPngBytes = await fetch(groupPngDataUrl).then(
                     (res) => res.arrayBuffer()
@@ -1060,10 +1078,7 @@ export const CanvasProvider = ({ children }) => {
       })
     }
   }, [pdfDimensions])
-  console.log({
-    originalPdfDimensions,
-    pdfDimensions,
-  })
+
   return (
     <editorFunctions.Provider
       value={{
@@ -1105,8 +1120,13 @@ export const CanvasProvider = ({ children }) => {
         setAllowPinchZoom,
         setOriginalPdfDimensions,
         originalPdfDimensions,
-        dbAnnotations,
-        setDbAnnotations,
+
+        changeStatus,
+        showAnnotationModal,
+        setShowAnnotationModal,
+        selectedAnnotation,
+        setSelectedAnnotation,
+        changeAnnotationStatusById,
       }}
     >
       {children}

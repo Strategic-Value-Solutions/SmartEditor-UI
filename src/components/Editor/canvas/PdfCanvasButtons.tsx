@@ -62,7 +62,9 @@ export default function PdfCanvasButtons({
       )}
 
       <button
-        onClick={zoomIn}
+        onClick={() => {
+          zoomIn()
+        }}
         className='p-1 hover:bg-gray-200 rounded-md bg-gray-100 border border-gray-300 transition duration-150 shadow-md export-exclude'
         id='zoom-in'
       >
@@ -70,7 +72,9 @@ export default function PdfCanvasButtons({
       </button>
 
       <button
-        onClick={zoomOut}
+        onClick={() => {
+          zoomOut()
+        }}
         className='p-1 hover:bg-gray-200 rounded-md bg-gray-100 border border-gray-300 transition duration-150 shadow-md export-exclude'
         id='zoom-out'
       >
@@ -107,7 +111,9 @@ export default function PdfCanvasButtons({
         )}
 
       <button
-        onClick={resetTransform}
+        onClick={() => {
+          resetTransform()
+        }}
         id='rotate-ccw'
         className='p-1 hover:bg-gray-200 rounded-md bg-gray-100 border border-gray-300 transition duration-150 shadow-md export-exclude'
       >

@@ -75,3 +75,22 @@ export const hasProjectWriteAccess = (projectRole: string) => {
   }
   return false
 }
+
+export async function changeSvgColor(svgUrl: string, color: string) {
+  // Fetch the SVG file
+  const response = await fetch(svgUrl)
+  if (!response.ok) {
+    throw new Error('Failed to fetch the SVG file')
+  }
+
+  // Get the SVG text
+  let svgText = await response.text()
+
+  // Change the color of the SVG by replacing 'fill' and 'stroke' attributes
+  svgText = svgText
+    .replace(/fill="[^"]+"/g, `fill="${color}"`)
+    .replace(/stroke="[^"]+"/g, `stroke="${color}"`)
+
+  // Return the modified SVG text directly instead of creating a blob URL
+  return `data:image/svg+xml;base64,${btoa(svgText)}`
+}

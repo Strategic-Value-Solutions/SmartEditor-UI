@@ -27,7 +27,7 @@ function ExtendedToolbar({
 
   return (
     <div
-      className={`fixed z-50 bg-gradient-to-br border bg-gray-100 border-gray-300 w-24 p-1 transition-all duration-300 left-0 top-0 h-full overflow-y-auto`}
+      className={`fixed z-50 bg-gradient-to-br border bg-gray-100 border-gray-300 w-28 p-1 transition-all duration-300 left-0 top-0 h-full overflow-y-auto`}
       id='toolbar'
     >
       <div className='flex flex-col items-center justify-center p-2 text-sm bg-blue-950 text-white rounded-sm'>

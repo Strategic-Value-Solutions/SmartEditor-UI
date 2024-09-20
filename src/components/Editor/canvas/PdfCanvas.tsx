@@ -1,4 +1,5 @@
 // @ts-nocheck
+import AnnotationModal from '../../Editor/AnnotationModal'
 import Loader from '../Loader'
 import PdfCanvasButtons from './PdfCanvasButtons'
 import { editorSteps } from '@/Tours/constants'
@@ -82,6 +83,9 @@ function PdfCanvas({
         boxSizing: 'border-box',
       }}
     >
+      <AnnotationModal>
+        <div className='flex items-center justify-center'></div>
+      </AnnotationModal>
       <div
         className={`flex items-center justify-center ${
           editor.theme ? 'bg-[rgb(20,20,20)] text-white' : 'bg-white text-black'

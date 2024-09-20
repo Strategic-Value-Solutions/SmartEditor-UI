@@ -4,6 +4,7 @@ import { PROJECT_ACCESS_ROLES } from '@/Tours/constants'
 import { RootState } from '@/store'
 import { updateCurrentProjectDetails } from '@/store/slices/projectSlice'
 import { hasPickWriteAccess } from '@/utils'
+import { on } from 'events'
 import debounce from 'lodash/debounce'
 import {
   FileDown,
@@ -13,6 +14,7 @@ import {
   Eraser,
   Trash2,
   Type,
+  Pencil,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -136,6 +138,12 @@ export default function Components({ toggleExtendedToolbar, getInputProps }) {
       icon: <FileDown className='w-6 h-6' />,
       show: true,
     },
+    {
+      title: 'Change Status',
+      onClick: () => editor.changeStatus(),
+      icon: <Pencil className='w-6 h-6' />,
+      show: true,
+    },
   ]
 
   return (
@@ -152,10 +160,12 @@ export default function Components({ toggleExtendedToolbar, getInputProps }) {
             title={title}
             onClick={onClick}
             className='p-1 hover:bg-gray-200 rounded white border border-gray-300 w-10 h-10 flex items-center justify-center bg-white'
-            style={{
-              // filter: 'invert(0)', // Make top 4 icons black
-              // boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
-            }}
+            style={
+              {
+                // filter: 'invert(0)', // Make top 4 icons black
+                // boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+              }
+            }
           >
             {icon}
           </button>
