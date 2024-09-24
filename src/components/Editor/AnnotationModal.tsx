@@ -1,4 +1,5 @@
-import { useEditor } from './CanvasContext'
+//@ts-nocheck
+import { useEditor } from './CanvasContext/CanvasContext'
 import {
   Dialog,
   DialogContent,
@@ -19,22 +20,32 @@ import { useEffect, useState } from 'react'
 const AnnotationModal = ({ children }) => {
   const editor = useEditor()
   const [status, setStatus] = useState(
-    editor?.selectedAnnotation?.status || 'new'
+    editor?.selectedAnnotation?.status || 'Pending'
   )
 
-  // Function to handle status change and close the modal
+  // Debugging log
+  // Function to handle status change, update annotation color, and close the modal
   const handleStatusChange = (newStatus) => {
+    // Debugging log
     setStatus(newStatus)
+
     // Update the status of the selected annotation
-    if (editor.selectedAnnotation?._id) {
+    if (editor.selectedAnnotation?.id) {
       editor.changeAnnotationStatusById(
-        editor.selectedAnnotation._id,
-        newStatus
+        editor.selectedAnnotation.id,
+        newStatus,
+        editor.currPage
       )
+
+      // Close the modal after status is changed
+      editor.setShowAnnotationModal(false)
+    } else {
+      console.error('No annotation selected or invalid editor state')
     }
   }
 
   useEffect(() => {
+    // Debugging log
     setStatus(editor?.selectedAnnotation?.status || 'new')
   }, [editor.selectedAnnotation])
 
@@ -62,9 +73,9 @@ const AnnotationModal = ({ children }) => {
                 <SelectValue placeholder='Select a status' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='new'>New</SelectItem>
-                <SelectItem value='in progress'>In Progress</SelectItem>
-                <SelectItem value='completed'>Completed</SelectItem>
+                <SelectItem value='Pending'>Pending</SelectItem>
+                <SelectItem value='Working'>Working</SelectItem>
+                <SelectItem value='Completed'>Completed</SelectItem>
               </SelectContent>
             </Select>
           </div>

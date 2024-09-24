@@ -1,12 +1,10 @@
 import { RootState } from '@/store'
-import { hasPickWriteAccess } from '@/utils'
 import {
   ChevronLeft,
   ChevronRight,
   Pause,
   Play,
   RotateCcw,
-  Save,
   ZoomIn,
   ZoomOut,
 } from 'lucide-react'
@@ -94,21 +92,6 @@ export default function PdfCanvasButtons({
           <Play className='w-5 h-5 text-black' />
         )}
       </button>
-
-      {pick?.status !== 'Completed' &&
-        pick?.status !== 'Skipped' &&
-        hasPickWriteAccess(
-          currentProject?.permission,
-          pick?.ProjectModelAccess?.[0]?.permission
-        ) && (
-          <button
-            id='saveAnnotations'
-            className='p-1 hover:bg-gray-200 rounded-md bg-gray-100 border border-gray-300 transition duration-150 shadow-md export-exclude'
-            onClick={handleSaveAnnotations}
-          >
-            <Save className='w-5 h-5' />
-          </button>
-        )}
 
       <button
         onClick={() => {

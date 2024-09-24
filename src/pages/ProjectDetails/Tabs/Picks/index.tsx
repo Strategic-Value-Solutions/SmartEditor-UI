@@ -2,7 +2,7 @@
 import ListProjectModels from './ListProjectModels'
 import Header from './components/Header'
 import { projectModelTour } from '@/Tours/constants'
-import Loader from '@/components/ui/Loader'
+import SkeletonCard from '@/components/ui/skeleton'
 import projectApi from '@/service/projectApi'
 import { RootState } from '@/store'
 import {
@@ -30,10 +30,12 @@ const ProjectModels = () => {
   const { projectModels } = useSelector(
     (state: RootState) => state.projectModels
   )
+
   const handleSetProjectModels = (projectModels: any) => {
     dispatch(setProjectModels(projectModels))
     setLoading(false)
   }
+
   const isProjectModelTourCompleted =
     localStorage.getItem('projectModelTourCompleted')?.toString() === 'true'
 
@@ -80,11 +82,9 @@ const ProjectModels = () => {
       await projectApi.skipPick(pick.id, pick.projectId)
       toast.success('Project Model skipped')
 
-      // Create a new array with updated models
       const updatedModels = projectModels.map(
         (projectModel: any, index: number) => {
           if (projectModel.id === pick.id) {
-            // Mark the current pick as skipped and inactive
             return {
               ...projectModel,
               status: 'Skipped',
@@ -92,7 +92,6 @@ const ProjectModels = () => {
             }
           }
 
-          // Activate the next pick if it's the one following the skipped pick
           if (
             index ===
             projectModels.findIndex((model) => model.id === pick.id) + 1
@@ -103,11 +102,10 @@ const ProjectModels = () => {
             }
           }
 
-          return projectModel // Return other models unchanged
+          return projectModel
         }
       )
 
-      // Update the state with the new project models
       handleSetProjectModels(updatedModels)
     } catch (error) {
       toast.error(getErrorMessage(error))
@@ -126,11 +124,9 @@ const ProjectModels = () => {
       await projectApi.completePick(pick.id, pick.projectId)
       toast.success('Project Model completed')
 
-      // Create a new array with updated models
       const updatedModels = projectModels.map(
         (projectModel: any, index: number) => {
           if (projectModel.id === pick.id) {
-            // Mark the current pick as completed and inactive
             return {
               ...projectModel,
               status: 'Completed',
@@ -138,7 +134,6 @@ const ProjectModels = () => {
             }
           }
 
-          // Activate the next pick if it's the one following the completed pick
           if (
             index ===
             projectModels.findIndex((model) => model.id === pick.id) + 1
@@ -149,11 +144,10 @@ const ProjectModels = () => {
             }
           }
 
-          return projectModel // Return other models unchanged
+          return projectModel
         }
       )
 
-      // Update the state with the new project models
       handleSetProjectModels(updatedModels)
     } catch (error) {
       toast.error(getErrorMessage(error))
@@ -173,11 +167,8 @@ const ProjectModels = () => {
     }
   }, [search, projectModels])
 
-  if (loading) return <Loader />
-
   return (
     <div className='flex flex-col'>
-      {/* <h3 className='ml-3 flex h-8 flex-col pb-1 text-2xl'>Project Models</h3> */}
       <Header
         viewType={viewType}
         setViewType={setViewType}
@@ -185,19 +176,28 @@ const ProjectModels = () => {
         search={search}
       />
 
-      <ListProjectModels
-        showPickModal={showPickModal}
-        setShowPickModal={setShowPickModal}
-        selectedPick={selectedPick}
-        setSelectedPick={setSelectedPick}
-        projectId={projectId}
-        viewType={viewType}
-        projectModels={filteredModels} // Pass filteredModels here
-        handleSelectPick={handleSelectPick}
-        handleRedirectToEditor={handleRedirectToEditor}
-        skipPick={skipPick}
-        completePick={completePick}
-      />
+      {/* Show skeleton cards when loading */}
+      {loading ? (
+        <div className='grid grid-cols-1 md:grid-cols-6 gap-4'>
+          {Array.from({ length: 6 }).map((_, index) => (
+            <SkeletonCard key={index} />
+          ))}
+        </div>
+      ) : (
+        <ListProjectModels
+          showPickModal={showPickModal}
+          setShowPickModal={setShowPickModal}
+          selectedPick={selectedPick}
+          setSelectedPick={setSelectedPick}
+          projectId={projectId}
+          viewType={viewType}
+          projectModels={filteredModels}
+          handleSelectPick={handleSelectPick}
+          handleRedirectToEditor={handleRedirectToEditor}
+          skipPick={skipPick}
+          completePick={completePick}
+        />
+      )}
     </div>
   )
 }

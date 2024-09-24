@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useEditor } from './CanvasContext'
+import { useEditor } from './CanvasContext/CanvasContext'
 import { PROJECT_ACCESS_ROLES } from '@/Tours/constants'
 import { RootState } from '@/store'
 import { updateCurrentProjectDetails } from '@/store/slices/projectSlice'
@@ -99,13 +99,13 @@ export default function Components({ toggleExtendedToolbar, getInputProps }) {
       show,
       isTopFour: true, // Add flag for top four icons
     },
-    {
-      title: 'Text',
-      onClick: () => editor.addText(),
-      icon: <Type className='w-6 h-6' />,
-      show,
-      isTopFour: true, // Add flag for top four icons
-    },
+    // {
+    //   title: 'Text',
+    //   onClick: () => editor.addText(),
+    //   icon: <Type className='w-6 h-6' />,
+    //   show,
+    //   isTopFour: true, // Add flag for top four icons
+    // },
     {
       title: 'Eraser',
       onClick: () => editor.eraseMode(),

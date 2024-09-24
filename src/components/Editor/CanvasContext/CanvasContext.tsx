@@ -1,17 +1,31 @@
 // @ts-nocheck
 import imageConstants from '@/constants/imageConstants'
+import annotationApi from '@/service/annotationApi'
 import { RootState } from '@/store'
 import { changeSvgColor, getErrorMessage, hasPickWriteAccess } from '@/utils'
 import * as fabric from 'fabric'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
-import { degrees, PDFDocument, rgb } from 'pdf-lib'
+import debounce from 'lodash/debounce'
+import { Pencil } from 'lucide-react'
+import { PDFDocument, rgb } from 'pdf-lib'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
 const editorFunctions = createContext()
+// Extend fabric objects globally to include custom properties like 'id' and 'status'
+// Safely extend fabric.Object prototype to include custom properties (id, status)
+fabric.Object.prototype.toObject = (function (toObject) {
+  return function () {
+    // Use Object.assign to ensure custom properties like id and status are added
+    return Object.assign(toObject.call(this), {
+      id: this.id || '', // Ensure id is set, even if it doesn't exist
+      status: this.status || 'Pending', // Default status if not provided
+    })
+  }
+})(fabric.Object.prototype.toObject)
 
 export const useEditor = () => {
   return useContext(editorFunctions)
@@ -25,7 +39,7 @@ export const CanvasProvider = ({ children }) => {
   const [isExporting, setExporting] = useState(false)
   const [hideCanvas, setHiddenCanvas] = useState(false)
   const [canvas, setCanvas] = useState<fabric.Canvas>(null)
-  const [borderColor] = useState('#f4a261')
+  const [borderColor] = useState('red')
   const [color] = useState('#000000')
   const [mode, setMode] = useState('')
   const [activeIcon, setActiveIcon] = useState(null)
@@ -40,6 +54,7 @@ export const CanvasProvider = ({ children }) => {
     originalWidth: 0,
     originalHeight: 0,
   })
+  const [toggleAnnotationFetch, setToggleAnnotationFetch] = useState(false)
   const [selectedTool, setSelectedTool] = useState(null)
   const [showAnnotationModal, setShowAnnotationModal] = useState(false)
   const [selectedAnnotation, setSelectedAnnotation] = useState(null)
@@ -53,6 +68,220 @@ export const CanvasProvider = ({ children }) => {
     currentProject?.permission,
     currentProjectModel?.ProjectModelAccess?.[0]?.permission
   )
+
+  useEffect(() => {
+    if (!canvas) return
+
+    // Clean up previous event listeners
+    resetCanvasListeners()
+
+    if (mode === 'change-status') {
+      // Disable interaction, controls, and movement
+      canvas.selection = false // Disable group selection
+
+      // Iterate over all objects on the canvas and disable movement/controls
+      canvas.forEachObject((obj) => {
+        obj.selectable = true // Enable selection
+        obj.hasControls = false // Disable controls (resizing, rotating)
+        obj.evented = true // Enable click events to be triggered
+        obj.lockMovementX = true // Lock horizontal movement
+        obj.lockMovementY = true // Lock vertical movement
+        obj.lockScalingX = true // Lock scaling horizontally
+        obj.lockScalingY = true // Lock scaling vertically
+        obj.lockRotation = true // Lock rotation
+      })
+
+      // Add the event listener for mouse down only in change-status mode
+      canvas.on('mouse:down', handleCanvasClick)
+    } else if (mode === 'select') {
+      // In select mode, enable controls and movement
+      canvas.selection = true // Enable group selection
+      canvas.forEachObject((obj) => {
+        obj.selectable = true // Allow selection
+        obj.hasControls = true // Enable controls (resizing, rotating)
+        obj.evented = true // Enable interaction (dragging/moving)
+        obj.lockMovementX = false // Unlock movement horizontally
+        obj.lockMovementY = false // Unlock movement vertically
+        obj.lockScalingX = false // Unlock scaling horizontally
+        obj.lockScalingY = false // Unlock scaling vertically
+        obj.lockRotation = false // Unlock rotation
+      })
+
+      // Clean up the canvas click listener from change-status mode
+      canvas.off('mouse:down', handleCanvasClick)
+    }
+
+    // Render the canvas with the updated properties
+    canvas.renderAll()
+
+    return () => {
+      // Clean up canvas listeners when unmounting or mode changes
+      resetCanvasListeners()
+    }
+  }, [canvas, mode])
+
+  // Debounced function to call the update API with conditional payload
+  const debouncedUpdateAnnotation = debounce(
+    async (annotationId, updatedData, isStatusUpdate = false) => {
+      const projectId = currentProject?.id
+      const projectModelId = currentProjectModel?.id
+
+      if (!projectId || !projectModelId || !annotationId) {
+        toast.error('Missing project or annotation details. Cannot update.')
+        return
+      }
+
+      try {
+        // Prepare payload: send status if it's a status update, otherwise send annotationData
+        const payload = isStatusUpdate
+          ? { status: updatedData.status } // Only send status for status update
+          : { annotationData: updatedData } // Send entire annotation for position/size updates
+
+        // Make the API call to update the annotation
+        await annotationApi.updateSingleAnnotation(
+          projectId,
+          projectModelId,
+          annotationId,
+          payload
+        )
+
+        toast.success(
+          isStatusUpdate
+            ? 'Annotation status updated successfully.'
+            : 'Annotation updated successfully.'
+        )
+      } catch (error) {
+        toast.error(`Failed to update annotation: ${getErrorMessage(error)}`)
+      }
+    },
+    300 // Debounce delay of 300ms
+  )
+
+  // Handle object modification (position or size changes)
+  const handleObjectModified = (event) => {
+    const activeObject = event.target
+    if (!activeObject) return
+
+    // Get the old object data (unchanged keys) using the fabric.js `toObject` method
+    const oldData = activeObject.toObject()
+
+    // Prepare the updated data for position and size changes
+    const updatedData = {
+      ...oldData, // Include the old data with unchanged keys
+      left: activeObject.left, // New position X
+      top: activeObject.top, // New position Y
+      scaleX: activeObject.scaleX, // New width scaling
+      scaleY: activeObject.scaleY, // New height scaling
+      width: activeObject.width * activeObject.scaleX, // New width
+      height: activeObject.height * activeObject.scaleY, // New height
+    }
+
+    const annotationId = activeObject.id // Assuming each object has a unique `id`
+
+    // Trigger the debounced API call with the updated data (position/size changes)
+    debouncedUpdateAnnotation(annotationId, updatedData, false) // false indicates this is not a status update
+  }
+
+  // Attach event listeners to Fabric.js canvas for size and position changes
+  useEffect(() => {
+    if (canvas) {
+      // Listen to scaling (size change), moving (position change), and modification events
+      canvas.on('object:scaling', handleObjectModified)
+      canvas.on('object:moving', handleObjectModified)
+      canvas.on('object:modified', handleObjectModified) // Trigger on finish move/scale
+
+      // Clean up event listeners when the component unmounts or canvas changes
+      return () => {
+        canvas.off('object:scaling', handleObjectModified)
+        canvas.off('object:moving', handleObjectModified)
+        canvas.off('object:modified', handleObjectModified)
+      }
+    }
+  }, [canvas])
+
+  const deleteAnnotationById = async (annotationId) => {
+    const projectId = currentProject?.id
+    const projectModelId = currentProjectModel?.id
+
+    if (!projectId || !projectModelId || !annotationId) {
+      toast.error('Missing project or annotation details. Cannot delete.')
+      return
+    }
+
+    try {
+      await annotationApi.deleteSingleAnnotation(
+        projectId,
+        projectModelId,
+        annotationId
+      )
+      toast.success('Annotation deleted successfully')
+
+      // Optionally, remove the annotation from the canvas and re-render it
+      if (canvas) {
+        const objectToRemove = canvas
+          .getObjects()
+          .find((obj) => obj.id === annotationId)
+        if (objectToRemove) {
+          canvas.remove(objectToRemove)
+          canvas.renderAll()
+          saveCanvasState(currPage) // Save the updated canvas state
+        }
+      }
+    } catch (error) {
+      toast.error(`Failed to delete annotation: ${getErrorMessage(error)}`)
+    }
+  }
+
+  const formatAnnotationData = (annotation) => {
+    const { annotationData } = annotation
+
+    // Check if the annotation is a group (multiple objects)
+    if (annotationData.type === 'Group') {
+      return {
+        ...annotationData, // Spread the existing properties
+        objects: annotationData.objects.map((obj) => ({
+          ...obj,
+          id: annotation.id, // Add the annotation's unique id to the objects
+        })),
+        id: annotation.id, // Set unique id for the group itself
+        status: annotation.status, // Set the status
+      }
+    }
+
+    // If not a group, return it directly (this example assumes all annotations are groups)
+    return {
+      ...annotationData,
+      id: annotation.id, // Add the annotation's unique id
+      status: annotation.status, // Set the status
+    }
+  }
+  const saveAnnotation = async (annotationData, pageNumber) => {
+    const projectId = currentProject?.id
+    const projectModelId = currentProjectModel?.id
+    const pickModelComponentId = selectedTool?.id
+
+    if (!projectId || !projectModelId || !pickModelComponentId) {
+      toast.error('Project information is missing. Unable to save annotation.')
+      return
+    }
+
+    try {
+      // Call the backend API to save the annotation
+      const savedAnnotation = await annotationApi.saveSingleAnnotation(
+        projectId,
+        projectModelId,
+        { pageNumber, annotationData, pickModelComponentId }
+      )
+
+      toast.success('Annotation saved successfully')
+      setToggleAnnotationFetch((prevState) => !prevState)
+      // Re-render the canvas to reflect the changes
+      canvas.renderAll()
+    } catch (error) {
+      console.error('Failed to save annotation', error)
+      toast.error('Failed to save annotation')
+    }
+  }
 
   const disableCanvasInteractions = () => {
     if (canvas && !hasWriteAccess) {
@@ -116,33 +345,56 @@ export const CanvasProvider = ({ children }) => {
 
     // Define colors based on the status
     const statusColors = {
-      new: 'red',
-      'in progress': 'blue',
-      completed: 'green',
+      Pending: 'red',
+      Working: 'blue',
+      Completed: 'green',
+    }
+
+    // Helper function to map status to color
+    const getStatusColor = (status) => {
+      return statusColors[status] || 'black'
     }
 
     // Find all objects in the canvas
     const objects = canvas.getObjects()
 
-    // Loop through all objects and check their type and _id
+    // Loop through all objects and check their type and id
     for (const annotation of objects) {
-      // If it's the matching annotation by its _id
-      if (annotation._id === annotationId) {
+      // If it's the matching annotation by its id
+      if (annotation.id === annotationId) {
         // Update the status of the selected annotation
         annotation.set({ status: newStatus })
 
         // Get the new color based on the status
-        const newColor = statusColors[newStatus] || 'black'
+        const newColor = getStatusColor(newStatus)
 
         // If the annotation is a group, process its objects
         if (annotation.type === 'group') {
           for (const groupObj of annotation.getObjects()) {
-            // Find the rectangle in the group to change its border color
-            if (groupObj.type === 'rect') {
+            const groupType = groupObj.type.toLowerCase()
+
+            // Change the rectangle's stroke color based on the status
+            if (groupType === 'rect') {
               groupObj.set({
-                stroke: newColor, // Change the border color of the rectangle
+                stroke: newColor, // Changing the stroke color of the rectangle
               })
-              console.log('Group border color updated:', newColor)
+            }
+
+            // Change the icon (SVG) color based on the status
+            if (groupType === 'image') {
+              try {
+                const coloredSvg = await changeSvgColor(groupObj.src, newColor)
+
+                if (coloredSvg) {
+                  groupObj.set({
+                    src: coloredSvg, // Set the new colored SVG as the source
+                  })
+                } else {
+                  console.error('Failed to change SVG color')
+                }
+              } catch (error) {
+                console.error('Error changing SVG color:', error)
+              }
             }
           }
         } else if (annotation.type === 'rect') {
@@ -150,16 +402,51 @@ export const CanvasProvider = ({ children }) => {
           annotation.set({
             stroke: newColor, // Change the border color directly
           })
-          console.log('Annotation border color updated:', newColor)
+        } else if (annotation.type === 'image') {
+          // If it's an image, change the SVG color
+          try {
+            const coloredSvg = await changeSvgColor(annotation.src, newColor)
+
+            if (coloredSvg) {
+              annotation.set({
+                src: coloredSvg, // Change the image source to the updated SVG
+              })
+            } else {
+              console.error('Failed to change SVG color')
+            }
+          } catch (error) {
+            console.error('Error changing SVG color:', error)
+          }
         }
 
-        // Re-render the canvas after updates
+        // Force re-rendering the canvas after updates
         canvas.renderAll()
 
         // Save the updated canvas state
         saveCanvasState(pageNumber)
 
-        // Close the modal
+        // Call the API to update the annotation in the database
+        try {
+          const projectId = currentProject?.id
+          const projectModelId = currentProjectModel?.id
+
+          if (projectId && projectModelId) {
+            // Call the update API with only the status update, not the entire annotationData
+            await annotationApi.updateSingleAnnotation(
+              projectId,
+              projectModelId,
+              annotationId,
+              { status: newStatus } // Send only the status in this case
+            )
+
+            toast.success('Annotation status updated successfully!')
+          }
+        } catch (error) {
+          console.error('Failed to update annotation on the server:', error)
+          toast.error(getErrorMessage(error))
+        }
+
+        // Close the modal after updating
         setShowAnnotationModal(false)
         return // Stop after finding and updating the matching annotation
       }
@@ -168,6 +455,169 @@ export const CanvasProvider = ({ children }) => {
     // If no matching annotation found, show error
     toast.error('Annotation not found')
   }
+
+  let previewRect = null // Store the preview rectangle
+  let cachedImgElement = null // Cache the image once it's loaded
+
+  const drawCrosshairsWithRectanglePreview = (pointer) => {
+    const overlayCtx = canvas.getSelectionContext() // Get Fabric.js overlay context
+
+    // Clear previous crosshairs and preview rectangle on the overlay
+    canvas.clearContext(canvas.contextTop)
+
+    const canvasWidth = canvas.getWidth()
+    const canvasHeight = canvas.getHeight()
+
+    // Save the current state of the context
+    overlayCtx.save()
+
+    // If there's an icon selected (activeIcon), show the preview rectangle
+    if (activeIconRef.current) {
+      // If the image is not cached, load it
+      if (!cachedImgElement) {
+        cachedImgElement = new Image()
+        cachedImgElement.src = activeIconRef.current
+
+        cachedImgElement.onload = () => {
+          const imgWidth = cachedImgElement.width
+          const imgHeight = cachedImgElement.height
+
+          // Coordinates for the edges of the rectangle
+          const leftX = pointer.x - imgWidth / 2 // Left edge
+          const rightX = pointer.x + imgWidth / 2 // Right edge
+          const topY = pointer.y - imgHeight / 2 // Top edge
+          const bottomY = pointer.y + imgHeight / 2 // Bottom edge
+
+          // Draw the rectangle preview first
+          overlayCtx.beginPath()
+          overlayCtx.strokeStyle = 'rgba(244, 162, 97, 0.8)' // Border color for rectangle
+          overlayCtx.lineWidth = 2
+          overlayCtx.setLineDash([10, 4]) // Solid lines for the rectangle
+          overlayCtx.rect(leftX, topY, imgWidth, imgHeight)
+          overlayCtx.stroke()
+
+          // Now draw crosshairs from the rectangle edges in both directions
+          // Vertical crosshairs (extend upwards and downwards from left and right edges)
+          overlayCtx.beginPath()
+          // Left vertical crosshair (upwards and downwards from the left edge)
+          overlayCtx.moveTo(leftX, 0) // From the top of the canvas to the left edge of the rectangle
+          overlayCtx.lineTo(leftX, topY) // Top of the rectangle
+          overlayCtx.moveTo(leftX, bottomY) // Bottom of the rectangle
+          overlayCtx.lineTo(leftX, canvasHeight) // Down to the bottom of the canvas
+
+          // Right vertical crosshair (upwards and downwards from the right edge)
+          overlayCtx.moveTo(rightX, 0) // From the top of the canvas to the right edge of the rectangle
+          overlayCtx.lineTo(rightX, topY) // Top of the rectangle
+          overlayCtx.moveTo(rightX, bottomY) // Bottom of the rectangle
+          overlayCtx.lineTo(rightX, canvasHeight) // Down to the bottom of the canvas
+          overlayCtx.stroke()
+
+          // Horizontal crosshairs (extend leftwards and rightwards from top and bottom edges)
+          overlayCtx.beginPath()
+          // Top horizontal crosshair (leftwards and rightwards from the top edge)
+          overlayCtx.moveTo(0, topY) // From the left of the canvas to the top of the rectangle
+          overlayCtx.lineTo(leftX, topY) // Left edge of rectangle
+          overlayCtx.moveTo(rightX, topY) // Right edge of rectangle
+          overlayCtx.lineTo(canvasWidth, topY) // Extend to the right of the canvas
+
+          // Bottom horizontal crosshair (leftwards and rightwards from the bottom edge)
+          overlayCtx.moveTo(0, bottomY) // From the left of the canvas to the bottom of the rectangle
+          overlayCtx.lineTo(leftX, bottomY) // Left edge of rectangle
+          overlayCtx.moveTo(rightX, bottomY) // Right edge of rectangle
+          overlayCtx.lineTo(canvasWidth, bottomY) // Extend to the right of the canvas
+          overlayCtx.stroke()
+        }
+      } else {
+        // If the image is already cached, draw the rectangle immediately
+        const imgWidth = cachedImgElement.width
+        const imgHeight = cachedImgElement.height
+
+        const leftX = pointer.x - imgWidth / 2 // Left edge
+        const rightX = pointer.x + imgWidth / 2 // Right edge
+        const topY = pointer.y - imgHeight / 2 // Top edge
+        const bottomY = pointer.y + imgHeight / 2 // Bottom edge
+
+        // Draw the rectangle preview
+        overlayCtx.beginPath()
+        overlayCtx.strokeStyle = 'rgba(244, 162, 97, 0.8)' // Border color for rectangle
+        overlayCtx.lineWidth = 2
+        overlayCtx.setLineDash([10, 4]) // Solid lines for the rectangle
+        overlayCtx.rect(leftX, topY, imgWidth, imgHeight)
+        overlayCtx.stroke()
+
+        // Now draw crosshairs from the rectangle edges in both directions
+        // Vertical crosshairs (extend upwards and downwards from left and right edges)
+        overlayCtx.beginPath()
+        // Left vertical crosshair (upwards and downwards from the left edge)
+        overlayCtx.moveTo(leftX, 0) // From the top of the canvas to the left edge of the rectangle
+        overlayCtx.lineTo(leftX, topY) // Top of the rectangle
+        overlayCtx.moveTo(leftX, bottomY) // Bottom of the rectangle
+        overlayCtx.lineTo(leftX, canvasHeight) // Down to the bottom of the canvas
+
+        // Right vertical crosshair (upwards and downwards from the right edge)
+        overlayCtx.moveTo(rightX, 0) // From the top of the canvas to the right edge of the rectangle
+        overlayCtx.lineTo(rightX, topY) // Top of the rectangle
+        overlayCtx.moveTo(rightX, bottomY) // Bottom of the rectangle
+        overlayCtx.lineTo(rightX, canvasHeight) // Down to the bottom of the canvas
+        overlayCtx.stroke()
+
+        // Horizontal crosshairs (extend leftwards and rightwards from top and bottom edges)
+        overlayCtx.beginPath()
+        // Top horizontal crosshair (leftwards and rightwards from the top edge)
+        overlayCtx.moveTo(0, topY) // From the left of the canvas to the top of the rectangle
+        overlayCtx.lineTo(leftX, topY) // Left edge of rectangle
+        overlayCtx.moveTo(rightX, topY) // Right edge of rectangle
+        overlayCtx.lineTo(canvasWidth, topY) // Extend to the right of the canvas
+
+        // Bottom horizontal crosshair (leftwards and rightwards from the bottom edge)
+        overlayCtx.moveTo(0, bottomY) // From the left of the canvas to the bottom of the rectangle
+        overlayCtx.lineTo(leftX, bottomY) // Left edge of rectangle
+        overlayCtx.moveTo(rightX, bottomY) // Right edge of rectangle
+        overlayCtx.lineTo(canvasWidth, bottomY) // Extend to the right of the canvas
+        overlayCtx.stroke()
+      }
+    }
+
+    // Restore the context state to avoid affecting other drawings
+    overlayCtx.restore()
+  }
+
+  // Handle mouse move event to draw the enhanced crosshairs and rectangle preview
+  const handleMouseMove = (event) => {
+    // Only proceed if the canvas exists and the mode is "addIcon"
+    if (!canvas || mode !== 'addIcon') return
+
+    const pointer = canvas.getPointer(event.e)
+    drawCrosshairsWithRectanglePreview(pointer) // Draw the crosshairs only in addIcon mode
+  }
+
+  // Handle mouse out (remove crosshairs and rectangle preview when leaving the canvas)
+  const handleMouseOut = () => {
+    // Clear the overlay context
+    if (canvas) {
+      canvas.clearContext(canvas.contextTop)
+    }
+  }
+
+  // Initialize crosshairs with rectangle preview when the canvas is ready
+  useEffect(() => {
+    if (!canvas) return
+
+    if (mode === 'addIcon') {
+      // Bind mouse move and mouse out events only in addIcon mode
+      canvas.on('mouse:move', handleMouseMove)
+      canvas.on('mouse:out', handleMouseOut)
+    } else {
+      // Clear the overlay if not in addIcon mode
+      canvas.clearContext(canvas.contextTop)
+    }
+
+    return () => {
+      // Remove event listeners when the component is unmounted or mode changes
+      canvas.off('mouse:move', handleMouseMove)
+      canvas.off('mouse:out', handleMouseOut)
+    }
+  }, [canvas, activeIconRef.current, mode])
 
   const saveCanvasState = (pageNumber) => {
     if (canvas) {
@@ -189,40 +639,69 @@ export const CanvasProvider = ({ children }) => {
 
     if (canvas) {
       const modifyObjectsBasedOnStatus = async (canvasData) => {
+        if (!canvasData?.objects) return canvasData
+
+        // Helper function to map status to color
+        const getStatusColor = (status) => {
+          switch (status?.toLowerCase()) {
+            case 'pending':
+              return 'red'
+            case 'completed':
+              return 'green'
+            case 'working':
+              return 'blue'
+            default:
+              return null
+          }
+        }
+
         // Loop through all objects and modify them based on their status
         for (const obj of canvasData.objects) {
           const type = obj.type.toLowerCase()
-          if (obj.status === 'new' && type === 'image') {
-            // Apply red color for new image objects
-            const redColoredSvg = await changeSvgColor(obj.src, 'red')
-            obj.src = redColoredSvg
-          }
+          const statusColor = getStatusColor(obj.status)
 
-          // If it's a group, check inside the group objects
-          if (type === 'group') {
+          if (type === 'group' && statusColor) {
+            // Loop through the group objects (rect and image)
             for (const groupObj of obj.objects) {
               const groupType = groupObj.type.toLowerCase()
-              if (groupType === 'image' && groupObj.status === 'new') {
-                const redColoredSvg = await changeSvgColor(groupObj.src, 'red')
 
-                groupObj.src = redColoredSvg
+              // Change the rectangle's stroke color based on the status
+              if (groupType === 'rect') {
+                groupObj.stroke = statusColor // Changing the stroke color of the rectangle
               }
+
+              // Change the icon (SVG) color based on the status
+              // if (groupType === 'image') {
+              //   // Use your existing changeSvgColor function to modify the SVG color
+              //   const coloredSvg = await changeSvgColor(
+              //     groupObj.src,
+              //     statusColor
+              //   )
+              //   groupObj.src = coloredSvg // Set the new colored SVG as the source
+              // }
             }
           }
         }
+
         return canvasData
       }
 
-      const modifiedCanvasJson = await modifyObjectsBasedOnStatus(
-        data || annotations[pageNumber]
-      )
+      // Check if annotations exist for the page
+      if (canvasJson) {
+        const modifiedCanvasJson = await modifyObjectsBasedOnStatus(
+          data || canvasJson
+        )
 
-      canvas.loadFromJSON(modifiedCanvasJson, () => {
-        canvas.renderAll()
-        setTimeout(() => {
+        // Safely load the modified JSON into the canvas
+        canvas.loadFromJSON(modifiedCanvasJson, () => {
           canvas.renderAll()
-        }, 100)
-      })
+          setTimeout(() => {
+            canvas.renderAll()
+          }, 100)
+        })
+      } else {
+        console.warn('No canvas data found for page:', pageNumber)
+      }
     }
   }
 
@@ -239,22 +718,30 @@ export const CanvasProvider = ({ children }) => {
       toast.error('You do not have write access to edit this canvas.')
       return
     }
-    if (allowPinchZoom) {
-      return
-    }
-    if (!canvas || mode === 'erase') return
+    if (allowPinchZoom || !canvas || mode === 'erase') return
 
     const pointer = canvas.getPointer(event.e)
+    const viewportTransform = canvas.viewportTransform
+    const realPoint = fabric.util.transformPoint(
+      pointer,
+      fabric.util.invertTransform(viewportTransform)
+    )
+    const x = realPoint.x
+    const y = realPoint.y
+
     const status = 'new'
+
+    let newAnnotation = null // To store the new annotation data
 
     if (mode === 'change-status' || mode === '') {
       const activeObject = canvas.getActiveObject()
 
       if (activeObject) {
         // Disable controls for resizing, rotating, and moving
-        activeObject.selectable = false
-        activeObject.hasControls = false
-        activeObject.evented = true // Keep evented true to allow it to trigger click events
+        activeObject.lockMovementX = true
+        activeObject.lockMovementY = true
+        activeObject.hasControls = false // Remove controls to prevent editing
+        activeObject.selectable = true // Allow selection for status change
 
         // Optional: Set controls visibility to false, so the user can't see them
 
@@ -262,10 +749,16 @@ export const CanvasProvider = ({ children }) => {
         activeObject.lockMovementX = true
         activeObject.lockMovementY = true
 
-        // Get the JSON properties of the activeObject and store it
+        // Ensure custom properties are retained
         const activeObjectJson = activeObject.toObject()
 
-        setSelectedAnnotation(activeObjectJson)
+        // Log custom properties to confirm they are present
+
+        setSelectedAnnotation({
+          ...activeObjectJson,
+          id: activeObject.id || 'default-id', // Ensure 'id' is included
+          status: activeObject.status || 'new', // Ensure 'status' is included
+        })
 
         setShowAnnotationModal(true)
 
@@ -274,107 +767,100 @@ export const CanvasProvider = ({ children }) => {
       }
     } else if (mode === 'create-rect') {
       const rect = new fabric.Rect({
+        originX: 'center',
+        originY: 'center',
+        left: x,
+        top: y,
         height: 50,
         width: 50,
         fill: 'transparent',
         stroke: borderColor,
-        left: pointer.x,
-        top: pointer.y,
-        selectable: false,
+        selectable: true,
       })
       canvas.add(rect)
+      newAnnotation = rect.toObject()
     } else if (mode === 'create-circle') {
       const circle = new fabric.Circle({
+        originX: 'center',
+        originY: 'center',
+        left: x,
+        top: y,
         radius: 50,
         fill: 'transparent',
         stroke: borderColor,
         strokeWidth: 2,
-        left: pointer.x,
-        top: pointer.y,
-        selectable: false,
+        selectable: true,
       })
       canvas.add(circle)
+      newAnnotation = circle.toObject()
     } else if (mode === 'create-text') {
       const text = new fabric.Textbox('', {
-        left: pointer.x,
-        top: pointer.y,
+        originX: 'center',
+        originY: 'center',
+        left: x,
+        top: y,
         fill: color,
         fontFamily: 'roboto',
-        selectable: false,
+        selectable: true,
         editable: true,
       })
       canvas.add(text)
       canvas.setActiveObject(text)
       text.enterEditing()
+      newAnnotation = text.toObject()
     } else if (mode === 'addIcon' && activeIconRef.current) {
-      let img
+      const originalIconUrl = activeIconRef.current
 
-      // Use the actual original URL instead of creating a blob URL
-      const originalIconUrl = activeIconRef.current // Store original icon URL
-
-      // Change the color of the SVG to the desired color (red in this case)
-      const svgWithNewColor = await changeSvgColor(activeIconRef.current, 'red')
-
-      // Create the image element
       const imgElement = document.createElement('img')
       imgElement.crossOrigin = 'anonymous'
-      imgElement.src = svgWithNewColor // This will be used for display purposes
+      imgElement.src = originalIconUrl
 
       imgElement.onload = function () {
-        img = new fabric.Image(imgElement, {
-          left: pointer.x,
-          top: pointer.y,
-          selectable: false,
+        const img = new fabric.Image(imgElement, {
+          originX: 'center',
+          originY: 'center',
+          left: x,
+          top: y,
+          selectable: true,
           scaleX: 1,
           scaleY: 1,
         })
 
-        // Set the original URL instead of the blob URL for the 'src'
-        img.toObject = (function (toObject) {
-          return function () {
-            return Object.assign(toObject.call(this), {
-              _id: uuidv4(),
-              status,
-              src: originalIconUrl, // Store the actual URL in the object
-            })
-          }
-        })(img.toObject)
-
-        // Create the smallest rectangle around the icon based on the image dimensions
         const rect = new fabric.Rect({
-          left: pointer.x,
-          top: pointer.y,
+          originX: 'center',
+          originY: 'center',
+          left: x,
+          top: y,
           width: img.width,
           height: img.height,
           fill: 'transparent',
           stroke: borderColor,
           strokeWidth: 2,
-          selectable: false,
+          selectable: true,
         })
 
-        // Group the rectangle and image together
         const group = new fabric.Group([rect, img], {
-          selectable: false,
-          hasControls: false,
+          originX: 'center',
+          originY: 'center',
+          selectable: true,
+          hasControls: true,
+          evented: true,
         })
-
-        // Assign unique IDs and add the group to the canvas
-        group.toObject = (function (toObject) {
-          return function () {
-            return Object.assign(toObject.call(this), {
-              _id: uuidv4(),
-              status,
-            })
-          }
-        })(group.toObject)
 
         canvas.add(group)
+        newAnnotation = group.toObject()
         canvas.renderAll()
+
+        // Save annotation to the server after adding to the canvas
+        saveAnnotation(newAnnotation, currPage)
       }
     }
 
-    // Save the canvas state after any changes
-    saveCanvasState(currPage)
+    // Save canvas state and annotation to the server
+    if (newAnnotation) {
+      saveCanvasState(currPage)
+      await saveAnnotation(newAnnotation, currPage) // Call save function
+    }
   }
 
   useEffect(() => {
@@ -393,13 +879,48 @@ export const CanvasProvider = ({ children }) => {
     }
   }
 
-  const removeObject = (event) => {
+  const removeObject = async (event) => {
     if (mode === 'erase' && canvas) {
-      const target = canvas.findTarget(event.e)
+      const target = canvas.findTarget(event.e) // Find the object on the canvas
       if (target) {
+        // Assuming each object on the canvas has a unique `annotationId` stored in `target.annotationId`
+        const annotationId = target.id
+
+        if (!annotationId) {
+          toast.error('Annotation ID not found. Cannot delete.')
+          return
+        }
+
+        // Remove the object from the canvas
         canvas.remove(target)
         canvas.renderAll()
+
+        // Save the updated canvas state
         saveCanvasState(currPage)
+
+        // Now delete the annotation from the backend
+        try {
+          const projectId = currentProject?.id
+          const projectModelId = currentProjectModel?.id
+
+          if (!projectId || !projectModelId) {
+            toast.error(
+              'Project or model information is missing. Cannot delete.'
+            )
+            return
+          }
+
+          // Call the API to delete the annotation using annotationId
+          await annotationApi.deleteSingleAnnotation(
+            projectId,
+            projectModelId,
+            annotationId
+          )
+
+          toast.success('Annotation deleted successfully.')
+        } catch (error) {
+          toast.error(`Failed to delete annotation: ${getErrorMessage(error)}`)
+        }
       }
     }
   }
@@ -411,6 +932,11 @@ export const CanvasProvider = ({ children }) => {
       canvas.hoverCursor = `url(${imageConstants.removeCursor}) 12 12, auto`
     } else if (mode === 'select' || mode === 'move') {
       canvas.defaultCursor = `url(${imageConstants.SelectIcon}) 12 12, auto`
+    } else if (mode === 'addIcon') {
+      canvas.defaultCursor = `url(${activeIconRef.current}) 12 12, auto`
+    } else if (mode === 'change-status') {
+      canvas.defaultCursor = `url(${Pencil}) 12 12, auto`
+      canvas.hoverCursor = `url(${imageConstants.changeStatusCursor}) 12 12, auto`
     } else {
       canvas.defaultCursor = 'default'
       canvas.hoverCursor = 'pointer'
@@ -424,7 +950,7 @@ export const CanvasProvider = ({ children }) => {
 
     if (mode.startsWith('create') || mode === 'addIcon') {
       canvas.selection = false
-      canvas.forEachObject((obj) => (obj.selectable = false))
+      canvas.forEachObject((obj) => (obj.selectable = true))
       canvas.on('mouse:down', handleCanvasClick)
     } else if (mode === 'erase') {
       canvas.selection = false
@@ -435,7 +961,7 @@ export const CanvasProvider = ({ children }) => {
       canvas.forEachObject((obj) => (obj.selectable = true))
     } else if (mode === 'change-status' || mode === '') {
       canvas.selection = false
-      canvas.forEachObject((obj) => (obj.selectable = false))
+      canvas.forEachObject((obj) => (obj.selectable = true))
       canvas.on('mouse:down', handleCanvasClick)
     }
 
@@ -905,7 +1431,7 @@ export const CanvasProvider = ({ children }) => {
     canvas.selection = false
     canvas.hoverCursor = 'auto'
     canvas.isDrawingMode = false
-    canvas.getObjects().forEach((item) => item.set({ selectable: false }))
+    canvas.getObjects().forEach((item) => item.set({ selectable: true }))
   }
 
   const startAddRect = (icn) => {
@@ -921,12 +1447,12 @@ export const CanvasProvider = ({ children }) => {
         img.set({
           left: origX,
           top: origY,
-          selectable: false,
+          selectable: true,
           scaleX: 1,
           scaleY: 1,
         })
 
-        img._id = uuidv4() // Set a unique id for the object
+        img.id = uuidv4() // Set a unique id for the object
 
         canvas.add(img)
         canvas.renderAll() // Ensure the canvas is updated with the icon
@@ -941,13 +1467,13 @@ export const CanvasProvider = ({ children }) => {
         top: origY,
         width: 0,
         height: 0,
-        selectable: false,
+        selectable: true,
       })
 
       drawInstance.toObject = (function (toObject) {
         return function () {
           return fabric.util.object.extend(toObject.call(this), {
-            _id: uuidv4(),
+            id: uuidv4(),
             ...selectedTool,
           })
         }
@@ -1120,7 +1646,7 @@ export const CanvasProvider = ({ children }) => {
         setAllowPinchZoom,
         setOriginalPdfDimensions,
         originalPdfDimensions,
-
+        toggleAnnotationFetch,
         changeStatus,
         showAnnotationModal,
         setShowAnnotationModal,

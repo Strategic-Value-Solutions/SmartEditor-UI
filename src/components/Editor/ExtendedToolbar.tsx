@@ -1,86 +1,101 @@
+import { useEditor } from '@/components/Editor/CanvasContext/CanvasContext'
 import {
   Tooltip,
-  TooltipTrigger,
-  TooltipProvider,
   TooltipContent,
-} from '../ui/tooltip'
-import { useEditor } from '@/components/Editor/CanvasContext'
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import imageConstants from '@/constants/imageConstants'
-import { RootState } from '@/store'
-import { useSelector } from 'react-redux'
+import { MoveLeft } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router-dom'
 
-function ExtendedToolbar({
-  tools,
-  // canvas,
-  // showExtendedToolbar,
-  // createRect,
-  // fileReaderInfo,
-  // toggleExtendedToolbar,
-}: any) {
-  const isCollapsed = useSelector(
-    (state: RootState) => state.sidebar.isCollapsed
-  )
-  const { currentProjectModel: pick } = useSelector(
-    (state: RootState) => state.projectModels
-  )
+export default function ExtendedToolbar({ tools }: { tools: any[] }) {
   const editor = useEditor() as any
+  const { projectId } = useParams()
+  const navigate = useNavigate()
+
+  const handleBack = () => {
+    navigate(`/project/${projectId}`)
+  }
+
+  const buttonStyle = {
+    background: 'linear-gradient(145deg, #a0a0a0, #808080)',
+    boxShadow: '2px 2px 4px #707070, -2px -2px 4px #b0b0b0',
+  }
 
   return (
     <div
-      className={`fixed z-50 bg-gradient-to-br border bg-gray-100 border-gray-300 w-28 p-1 transition-all duration-300 left-0 top-0 h-full overflow-y-auto`}
+      className='fixed z-50 w-36 h-full p-1 overflow-y-auto transition-all duration-300 left-0 top-0'
+      style={{
+        background: 'linear-gradient(145deg, #e6e6e6, #ffffff)',
+        boxShadow: '3px 3px 6px #d1d1d1, -3px -3px 6px #ffffff',
+        border: '1px solid #d1d1d1',
+      }}
       id='toolbar'
     >
-      <div className='flex flex-col items-center justify-center p-2 text-sm bg-blue-950 text-white rounded-sm'>
-        <p>Components </p>
-        <div className='flex items-center justify-center'>
-          ({tools.length})
+      <div className='flex flex-col items-center justify-center w-full h-10 mt-12 text-white'>
+        <button
+          id='back'
+          className='flex items-center justify-center w-4/5 px-4 py-2 mb-2 text-white transition rounded-lg h-10 hover:opacity-90'
+          onClick={handleBack}
+          style={buttonStyle}
+          aria-label='Go back'
+        >
+          <MoveLeft className='mr-2' />
+          <span>Back</span>
+        </button>
+        <div
+          className='flex flex-col items-center justify-center w-4/5 p-2 mb-2 text-sm text-white rounded-lg'
+          style={buttonStyle}
+        >
+          <p>Components</p>
+          <div className='flex items-center justify-center'>
+            ({tools.length})
+          </div>
         </div>
       </div>
-      <div className='flex flex-col items-center justify-center gap-3 h-[calc(100vh-90px)] mt-2 mx-auto'>
-        {tools.map((tool: any, index: any) => {
-          return (
-            <TooltipProvider key={`${index}-provider`}>
-              <Tooltip>
-                <TooltipTrigger>
-                  <button
-                    key={`${index}-primary`}
-                    type='button'
-                    className='p-1 hover:bg-gray-200 rounded white border border-gray-300 w-10 h-10 flex items-center justify-center bg-white'
-                    onClick={() => {
-                      editor.addIcon({
-                        icon: imageConstants[tool.imageUrl],
-                        tool,
-                      })
-                      window.localStorage.setItem(
-                        'selectedTool',
-                        JSON.stringify(tool)
-                      )
-                    }}
+      <div className='flex flex-col items-center justify-center gap-3 h-[calc(100vh-150px)] mt-2 mx-auto'>
+        {tools.map((tool: any, index: number) => (
+          <TooltipProvider key={`${index}-provider`}>
+            <Tooltip>
+              <TooltipTrigger>
+                <button
+                  key={`${index}-primary`}
+                  type='button'
+                  className='flex items-center justify-center w-10 h-10 p-1 transition rounded-lg'
+                  onClick={() => {
+                    editor.addIcon({
+                      icon: imageConstants[tool.imageUrl],
+                      tool,
+                    })
+                    window.localStorage.setItem(
+                      'selectedTool',
+                      JSON.stringify(tool)
+                    )
+                  }}
+                  style={{
+                    background: 'linear-gradient(145deg, #ffffff, #e6e6e6)',
+                    boxShadow: '2px 2px 4px #d1d1d1, -2px -2px 4px #ffffff',
+                  }}
+                  aria-label={`Add ${tool.name}`}
+                >
+                  <img
+                    src={imageConstants[tool.imageUrl]}
+                    alt={tool?.name?.toLowerCase()}
+                    className='w-full'
                     style={{
-                      // filter: 'invert(0)', // Ensure icons aren't too light
-                      // boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)', // Add subtle shadow
+                      filter: 'contrast(1.2) brightness(0.9)',
                     }}
-                  >
-                    <img
-                      src={imageConstants[tool.imageUrl]}
-                      alt={tool?.name?.toLowerCase()}
-                      className='w-full' // Ensure full visibility
-                      style={{
-                        filter: 'contrast(1.2)', // Increase contrast for clarity
-                      }}
-                    />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{tool.name}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )
-        })}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{tool.name}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ))}
       </div>
     </div>
   )
 }
-
-export default ExtendedToolbar

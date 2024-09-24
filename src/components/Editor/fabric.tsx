@@ -1,4 +1,4 @@
-import { CanvasProvider } from './CanvasContext'
+import { CanvasProvider } from './CanvasContext/CanvasContext'
 import Editor from './Editor'
 
 export default function WhiteBoard() {

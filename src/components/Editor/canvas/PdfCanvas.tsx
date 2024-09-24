@@ -1,5 +1,5 @@
 // @ts-nocheck
-import AnnotationModal from '../../Editor/AnnotationModal'
+import AnnotationModal from '../AnnotationModal'
 import Loader from '../Loader'
 import PdfCanvasButtons from './PdfCanvasButtons'
 import { editorSteps } from '@/Tours/constants'

@@ -86,11 +86,23 @@ export async function changeSvgColor(svgUrl: string, color: string) {
   // Get the SVG text
   let svgText = await response.text()
 
-  // Change the color of the SVG by replacing 'fill' and 'stroke' attributes
-  svgText = svgText
-    .replace(/fill="[^"]+"/g, `fill="${color}"`)
-    .replace(/stroke="[^"]+"/g, `stroke="${color}"`)
+  // Check if the SVG has a stroke attribute
+  const hasStroke = /stroke="[^"]+"/.test(svgText)
+  const hasFill = /fill="[^"]+"/.test(svgText)
 
-  // Return the modified SVG text directly instead of creating a blob URL
+  if (hasStroke) {
+    // Modify the stroke color and stroke width
+    svgText = svgText
+      .replace(/stroke="[^"]+"/g, `stroke="${color}"`) // Change stroke color
+      .replace(/stroke-width="[^"]+"/g, `stroke-width="1"`) // Adjust stroke width
+  } else if (hasFill) {
+    // If no stroke is present, modify the fill color
+    svgText = svgText.replace(/fill="[^"]+"/g, `fill="${color}"`)
+  } else {
+    // If neither fill nor stroke is present, add a stroke with the desired color
+    svgText = svgText.replace('<svg', `<svg stroke="${color}" stroke-width="1"`)
+  }
+
+  // Return the modified SVG as a base64-encoded string
   return `data:image/svg+xml;base64,${btoa(svgText)}`
 }

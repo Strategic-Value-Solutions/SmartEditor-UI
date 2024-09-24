@@ -1,6 +1,6 @@
 // @ts-nocheck
 import StatusCapsule from '../ui/status-capsule'
-import { useEditor } from './CanvasContext'
+import { useEditor } from './CanvasContext/CanvasContext'
 import Components from './Components'
 import ExtendedToolbar from './ExtendedToolbar'
 import SelectPick from './SelectPick'
@@ -132,13 +132,42 @@ export default function Editor() {
   }
 
   const transformData = (data) => {
-    if (data.length === 0) return {}
+    if (!data || data.length === 0) return {}
+
     const result = {}
+
     data.forEach((item) => {
-      result[item.pageNumber] = {
-        version: item.canvasData.version,
-        objects: item.canvasData.objects,
+      // Ensure that each page is initialized
+      const pageNum = item.pageNumber || 1 // Default to page 1 if pageNumber is missing
+      if (!result[pageNum]) {
+        result[pageNum] = {
+          version: item.annotationData.version || '6.1.0',
+          objects: [],
+        }
       }
+
+      const groupObject = {
+        ...item.annotationData,
+        id: item.id,
+        status: item.status, // Adding status
+        type: 'group', // Ensuring the type is recognized as "Group"
+        objects: item.annotationData.objects.map((childObj) => {
+          return {
+            ...childObj,
+            // Ensure child object attributes like position, scaling, etc., are correctly retained
+            left: childObj.left || 0,
+            top: childObj.top || 0,
+            width: childObj.width || 0,
+            height: childObj.height || 0,
+            fill: childObj.fill || 'transparent',
+            stroke: childObj.stroke || null,
+            type: childObj.type.toLowerCase(), // Ensure it's lowercase
+          }
+        }),
+      }
+
+      // Push the group object into the corresponding page's objects array
+      result[pageNum].objects.push(groupObject)
     })
 
     return result
@@ -152,12 +181,11 @@ export default function Editor() {
       }
       const response = await annotationApi.getAnnotations(projectId, pick.id)
       const transformedData = transformData(response)
-      console.log(transformedData)
+
       editor.setAnnotations(transformedData)
       if (editor.canvas) {
         editor.canvas.clear() // Clear the canvas
         if (transformedData[editor.currPage]) {
-          console.log(transformedData[editor.currPage])
           editor.loadCanvasState(
             editor.currPage,
             transformedData[editor.currPage]
@@ -185,11 +213,7 @@ export default function Editor() {
     if (pick.id) {
       Promise.all([fetchAnnotations(), fetchComponents()])
     }
-  }, [pick.id, pick.fileUrl])
-
-  const handleBack = () => {
-    navigate(`/project/${projectId}`)
-  }
+  }, [pick.id, pick.fileUrl, editor.toggleAnnotationFetch])
 
   useEffect(() => {
     if (pick && pickId !== pick.id) {
@@ -348,13 +372,6 @@ export default function Editor() {
         </div>
       </div> */}
 
-      <button
-        id='back'
-        className='bg-blue-950 text-white rounded-lg px-4 py-2 hover:bg-blue-900 transition fixed left-28 h-8 top-2 flex items-center'
-        onClick={handleBack}
-      >
-        <MoveLeft />
-      </button>
       {hasPickWriteAccess(
         currentProject?.permission,
         currentProjectModel?.ProjectModelAccess?.[0]?.permission
