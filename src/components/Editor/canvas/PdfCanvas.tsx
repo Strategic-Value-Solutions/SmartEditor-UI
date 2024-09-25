@@ -135,7 +135,7 @@ function PdfCanvas({
                 <>
                   <TransformComponent>
                     <div
-                      className='absolute z-[9] px-4 py-4'
+                      className='absolute z-[9]'
                       id='canvasWrapper'
                       style={{
                         visibility: 'visible',
@@ -145,7 +145,7 @@ function PdfCanvas({
                     </div>
                     <div
                       id='pdfWrapper'
-                      className={`px-4 py-4 ${
+                      className={` ${
                         !editor.isExporting && editor.theme
                           ? 'border-none bg-[rgb(25,25,25)] shadow-[0px_0px_16px_rgb(0,0,0)]'
                           : 'border shadow-lg'

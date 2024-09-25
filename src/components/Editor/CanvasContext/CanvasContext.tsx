@@ -76,7 +76,6 @@ export const CanvasProvider = ({ children }) => {
     resetCanvasListeners()
 
     if (mode === 'change-status') {
-      // Disable interaction, controls, and movement
       canvas.selection = false // Disable group selection
 
       // Iterate over all objects on the canvas and disable movement/controls
@@ -1232,15 +1231,15 @@ export const CanvasProvider = ({ children }) => {
       }
 
       const pdfDoc = await PDFDocument.create()
-      const pageHeight = pages[0]?.getHeight() // Check if the first page exists
-      const pageWidth = pages[0]?.getWidth() // Check if the first page exists
+      const pageHeight = pages[0].getHeight() // Get the height of the first page
+      const pageWidth = pages[0].getWidth() // Get the width of the first page
 
       if (!pageHeight || !pageWidth) {
         toast.error('Unable to get page dimensions.')
         return
       }
 
-      const scalingFactor = 1.5 // Adjust this to scale up the annotations
+      const scalingFactor = pageWidth / pdfDimensions.width // Dynamically adjust scaling based on PDF size
       const f4a261Color = rgb(244 / 255, 162 / 255, 97 / 255) // Convert hex #f4a261 to rgb
 
       const svgToPng = async (svgData) => {
@@ -1260,27 +1259,24 @@ export const CanvasProvider = ({ children }) => {
 
       // Loop through each page in the annotations object
       for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-        // Load the correct page state
         setCurrPage(pageNum)
         await loadCanvasState(pageNum)
         await new Promise((resolve) => setTimeout(resolve, 1000)) // Ensure state is loaded
 
-        const json = canvas.toJSON() // Now capture the state with annotations
+        const canvasJson = canvas.toJSON() // Get current canvas state
 
         const [originalPage] = await pdfDoc.copyPages(originalPdfDoc, [
           pageNum - 1,
         ])
+        const page = pdfDoc.addPage(originalPage)
 
-        if (!originalPage) {
-          console.warn(`Page ${pageNum} does not exist in the PDF.`)
+        if (!canvasJson.objects || canvasJson.objects.length === 0) {
+          console.warn(`No annotations found for page ${pageNum}`)
           continue
         }
 
-        const page = pdfDoc.addPage(originalPage)
-
-        for (const obj of pageAnnotations) {
+        for (const obj of canvasJson.objects) {
           const type = obj.type.toLowerCase()
-
           const x = obj.left * scalingFactor
           const y =
             pageHeight - obj.top * scalingFactor - obj.height * scalingFactor
@@ -1288,8 +1284,8 @@ export const CanvasProvider = ({ children }) => {
           switch (type) {
             case 'text':
               page.drawText(obj.text, {
-                x: x,
-                y: y,
+                x,
+                y,
                 size: (obj.fontSize || 16) * scalingFactor,
                 color: rgb(0, 0, 0), // Default black text color
               })
@@ -1297,8 +1293,8 @@ export const CanvasProvider = ({ children }) => {
 
             case 'rect':
               page.drawRectangle({
-                x: x,
-                y: y,
+                x,
+                y,
                 width: obj.width * scalingFactor,
                 height: obj.height * scalingFactor,
                 borderColor: f4a261Color, // Set border color to #f4a261
@@ -1313,8 +1309,8 @@ export const CanvasProvider = ({ children }) => {
               )
               const pngImage = await pdfDoc.embedPng(pngBytes)
               page.drawImage(pngImage, {
-                x: x,
-                y: y,
+                x,
+                y,
                 width: obj.width * scalingFactor,
                 height: obj.height * scalingFactor,
               })
@@ -1324,13 +1320,11 @@ export const CanvasProvider = ({ children }) => {
               // Loop through each object inside the group and process it
               for (const groupObj of obj.objects) {
                 const groupType = groupObj.type.toLowerCase()
-
-                // Calculate the global coordinates by combining the group's and object's coordinates
                 const groupX = (obj.left + groupObj.left) * scalingFactor
                 const groupY =
                   pageHeight -
-                  obj.top * scalingFactor -
-                  (groupObj.top + groupObj.height) * scalingFactor
+                  (obj.top + groupObj.top) * scalingFactor -
+                  groupObj.height * scalingFactor
 
                 if (groupType === 'rect') {
                   page.drawRectangle({
@@ -1338,7 +1332,7 @@ export const CanvasProvider = ({ children }) => {
                     y: groupY,
                     width: groupObj.width * scalingFactor,
                     height: groupObj.height * scalingFactor,
-                    borderColor: f4a261Color, // Set group rectangle border color to #f4a261
+                    borderColor: f4a261Color,
                     borderWidth: groupObj.strokeWidth || 1,
                   })
                 } else if (groupType === 'image') {
@@ -1347,7 +1341,6 @@ export const CanvasProvider = ({ children }) => {
                     (res) => res.arrayBuffer()
                   )
                   const groupPngImage = await pdfDoc.embedPng(groupPngBytes)
-
                   page.drawImage(groupPngImage, {
                     x: groupX,
                     y: groupY,
