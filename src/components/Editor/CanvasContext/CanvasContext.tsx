@@ -1331,10 +1331,6 @@ export const CanvasProvider = ({ children }) => {
                   (obj.top + (groupObj.top || 0) + groupObj.height) *
                     scalingFactor +
                   offset        
-                  \ 
-
-                  \ \          
-
                 if (groupType === 'rect') {
                   const groupBorderColor =
                     statusColors[obj.status] || rgb(0, 0, 0) // Apply color based on group status
