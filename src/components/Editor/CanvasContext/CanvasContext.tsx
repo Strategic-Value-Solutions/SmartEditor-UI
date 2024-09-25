@@ -54,6 +54,7 @@ export const CanvasProvider = ({ children }) => {
     originalWidth: 0,
     originalHeight: 0,
   })
+  const [annotationFromDB, setAnnotationFromDB] = useState(null)
   const [toggleAnnotationFetch, setToggleAnnotationFetch] = useState(false)
   const [selectedTool, setSelectedTool] = useState(null)
   const [showAnnotationModal, setShowAnnotationModal] = useState(false)
@@ -1231,16 +1232,21 @@ export const CanvasProvider = ({ children }) => {
       }
 
       const pdfDoc = await PDFDocument.create()
-      const pageHeight = pages[0].getHeight() // Get the height of the first page
-      const pageWidth = pages[0].getWidth() // Get the width of the first page
+      const pageHeight = pages[0].getHeight()
+      const pageWidth = pages[0].getWidth()
 
       if (!pageHeight || !pageWidth) {
         toast.error('Unable to get page dimensions.')
         return
       }
 
-      const scalingFactor = pageWidth / pdfDimensions.width // Dynamically adjust scaling based on PDF size
-      const f4a261Color = rgb(244 / 255, 162 / 255, 97 / 255) // Convert hex #f4a261 to rgb
+      const scalingFactor = pageWidth / pdfDimensions.width
+
+      const statusColors = {
+        Pending: rgb(1, 0, 0), // Red
+        Working: rgb(0, 0, 1), // Blue
+        Completed: rgb(0, 1, 0), // Green
+      }
 
       const svgToPng = async (svgData) => {
         const img = new Image()
@@ -1259,23 +1265,19 @@ export const CanvasProvider = ({ children }) => {
 
       // Loop through each page in the annotations object
       for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-        setCurrPage(pageNum)
-        await loadCanvasState(pageNum)
-        await new Promise((resolve) => setTimeout(resolve, 1000)) // Ensure state is loaded
-
-        const canvasJson = canvas.toJSON() // Get current canvas state
-
+        const annotations = annotationFromDB[pageNum] // Get annotations for the current page
         const [originalPage] = await pdfDoc.copyPages(originalPdfDoc, [
           pageNum - 1,
         ])
         const page = pdfDoc.addPage(originalPage)
 
-        if (!canvasJson.objects || canvasJson.objects.length === 0) {
+        if (!annotations || annotations.objects.length === 0) {
           console.warn(`No annotations found for page ${pageNum}`)
           continue
         }
 
-        for (const obj of canvasJson.objects) {
+        // Process annotations on the current page
+        for (const obj of annotations.objects) {
           const type = obj.type.toLowerCase()
           const x = obj.left * scalingFactor
           const y =
@@ -1292,12 +1294,13 @@ export const CanvasProvider = ({ children }) => {
               break
 
             case 'rect':
+              const borderColor = statusColors[obj.status] || rgb(0, 0, 0) // Apply color based on status
               page.drawRectangle({
                 x,
                 y,
                 width: obj.width * scalingFactor,
                 height: obj.height * scalingFactor,
-                borderColor: f4a261Color, // Set border color to #f4a261
+                borderColor: borderColor,
                 borderWidth: obj.strokeWidth || 1,
               })
               break
@@ -1317,23 +1320,31 @@ export const CanvasProvider = ({ children }) => {
               break
 
             case 'group':
-              // Loop through each object inside the group and process it
+              const offset = 45
               for (const groupObj of obj.objects) {
                 const groupType = groupObj.type.toLowerCase()
-                const groupX = (obj.left + groupObj.left) * scalingFactor
+
+                const groupX =
+                  (obj.left + (groupObj.left || 0)) * scalingFactor - offset
                 const groupY =
                   pageHeight -
-                  (obj.top + groupObj.top) * scalingFactor -
-                  groupObj.height * scalingFactor
+                  (obj.top + (groupObj.top || 0) + groupObj.height) *
+                    scalingFactor +
+                  offset        
+                  \ 
+
+                  \ \          
 
                 if (groupType === 'rect') {
+                  const groupBorderColor =
+                    statusColors[obj.status] || rgb(0, 0, 0) // Apply color based on group status
                   page.drawRectangle({
                     x: groupX,
                     y: groupY,
                     width: groupObj.width * scalingFactor,
                     height: groupObj.height * scalingFactor,
-                    borderColor: f4a261Color,
-                    borderWidth: groupObj.strokeWidth || 1,
+                    borderColor: groupBorderColor,
+                    borderWidth: groupObj.strokeWidth * scalingFactor || 1,
                   })
                 } else if (groupType === 'image') {
                   const groupPngDataUrl = await svgToPng(groupObj.src)
@@ -1646,6 +1657,7 @@ export const CanvasProvider = ({ children }) => {
         selectedAnnotation,
         setSelectedAnnotation,
         changeAnnotationStatusById,
+        setAnnotationFromDB,
       }}
     >
       {children}

@@ -68,8 +68,6 @@ function PdfCanvas({
 
     // Store both original and displayed dimensions in the editor
     editor.setOriginalPdfDimensions({ originalWidth, originalHeight })
-
-    // Other logic here...
   }
 
   return (
@@ -139,13 +137,21 @@ function PdfCanvas({
                       id='canvasWrapper'
                       style={{
                         visibility: 'visible',
+                        width: pageDimensions.width + 'px', // Match canvas width to PDF
+                        height: pageDimensions.height + 'px', // Match canvas height to PDF
+                        top: 0,
+                        left: 0,
                       }}
                     >
-                      <canvas id='canvas' />
+                      <canvas
+                        id='canvas'
+                        width={pageDimensions.width}
+                        height={pageDimensions.height}
+                      />
                     </div>
                     <div
                       id='pdfWrapper'
-                      className={` ${
+                      className={`${
                         !editor.isExporting && editor.theme
                           ? 'border-none bg-[rgb(25,25,25)] shadow-[0px_0px_16px_rgb(0,0,0)]'
                           : 'border shadow-lg'
@@ -153,21 +159,11 @@ function PdfCanvas({
                     >
                       <Page
                         pageNumber={editor.currPage}
-                        width={pageDimensions.width}
-                        height={pageDimensions.height}
+                        width={pageDimensions.width} // Match PDF width
+                        height={pageDimensions.height} // Match PDF height
                       />
                     </div>
                   </TransformComponent>
-                  {/* <Rnd
-                    default={{
-                      x: window.height, // Adjust dynamically based on window width (center horizontally)
-                      y: window.width, // Adjust dynamically based on window height (shift it to the bottom)
-                      width: 'auto',
-                      height: 'auto',
-                    }}
-                    bounds='window' // Restrict dragging to within the window
-                  > */}
-                  {/* <div className='drag-handle'> */}
                   <PdfCanvasButtons
                     editor={editor}
                     changePage={changePage}
@@ -177,8 +173,6 @@ function PdfCanvas({
                     zoomOut={zoomOut}
                     resetTransform={resetTransform}
                   />
-                  {/* </div> */}
-                  {/* </Rnd> */}
                 </>
               )}
             </TransformWrapper>

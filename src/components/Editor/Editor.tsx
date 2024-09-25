@@ -181,7 +181,7 @@ export default function Editor() {
       }
       const response = await annotationApi.getAnnotations(projectId, pick.id)
       const transformedData = transformData(response)
-
+      editor.setAnnotationFromDB(transformedData)
       editor.setAnnotations(transformedData)
       if (editor.canvas) {
         editor.canvas.clear() // Clear the canvas
