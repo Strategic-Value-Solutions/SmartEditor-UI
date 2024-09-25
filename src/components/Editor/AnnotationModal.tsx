@@ -99,7 +99,17 @@ const AnnotationModal = ({ children }) => {
     setIsReloadingEventTriggers(false)
   }
 
+  const clearStates = () => {
+    setPostDataType('')
+    setPostDataUrl('')
+    setShowInformation(false)
+    setEventTriggered(false)
+    setEventTriggers([])
+    setIsReloadingEventTriggers(false)
+  }
+
   useEffect(() => {
+    clearStates()
     // Debugging log
     setStatus(editor?.selectedAnnotation?.status || 'new')
     if (editor.selectedAnnotation) {
