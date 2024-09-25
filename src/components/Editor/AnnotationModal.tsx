@@ -66,13 +66,24 @@ const AnnotationModal = ({ children }) => {
   }
 
   const handleSubmitPostData = async () => {
-    setIsLoading(true)
     const data = {
       annotationId: editor.selectedAnnotation.id,
       url: postDataUrl,
       data: editor.selectedAnnotation,
       postDataType,
     }
+
+    if (!data.postDataType) {
+      toast.error('Please select an action')
+      return
+    }
+
+    if (!data.data) {
+      toast.error('No data to trigger')
+      return
+    }
+
+    setIsLoading(true)
 
     try {
       await eventTriggerApi.createEventTrigger(data)
@@ -259,7 +270,7 @@ const AnnotationModal = ({ children }) => {
                 )}
               </Button>
             </div>
-            <div className='flex flex-col justify-center items-center gap-2 mt-3 w-full min-h-[7vh] max-h-[20vh] overflow-y-auto'>
+            <div className='flex flex-col justify-start items-center gap-2 mt-3 w-full min-h-[7vh] max-h-[20vh] overflow-y-auto pr-1'>
               {isReloadingEventTriggers ? (
                 <div className='flex items-center justify-center'>
                   <Loader2 className='h-5 w-5 mr-2' />
