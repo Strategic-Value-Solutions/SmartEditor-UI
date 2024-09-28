@@ -144,10 +144,17 @@ const AnnotationModal = ({ children }) => {
           </DialogHeader>
 
           {/* Dropdown for Changing Status */}
-          <div className='status-section'>
-            <p>Current Status: {status}</p>
+          <div className='flex flex-col justify-center border p-2 rounded-md shadow-md'>
+            <div className='text-sm font-semibold flex justify-between items-center gap-2 py-2'>
+              <p>Status</p>
+              <p className='font-normal'>{status}</p>
+            </div>
 
-            <Select value={status} onValueChange={handleStatusChange}>
+            <Select
+              value={status}
+              onValueChange={handleStatusChange}
+              className='w-full mt-2'
+            >
               <SelectTrigger>
                 <SelectValue placeholder='Select a status' />
               </SelectTrigger>
