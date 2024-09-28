@@ -1201,6 +1201,25 @@ export const CanvasProvider = ({ children }) => {
     setMode('move')
   }
 
+  const svgToPng = async (svgData, scale = 2) => {
+    const img = new Image()
+    img.src = svgData
+    await new Promise((resolve) => (img.onload = resolve))
+
+    // Create a canvas with a higher resolution
+    const canvasEl = document.createElement('canvas')
+    canvasEl.width = img.width * scale // Scale the width
+    canvasEl.height = img.height * scale // Scale the height
+
+    const ctx = canvasEl.getContext('2d')
+    // Set image smoothing to false to maintain sharpness
+    ctx.imageSmoothingEnabled = false
+
+    ctx.drawImage(img, 0, 0, canvasEl.width, canvasEl.height) // Draw the image on the canvas with the higher resolution
+
+    return canvasEl.toDataURL('image/png')
+  }
+
   const downloadPDFWithAnnotations = async () => {
     let selectedFile = currentProjectModel?.fileUrl
 
@@ -1246,21 +1265,6 @@ export const CanvasProvider = ({ children }) => {
         Pending: rgb(1, 0, 0), // Red
         Working: rgb(0, 0, 1), // Blue
         Completed: rgb(0, 1, 0), // Green
-      }
-
-      const svgToPng = async (svgData) => {
-        const img = new Image()
-        img.src = svgData
-        await new Promise((resolve) => (img.onload = resolve))
-
-        const canvasEl = document.createElement('canvas')
-        canvasEl.width = img.width
-        canvasEl.height = img.height
-
-        const ctx = canvasEl.getContext('2d')
-        ctx.drawImage(img, 0, 0)
-
-        return canvasEl.toDataURL('image/png')
       }
 
       // Loop through each page in the annotations object
@@ -1318,7 +1322,6 @@ export const CanvasProvider = ({ children }) => {
                 height: obj.height * scalingFactor,
               })
               break
-
             case 'group':
               const offset = 45
               for (const groupObj of obj.objects) {
@@ -1330,7 +1333,8 @@ export const CanvasProvider = ({ children }) => {
                   pageHeight -
                   (obj.top + (groupObj.top || 0) + groupObj.height) *
                     scalingFactor +
-                  offset        
+                  offset
+
                 if (groupType === 'rect') {
                   const groupBorderColor =
                     statusColors[obj.status] || rgb(0, 0, 0) // Apply color based on group status
@@ -1343,7 +1347,7 @@ export const CanvasProvider = ({ children }) => {
                     borderWidth: groupObj.strokeWidth * scalingFactor || 1,
                   })
                 } else if (groupType === 'image') {
-                  const groupPngDataUrl = await svgToPng(groupObj.src)
+                  const groupPngDataUrl = await svgToPng(groupObj.src, 10) // Use higher resolution for grouped images
                   const groupPngBytes = await fetch(groupPngDataUrl).then(
                     (res) => res.arrayBuffer()
                   )

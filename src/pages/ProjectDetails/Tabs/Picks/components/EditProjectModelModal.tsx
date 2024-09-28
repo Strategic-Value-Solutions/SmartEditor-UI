@@ -88,7 +88,7 @@ function EditProjectModelModal({
               ) : (
                 <div className='space-y-1 text-center'>
                   <div className={`text-md flex text-gray-600`}>
-                    <label className='relative cursor-pointer rounded-md bg-transparent font-medium text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:text-indigo-500'>
+                    <label className='relative cursor-pointer rounded-md bg-transparent font-medium text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-gray-500 focus-within:ring-offset-2 hover:text-indigo-500'>
                       <span>Upload a file</span>
                     </label>
                     <input

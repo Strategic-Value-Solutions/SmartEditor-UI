@@ -9,6 +9,9 @@ import Landing from './pages/Landing/src/main'
 import ProjectDetails from './pages/ProjectDetails'
 import Invitations from './pages/ProjectInvitations'
 import Projects from './pages/Projects'
+import ForgotPassword from './pages/forgot-password'
+import ResetPassword from './pages/reset-password'
+import Signup from './pages/signup'
 import AdminRoute from './routes/AdminRoute'
 import AuthenticationRoute from './routes/AuthenticationRoute'
 import PrivateRoute from './routes/PrivateRoute'
@@ -20,6 +23,12 @@ export const paths = {
     path: '/',
     roles: [], // accessible by anyone
     component: Landing,
+  },
+  signup: {
+    name: 'Sign Up',
+    path: '/signup',
+    roles: [], // accessible by anyone
+    component: Signup,
   },
   auth: {
     name: 'Authentication',
@@ -57,6 +66,18 @@ export const paths = {
     path: '/admin',
     roles: [ROLES.ADMIN], // only admin can access
     component: SuperStructure, // Replace with your actual admin component
+  },
+  forgotPassword: {
+    name: 'Forgot Password',
+    path: '/forgot-password',
+    roles: [], // accessible by anyone
+    component: ForgotPassword,
+  },
+  resetPassword: {
+    name: 'Reset Password',
+    path: '/reset-password/:token',
+    roles: [], // accessible by anyone
+    component: ResetPassword,
   },
 }
 

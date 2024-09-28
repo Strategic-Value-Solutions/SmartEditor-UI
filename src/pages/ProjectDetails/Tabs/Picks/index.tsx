@@ -24,6 +24,7 @@ const ProjectModels = () => {
   const [selectedPick, setSelectedPick] = useState<any>(null)
   const [viewType, setViewType] = useState('grid')
   const [search, setSearch] = useState('')
+  const [showCreatePickModal, setShowCreatePickModal] = useState(false)
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { setIsOpen, setSteps } = useTour()
