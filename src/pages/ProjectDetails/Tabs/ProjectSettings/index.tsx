@@ -1,18 +1,40 @@
+import ProjectInfo from './ProjectInfo'
 import Collaborators from './components/Collaborators/Collaborators'
+import Events from './components/Event/Event'
 import Invitations from './components/Invitations/Invitations'
 import ModelAccess from './components/ModelAccess/ModelAccess'
-import { Mail, Settings, Users } from 'lucide-react'
+import { Mail, Settings, Users, Webhook } from 'lucide-react'
 import { useState } from 'react'
-import ProjectInfo from './ProjectInfo'
 
 const ProjectSettings = () => {
   const [activeTab, setActiveTab] = useState('collaborators')
 
   const tabs = [
-    { name: 'Project Info', key: 'projectInfo', icon: Settings, component: <ProjectInfo /> },
-    { name: 'Collaborators', key: 'collaborators', icon: Users, component: <Collaborators /> },
-    { name: 'Model Access', key: 'modelAccess', icon: Settings, component: <ModelAccess /> },
-    { name: 'Invitations', key: 'invitations', icon: Mail, component: <Invitations /> },
+    {
+      name: 'Project Info',
+      key: 'projectInfo',
+      icon: Settings,
+      component: <ProjectInfo />,
+    },
+    {
+      name: 'Collaborators',
+      key: 'collaborators',
+      icon: Users,
+      component: <Collaborators />,
+    },
+    {
+      name: 'Model Access',
+      key: 'modelAccess',
+      icon: Settings,
+      component: <ModelAccess />,
+    },
+    {
+      name: 'Invitations',
+      key: 'invitations',
+      icon: Mail,
+      component: <Invitations />,
+    },
+    { name: 'Events', key: 'events', icon: Webhook, component: <Events /> },
   ]
 
   const renderTabContent = () => {
@@ -21,6 +43,7 @@ const ProjectSettings = () => {
       modelAccess: ModelAccess,
       collaborators: Collaborators,
       invitations: Invitations,
+      events: Events,
     }
 
     const TabComponent = tabComponents[activeTab as keyof typeof tabComponents]

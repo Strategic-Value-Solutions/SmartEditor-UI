@@ -142,7 +142,6 @@ export const CanvasProvider = ({ children }) => {
               groupObj.set({
                 stroke: newColor, // Change the border color of the rectangle
               })
-              console.log('Group border color updated:', newColor)
             }
           }
         } else if (annotation.type === 'rect') {
@@ -150,7 +149,6 @@ export const CanvasProvider = ({ children }) => {
           annotation.set({
             stroke: newColor, // Change the border color directly
           })
-          console.log('Annotation border color updated:', newColor)
         }
 
         // Re-render the canvas after updates

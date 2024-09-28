@@ -1,19 +1,18 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ViewTypeButtons from '@/components/ui/view-type-buttons'
 import projectApi from '@/service/projectApi'
-import { Download, Plus } from 'lucide-react'
+import { Download } from 'lucide-react'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { toast } from 'sonner'
+import NewProjectModal from './NewProjectModal'
 
 interface HeaderProps {
   setViewType: (value: string) => void
   viewType: string
   setSearch: (value: string) => void
   search: string
-  activeTab: string
+  setShowCreatePickModal: (value: boolean) => void
   setActiveTab: (value: string) => void
 }
 
@@ -22,7 +21,7 @@ const Header = ({
   viewType,
   setSearch,
   search,
-  activeTab,
+  setShowCreatePickModal,
   setActiveTab,
 }: HeaderProps) => {
   const { projectId }: any = useParams()
@@ -67,13 +66,7 @@ const Header = ({
             {isLoading ? 'Downloading...' : 'Download report'}
             <Download size={20} />
           </Button>
-          <Button
-            onClick={() => toast.info('Coming soon')}
-            className='flex h-8 items-center justify-center gap-2 p-2'
-          >
-            New Project Model
-            <Plus size={20} />
-          </Button>
+          <NewProjectModal />
           <ViewTypeButtons
             handleViewChange={handleViewChange}
             viewType={viewType}
