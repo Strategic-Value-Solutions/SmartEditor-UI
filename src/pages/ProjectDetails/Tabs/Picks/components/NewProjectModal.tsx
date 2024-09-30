@@ -32,9 +32,9 @@ const NewProjectModal = () => {
   >([])
 
   const handleCreateProject = () => {
-    console.log('Project Name:', projectName)
-    console.log('Fields:', fields)
-    console.log('Selected Configurations:', selectedConfigurations)
+    
+    
+    
   }
 
   const handleFieldChange = (index: number, key: string, value: string) => {

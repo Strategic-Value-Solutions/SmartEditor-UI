@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { paths } from '@/router'
 import authApi from '@/service/authApi'
 import { setAuth } from '@/store/slices/authSlice'
+import { getErrorMessage } from '@/utils'
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google'
 import { useState } from 'react'
 import * as React from 'react'
@@ -23,8 +24,35 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const dispatch = useDispatch()
 
   const [isLoading, setIsLoading] = useState(false)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  })
+
+  const inputFields = [
+    {
+      id: 'email',
+      type: 'email',
+      placeholder: 'name@example.com',
+      label: 'Email',
+      autoComplete: 'email',
+    },
+    {
+      id: 'password',
+      type: 'password',
+      placeholder: '**********',
+      label: 'Password',
+      autoComplete: 'current-password',
+    },
+  ]
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData((prevData) => ({
+      ...prevData,
+      [id]: value,
+    }))
+  }
 
   const onGoogleSuccess = async ({ credential }: any) => {
     setIsLoading(true)
@@ -54,60 +82,62 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     toast.error('Google Sign In was unsuccessful. Try again later')
   }
 
-  const handleEmailSignIn = (e: React.FormEvent) => {
+  const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Implement email and password login logic
-    
-    
+    try {
+      setIsLoading(true)
+      const response = await authApi.login(formData)
+      const { user, tokens } = response
+
+      localStorage.setItem('user', JSON.stringify(user))
+      localStorage.setItem('accessToken', JSON.stringify(tokens.access))
+      localStorage.setItem('refreshToken', JSON.stringify(tokens.refresh))
+      dispatch(
+        setAuth({
+          isAuthenticated: true,
+          user,
+          accessToken: tokens.access,
+          refreshToken: tokens.refresh,
+        })
+      )
+      navigate(paths.projects.path)
+    } catch (err) {
+      toast.error(getErrorMessage(err))
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <div className={cn('flex flex-col gap-6 w-full', className)} {...props}>
       <form className='space-y-6' onSubmit={handleEmailSignIn}>
         <div className='space-y-4'>
-          <div>
-            <Label
-              htmlFor='email'
-              className='block text-sm font-medium text-gray-700'
-            >
-              Email
-            </Label>
-            <Input
-              id='email'
-              placeholder='name@example.com'
-              type='email'
-              autoComplete='email'
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-              className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-gray-500 sm:text-sm'
-            />
-          </div>
-
-          <div>
-            <Label
-              htmlFor='password'
-              className='block text-sm font-medium text-gray-700'
-            >
-              Password
-            </Label>
-            <Input
-              id='password'
-              placeholder='**********'
-              type='password'
-              autoComplete='current-password'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading}
-              className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-gray-500 sm:text-sm'
-            />
-          </div>
+          {inputFields.map((field) => (
+            <div key={field.id}>
+              <Label
+                htmlFor={field.id}
+                className='block text-sm font-medium text-gray-700'
+              >
+                {field.label}
+              </Label>
+              <Input
+                id={field.id}
+                placeholder={field.placeholder}
+                type={field.type}
+                autoComplete={field.autoComplete}
+                value={formData[field.id]}
+                onChange={handleChange}
+                disabled={isLoading}
+                className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-gray-500 sm:text-sm'
+              />
+            </div>
+          ))}
 
           {/* Forgot Password Link */}
           <div className='flex justify-end'>
             <Link
               to='/forgot-password'
-              className='text-sm font-medium text-indigo-600 hover:text-indigo-500'
+              className='text-sm font-medium text-gray-800 hover:text-gray-900'
             >
               Forgot your password?
             </Link>
@@ -126,6 +156,16 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           )}
         </Button>
       </form>
+
+      <div className='flex justify-center items-center gap-2 text-sm'>
+        <span className='text-gray-600'>Don&apos;t have an account?</span>
+        <Link
+          to='/signup'
+          className='text-sm font-medium text-gray-800 hover:text-gray-900 transition-colors duration-200'
+        >
+          Sign Up
+        </Link>
+      </div>
 
       <div className='relative my-4'>
         <div className='absolute inset-0 flex items-center'>
