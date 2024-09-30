@@ -1,5 +1,6 @@
 //@ts-nocheck
 import { Button } from '../ui/button'
+import { FileInput } from '../ui/file-upload'
 import { Input } from '../ui/input'
 import { useEditor } from './CanvasContext/CanvasContext'
 import {
@@ -21,6 +22,7 @@ import { ReloadIcon } from '@radix-ui/react-icons'
 import { CheckCircleIcon, Loader2, Webhook } from 'lucide-react'
 import PropTypes from 'prop-types'
 import { useEffect, useState } from 'react'
+import { useDropzone } from 'react-dropzone'
 import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
@@ -39,6 +41,19 @@ const AnnotationModal = ({ children }) => {
   const [eventTriggers, setEventTriggers] = useState([])
   const [isReloadingEventTriggers, setIsReloadingEventTriggers] =
     useState(false)
+  const [file, setFile] = useState(null)
+
+  // Handle file drop
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop: (files) => {
+      const file = files[0]
+      setFile(file)
+    },
+    accept: {
+      'application/pdf': ['.pdf'],
+      'image/*': ['.jpeg', '.jpg', '.png'],
+    },
+  })
 
   // Debugging log
   // Function to handle status change, update annotation color, and close the modal
@@ -66,27 +81,25 @@ const AnnotationModal = ({ children }) => {
   }
 
   const handleSubmitPostData = async () => {
-    const data = {
-      annotationId: editor.selectedAnnotation.id,
-      url: postDataUrl,
-      data: editor.selectedAnnotation,
-      postDataType,
+    const formData = new FormData()
+    formData.append('annotationId', editor.selectedAnnotation.id)
+    formData.append('url', postDataUrl)
+    formData.append('data', JSON.stringify(editor.selectedAnnotation))
+    formData.append('postDataType', postDataType)
+
+    if (file) {
+      formData.append('file', file)
     }
 
-    if (!data.postDataType) {
+    if (!postDataType) {
       toast.error('Please select an action')
-      return
-    }
-
-    if (!data.data) {
-      toast.error('No data to trigger')
       return
     }
 
     setIsLoading(true)
 
     try {
-      await eventTriggerApi.createEventTrigger(data)
+      await eventTriggerApi.createEventTrigger(formData)
       setEventTriggered(true)
       getEventTriggersForAnnotation()
       toast.success('Event triggered successfully')
@@ -117,6 +130,7 @@ const AnnotationModal = ({ children }) => {
     setEventTriggered(false)
     setEventTriggers([])
     setIsReloadingEventTriggers(false)
+    setFile(null)
   }
 
   useEffect(() => {
@@ -246,6 +260,42 @@ const AnnotationModal = ({ children }) => {
                     </div>
                   )}
                 </div>
+                <div className='text-sm text-gray-400 text-center mt-3'>
+                  <div
+                    className='flex h-[12vh] w-full items-center justify-center py-8'
+                    {...getRootProps()}
+                  >
+                    <div className='flex h-[10vh] w-full max-w-[40vw] items-center justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5'>
+                      {file ? (
+                        <p className='text-sm text-gray-600'>
+                          <span className='font-medium'>{file.name}</span>
+                        </p>
+                      ) : (
+                        <>
+                          <div className='flex flex-col  justify-center items-center space-y-1 text-center'>
+                            <div
+                              className={`text-md flex text-gray-600 text-center`}
+                            >
+                              <label className='relative text-center cursor-pointer rounded-md bg-transparent font-medium text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-gray-500 focus-within:ring-offset-2 hover:text-indigo-500'>
+                                <span>Upload a file</span>
+                              </label>
+                              <input
+                                type='file'
+                                className='sr-only'
+                                accept='application/pdf,image/*'
+                                {...getInputProps()}
+                              />
+                              <p className='pl-1'>or drag and drop  (optional)</p>
+                            </div>
+                            <p className='text-sm'>
+                              File url will be sent in the request or mail
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
                 <Button
                   onClick={handleSubmitPostData}
                   className='mt-4'
@@ -264,7 +314,7 @@ const AnnotationModal = ({ children }) => {
 
           <div className='flex flex-col gap-2 mt-3 w-full'>
             <div className='flex items-center justify-between'>
-              <p className='text-sm font-medium'>Previous Triggers</p>
+              <p className='text-sm font-medium'>Audits</p>
               <Button
                 size='small'
                 className='p-1'
@@ -290,21 +340,13 @@ const AnnotationModal = ({ children }) => {
                       key={trigger.id}
                       className='flex flex-col gap-1 p-2 rounded-md border border-gray-200 w-full'
                     >
-                      <div className='flex items-center justify-between'>
-                        <p className='text-sm font-semibold'>{trigger.name}</p>
-                        <p className='text-sm text-gray-600 border p-1 rounded-md'>
-                          {trigger.status}
-                        </p>
-                      </div>
-                      <div className='flex items-center justify-between'>
-                        <p className='text-sm text-gray-500 truncate'>
-                          {trigger.type} {trigger.url ? `: ${trigger.url}` : ''}
-                        </p>
-                        <p className='text-sm text-gray-600'>
-                          Triggered at:{' '}
-                          {new Date(trigger.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
+                      <p className='text-sm text-gray-600'>
+                        {trigger.name}, triggered at{' '}
+                        {new Date(trigger.createdAt).toLocaleDateString()} with
+                        status {trigger.status}
+                        {trigger.url ? ` to ${trigger.url}` : ''}
+                        {trigger.fileUrl ? ` with attachment` : ''}.
+                      </p>
                     </div>
                   ))}
                 </>

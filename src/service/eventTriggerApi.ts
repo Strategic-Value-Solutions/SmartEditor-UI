@@ -6,7 +6,11 @@ const getEventTriggers = async (query: string) => {
 }
 
 const createEventTrigger = async (data: any) => {
-  const response = await api.post(`/event/trigger`, data)
+  const response = await api.post(`/event/trigger`, data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
   return response.data.data
 }
 

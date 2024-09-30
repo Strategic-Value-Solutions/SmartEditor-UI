@@ -40,6 +40,11 @@ const deleteProject = async (projectId: any) => {
   return response.data.data
 }
 
+const getAnalytics = async (projectId: any) => {
+  const response = await api.get(`/project/${projectId}/analytics`)
+  return response.data.data
+}
+
 const getProjectModels = async (projectId: any) => {
   const response = await api.get(`/project/${projectId}/model`)
   return response.data.data
@@ -109,6 +114,7 @@ export default {
   createProject,
   updateProject,
   getProjects,
+  getAnalytics,
   getCompletedProjects,
   getRecentProjects,
   getSharedProjects,

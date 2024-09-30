@@ -23,6 +23,7 @@ const ProjectTabs: React.FC<TabsProps> = ({ activeTab, handleTabChange }) => {
         <div className='w-full overflow-x-auto'>
           <TabsList className='flex justify-start space-x-4 border-b border-gray-200'>
             <TabsTrigger value='projectModels'>Project Models</TabsTrigger>
+            <TabsTrigger value='analytics'>Analytics</TabsTrigger>
             {hasProjectWriteAccess(currentProject?.permission) && (
               <TabsTrigger value='settings'>Settings</TabsTrigger>
             )}
