@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import authApi from '@/service/authApi'
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -15,14 +16,12 @@ const ForgotPassword = () => {
       return
     }
 
-    console.log('Forgot Password Email:', email)
-
+    await authApi.forgotPassword({ email })
+    navigate('/auth')
     // Example: Call API to send password reset email (mock for now)
     toast.success('Password reset link sent!')
 
     // For now, redirect to reset password screen with a dummy token
-    const dummyToken = 'dummy-reset-token'
-    navigate(`/reset-password/${dummyToken}`)
   }
 
   return (

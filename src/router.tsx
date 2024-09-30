@@ -2,6 +2,7 @@
 import TourProviderComponent from './Tours/TourProvider'
 import { ROLES } from './constants/otherConstants'
 import SuperStructure from './pages/Admin/SuperStructure'
+import Analytics from './pages/Analytics'
 import Auth from './pages/Auth'
 import Editor from './pages/Editor/index'
 import Error from './pages/Error/Error'
@@ -12,9 +13,11 @@ import Projects from './pages/Projects'
 import ForgotPassword from './pages/forgot-password'
 import ResetPassword from './pages/reset-password'
 import Signup from './pages/signup'
+import VerifyEmail from './pages/verify-email'
 import AdminRoute from './routes/AdminRoute'
 import AuthenticationRoute from './routes/AuthenticationRoute'
 import PrivateRoute from './routes/PrivateRoute'
+import VerificationRoute from './routes/VerificationRoute'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 export const paths = {
@@ -75,9 +78,22 @@ export const paths = {
   },
   resetPassword: {
     name: 'Reset Password',
-    path: '/reset-password/:token',
+    path: '/reset-password',
     roles: [], // accessible by anyone
     component: ResetPassword,
+  },
+  analytics: {
+    name: 'Analytics',
+    path: '/analytics',
+    roles: [],
+    component: Analytics,
+  },
+  verifyEmail: {
+    name: 'Verify Email',
+    path: '/verify-email',
+    roles: [],
+    component: VerifyEmail,
+    isVerificationRoute: true,
   },
 }
 
@@ -89,7 +105,10 @@ const Router = () => {
           {/* Public Routes */}
           {Object.values(paths)
             .filter(
-              (path) => path.roles.length === 0 && !path.isAuthenticationRoute
+              (path) =>
+                path.roles.length === 0 &&
+                !path.isAuthenticationRoute &&
+                !path.isVerificationRoute
             )
             .map((path) => (
               <Route
@@ -99,6 +118,19 @@ const Router = () => {
               />
             ))}
 
+          {Object.values(paths)
+            .filter((path) => path.isVerificationRoute)
+            .map((path) => (
+              <Route
+                key={path.path}
+                path={path.path}
+                element={
+                  <VerificationRoute>
+                    <path.component />
+                  </VerificationRoute>
+                }
+              />
+            ))}
           {/* Authentication Routes */}
           {Object.values(paths)
             .filter((path) => path.isAuthenticationRoute)

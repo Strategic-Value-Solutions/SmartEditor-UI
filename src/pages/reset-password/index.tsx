@@ -1,20 +1,49 @@
-// ResetPassword.tsx
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+// For showing success/error messages
+import authApi from '@/service/authApi'
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+
+// Assuming you have an API service to handle auth
 
 const ResetPassword = () => {
-  const { token } = useParams() // Assuming the reset token is in the URL
+  const location = useLocation() // To access the query string
+  const token = new URLSearchParams(location.search).get('token') // Extract the token from query string
+  const navigate = useNavigate()
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleResetPassword = async () => {
-    // TODO: Handle password reset with token and new password
-    console.log('Reset Password Token:', token)
-    console.log('New Password:', password)
+    if (!password || !confirmPassword) {
+      toast.error('Both password fields are required')
+      return
+    }
 
-    // Example: Call API to reset the password
-    // await resetPassword({ token, password });
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match')
+      return
+    }
+
+    if (!token) {
+      toast.error('Reset token is missing')
+      return
+    }
+
+    try {
+      setLoading(true)
+      // Call the API to reset the password with the token and new password
+      const data = { password }
+      await authApi.resetPassword(`?token=${token}`, data)
+      toast.success('Password reset successfully')
+      navigate('/auth')
+    } catch (error) {
+      toast.error('Failed to reset password. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -31,8 +60,19 @@ const ResetPassword = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <Button className='w-full' onClick={handleResetPassword}>
-            Set New Password
+          <Input
+            type='password'
+            placeholder='Confirm new password'
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+          <Button
+            className='w-full'
+            onClick={handleResetPassword}
+            disabled={loading}
+          >
+            {loading ? 'Setting New Password...' : 'Set New Password'}
           </Button>
         </div>
       </div>
