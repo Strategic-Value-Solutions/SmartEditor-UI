@@ -62,7 +62,7 @@ const NewProject = ({
     defaultValues: {
       name: '',
       clientName: '',
-      superStructureId: 'cjxqf3swq0000u5skt2ddc5p0',
+      superStructureId: '',
       // config: '',
     },
   })

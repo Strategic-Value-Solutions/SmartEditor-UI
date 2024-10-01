@@ -1,5 +1,6 @@
-// @ts-nocheck
+// src/redux/slices/templateSlice.js
 import { createSlice } from '@reduxjs/toolkit'
+import { v4 as uuidv4 } from 'uuid'
 
 const loadState = () => {
   try {
@@ -34,42 +35,24 @@ const templateSlice = createSlice({
   initialState,
   reducers: {
     addTemplate: (state, action) => {
-      const template = { ...action.payload }
+      const template = { ...action.payload } // Create a new object from the payload
+      if (!template.id) {
+        template.id = uuidv4() // Generate a unique ID if not present
+      }
       state.templatesData.push(template)
+      saveState(state)
     },
     setTemplatesData: (state, action) => {
       state.templatesData = action.payload.map((template: any) => ({
         ...template,
-        id: template.id,
+        id: template.id || uuidv4(), // Ensure each template has a unique ID
       }))
       saveState(state)
-    },
-
-    deleteTemplate: (state, action) => {
-      
-      state.templatesData = state.templatesData.filter(
-        (template) => template.id !== action.payload
-      )
-      saveState(state)
-    },
-    updateTemplate: (state, action) => {
-      const index = state.templatesData.findIndex(
-        (template: any) => template.id === action.payload.id
-      )
-      if (index !== -1) {
-        state.templatesData[index] = action.payload
-        saveState(state)
-      }
     },
   },
 })
 
-export const {
-  addTemplate,
-  setTemplatesData,
-  deleteTemplate,
-  updateTemplate,
-  updateCurrentTemplateDetails,
-} = templateSlice.actions
+export const { addTemplate, setTemplatesData } =
+  templateSlice.actions
 
 export default templateSlice.reducer

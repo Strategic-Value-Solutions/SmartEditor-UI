@@ -2,7 +2,6 @@
 import TourProviderComponent from './Tours/TourProvider'
 import { ROLES } from './constants/otherConstants'
 import SuperStructure from './pages/Admin/SuperStructure'
-import Analytics from './pages/Analytics'
 import Auth from './pages/Auth'
 import Editor from './pages/Editor/index'
 import Error from './pages/Error/Error'
@@ -10,7 +9,9 @@ import Landing from './pages/Landing/src/main'
 import ProjectDetails from './pages/ProjectDetails'
 import Invitations from './pages/ProjectInvitations'
 import Projects from './pages/Projects'
+import Templates from './pages/Templates'
 import ForgotPassword from './pages/forgot-password'
+import ProjectModelsConfiguration from './pages/projectModelsConfiguration'
 import ResetPassword from './pages/reset-password'
 import Signup from './pages/signup'
 import VerifyEmail from './pages/verify-email'
@@ -18,7 +19,12 @@ import AdminRoute from './routes/AdminRoute'
 import AuthenticationRoute from './routes/AuthenticationRoute'
 import PrivateRoute from './routes/PrivateRoute'
 import VerificationRoute from './routes/VerificationRoute'
+import templateApi from './service/templateApi'
+import { setTemplatesData } from './store/slices/templateSlice'
+import { getErrorMessage } from './utils'
+import { useEffect } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { toast } from 'sonner'
 
 export const paths = {
   root: {
@@ -52,6 +58,18 @@ export const paths = {
     roles: [ROLES.USER],
     component: Projects,
   },
+  projectModelsConfiguration: {
+    name: 'Project Models Configuration',
+    path: '/configuration',
+    roles: [ROLES.USER],
+    component: ProjectModelsConfiguration,
+  },
+  templates: {
+    name: 'Templates',
+    path: '/templates',
+    roles: [ROLES.USER],
+    component: Templates,
+  },
   invitations: {
     name: 'Invitations',
     path: '/invitations',
@@ -82,12 +100,6 @@ export const paths = {
     roles: [], // accessible by anyone
     component: ResetPassword,
   },
-  analytics: {
-    name: 'Analytics',
-    path: '/analytics',
-    roles: [],
-    component: Analytics,
-  },
   verifyEmail: {
     name: 'Verify Email',
     path: '/verify-email',
@@ -98,6 +110,17 @@ export const paths = {
 }
 
 const Router = () => {
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const response = await Promise.all([templateApi.getTemplates()])
+        setTemplatesData(response[0])
+      } catch (error) {
+        toast.error(getErrorMessage(error))
+      }
+    }
+    fetchTemplates()
+  }, [])
   return (
     <BrowserRouter>
       <TourProviderComponent>

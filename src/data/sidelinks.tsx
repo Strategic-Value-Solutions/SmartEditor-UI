@@ -1,5 +1,12 @@
 import { ROLES } from '@/constants/otherConstants'
-import { ArrowDownFromLineIcon, Box, LayoutDashboardIcon, MailCheck } from 'lucide-react'
+import {
+  ArrowDownFromLineIcon,
+  Box,
+  CogIcon,
+  FileTextIcon,
+  LayoutDashboardIcon,
+  MailCheck,
+} from 'lucide-react'
 
 // Ensure you have installed lucide-react and are importing the correct icons
 
@@ -28,6 +35,20 @@ export const sideLinks: SideLink[] = [
     label: '',
     href: '/invitations',
     icon: <MailCheck size={18} />,
+    roles: [ROLES.USER],
+  },
+  {
+    title: 'Templates',
+    label: '',
+    href: '/templates',
+    icon: <FileTextIcon size={18} />,
+    roles: [ROLES.USER],
+  },
+  {
+    title: 'Configuration',
+    label: '',
+    href: '/configuration',
+    icon: <CogIcon size={18} />,
     roles: [ROLES.USER],
   },
   {

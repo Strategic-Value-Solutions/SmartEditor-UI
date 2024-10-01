@@ -1,25 +1,26 @@
 //@ts-nocheck
+import NewTemplate from './Dialog/NewTemplate'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ViewTypeButtons from '@/components/ui/view-type-buttons'
-import { Plus } from 'lucide-react'
+import { Grid2X2, List, Plus } from 'lucide-react'
 
 const Header = ({
   setViewType,
   viewType,
-  setSearch,
-  search,
   onHandleAddTemplate,
+  search,
+  setSearch,
 }) => {
   const handleViewChange = (value) => {
     setViewType(value)
   }
-
   return (
-    <div className='p-y-3 mt-4 flex w-full flex-row justify-between lg:gap-0 gap-2 '>
+    <div className='p-y-3 mt-4 flex w-full flex-row justify-between'>
       <Input
         placeholder='Search template...'
-        className='lg:w-[20vw]'
+        className='w-[20vw]'
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
@@ -27,7 +28,6 @@ const Header = ({
         <Button
           onClick={onHandleAddTemplate}
           className='flex h-8 items-center justify-center gap-2 p-2'
-          id='new-template'
         >
           New Template
           <Plus size={20} />

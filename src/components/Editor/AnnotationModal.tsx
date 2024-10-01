@@ -29,7 +29,9 @@ import { toast } from 'sonner'
 const AnnotationModal = ({ children }) => {
   const editor = useEditor()
   const { user } = useSelector((state: RootState) => state.auth)
-
+  const templatesData = useSelector(
+    (state: RootState) => state.template.templatesData || []
+  )
   const [status, setStatus] = useState(
     editor?.selectedAnnotation?.status || 'Pending'
   )
@@ -210,6 +212,9 @@ const AnnotationModal = ({ children }) => {
                     <SelectContent>
                       <SelectItem value='send-mail'>Send Mail</SelectItem>
                       <SelectItem value='post-data'>Post Data</SelectItem>
+                      <SelectItem value='generate-report'>
+                        Generate Report
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -231,6 +236,29 @@ const AnnotationModal = ({ children }) => {
                 {postDataType === 'send-mail' && (
                   <div className='mt-4 text-sm text-gray-400 text-center'>
                     Mail will be sent to {user.email}
+                  </div>
+                )}
+
+                {postDataType === 'generate-report' && (
+                  <div className='mt-4 text-sm text-gray-400 text-center'>
+                    <Select className='w-full '>
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select a template' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {templatesData.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            {template.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      className='mt-2 flex h-8 w-fit items-center justify-center'
+                      onClick={() => setShowInformation(!showInformation)}
+                    >
+                      Generate Report 
+                    </Button>
                   </div>
                 )}
 
@@ -285,7 +313,9 @@ const AnnotationModal = ({ children }) => {
                                 accept='application/pdf,image/*'
                                 {...getInputProps()}
                               />
-                              <p className='pl-1'>or drag and drop  (optional)</p>
+                              <p className='pl-1'>
+                                or drag and drop (optional)
+                              </p>
                             </div>
                             <p className='text-sm'>
                               File url will be sent in the request or mail

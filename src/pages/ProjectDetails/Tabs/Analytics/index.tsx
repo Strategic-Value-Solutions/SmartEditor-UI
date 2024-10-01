@@ -1,203 +1,151 @@
-'use client'
-
+import { renderChart } from './components/ChartRender'
+import ProjectFilter from './components/ProjectFilter'
+import StatusFilter from './components/StatusFilter'
+import { Button } from '@/components/ui/button'
 import projectApi from '@/service/projectApi'
-import React, { useEffect, useState } from 'react'
+import { FileTextIcon, ImageIcon } from '@radix-ui/react-icons'
+import { toPng } from 'html-to-image'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Sector,
-  Cell,
-} from 'recharts'
-
-const colors = {
-  Pending: 'hsl(0, 100%, 80%)',
-  Working: 'hsl(210, 100%, 70%)',
-  Completed: 'hsl(120, 100%, 70%)',
-}
-
-const renderActiveShape = (props: any) => {
-  const RADIAN = Math.PI / 180
-  const {
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    startAngle,
-    endAngle,
-    fill,
-    payload,
-    percent,
-    value,
-  } = props
-  const sin = Math.sin(-RADIAN * midAngle)
-  const cos = Math.cos(-RADIAN * midAngle)
-  const sx = cx + (outerRadius + 10) * cos
-  const sy = cy + (outerRadius + 10) * sin
-  const mx = cx + (outerRadius + 30) * cos
-  const my = cy + (outerRadius + 30) * sin
-  const ex = mx + (cos >= 0 ? 1 : -1) * 22
-  const ey = my
-  const textAnchor = cos >= 0 ? 'start' : 'end'
-
-  return (
-    <g>
-      <text x={cx} y={cy} dy={8} textAnchor='middle' fill={fill}>
-        {payload.name}
-      </text>
-      <Sector
-        cx={cx}
-        cy={cy}
-        innerRadius={innerRadius}
-        outerRadius={outerRadius}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        fill={fill}
-      />
-      <Sector
-        cx={cx}
-        cy={cy}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        innerRadius={outerRadius + 6}
-        outerRadius={outerRadius + 10}
-        fill={fill}
-      />
-      <path
-        d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
-        stroke={fill}
-        fill='none'
-      />
-      <circle cx={ex} cy={ey} r={2} fill={fill} stroke='none' />
-
-      <text
-        x={ex + (cos >= 0 ? 1 : -1) * 12}
-        y={ey}
-        dy={36}
-        textAnchor={textAnchor}
-        fill='#999'
-      >
-        {`Pending: ${payload.Pending}`}
-      </text>
-      <text
-        x={ex + (cos >= 0 ? 1 : -1) * 12}
-        y={ey}
-        dy={54}
-        textAnchor={textAnchor}
-        fill='#999'
-      >
-        {`Working: ${payload.Working}`}
-      </text>
-      <text
-        x={ex + (cos >= 0 ? 1 : -1) * 12}
-        y={ey}
-        dy={72}
-        textAnchor={textAnchor}
-        fill='#999'
-      >
-        {`Completed: ${payload.Completed}`}
-      </text>
-    </g>
-  )
-}
+import { ResponsiveContainer } from 'recharts'
 
 export default function Analytics() {
+  const chartRef = useRef(null)
   const { projectId } = useParams()
-  const [activeIndex, setActiveIndex] = useState(0)
   const [analytics, setAnalytics] = useState<any>({})
+  const [filter, setFilter] = useState('All')
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       const analytics = await projectApi.getAnalytics(projectId)
-      console.log('analytics,', analytics)
       setAnalytics(analytics)
     }
-
     fetchAnalytics()
-  }, [])
+  }, [projectId])
 
-  const onPieEnter = (_: any, index: number) => {
-    setActiveIndex(index)
+  const handleFilterChange = (value: string | undefined) => {
+    if (!value) {
+      return
+    }
+    setFilter(value)
   }
 
-  const pieData = Object.entries(analytics).map(([key, value]: any) => ({
+  const toggleStatus = (status: string) => {
+    setSelectedStatuses((prev) =>
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status]
+    )
+  }
+
+  const filteredData = Object.entries(analytics).map(([key, value]: any) => ({
     name: key,
-    value: value.Pending || 0 + value.Working || 0 + value.Completed || 0,
-    Pending: value.Pending || 0,
-    Working: value.Working || 0,
-    Completed: value.Completed || 0,
+    value: (value.Pending || 0) + (value.Working || 0) + (value.Completed || 0),
+    ...value,
   }))
 
-  console.log('pieData,', pieData)
-  const barData = Object.entries(analytics).map(([key, value]: any) => ({
-    name: key,
-    Pending: value.Pending,
-    Working: value.Working,
-    Completed: value.Completed,
-  }))
+  // Convert JSON to CSV
+  const downloadCSV = () => {
+    const headers = ['Name', 'Pending', 'Working', 'Completed']
+    const rows = filteredData.map((item: any) => [
+      item.name,
+      item.Pending || 0,
+      item.Working || 0,
+      item.Completed || 0,
+    ])
 
-  console.log('barData,', barData)
+    // Create a CSV string
+    let csvContent =
+      headers.join(',') + '\n' + rows.map((row) => row.join(',')).join('\n')
+
+    // Create a Blob from the CSV string and download it
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = 'analytics-data.csv'
+    link.click()
+  }
+
+  // Download chart as an image
+  const downloadImage = () => {
+    if (chartRef.current === null) {
+      return
+    }
+    toPng(chartRef.current)
+      .then(function (dataUrl) {
+        const link = document.createElement('a')
+        link.download = 'analytics-chart.png'
+        link.href = dataUrl
+        link.click()
+      })
+      .catch(function (error) {
+        console.error('oops, something went wrong!', error)
+      })
+  }
+
+  // Convert data to PDF
+  const downloadPDF = () => {
+    const doc = new jsPDF()
+    const tableColumn = ['Name', 'Pending', 'Working', 'Completed']
+    const tableRows: any[] = []
+
+    filteredData.forEach((item: any) => {
+      const row = [
+        item.name,
+        item.Pending || 0,
+        item.Working || 0,
+        item.Completed || 0,
+      ]
+      tableRows.push(row)
+    })
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+    })
+    doc.save('analytics-data.pdf')
+  }
+
   return (
     <div className='flex flex-col h-full w-full space-y-8'>
       <h1 className='text-2xl font-bold'>Analytics</h1>
 
-      <div className='flex flex-col space-y-8'>
-        <div className='w-full'>
-          <ResponsiveContainer width='100%' height={400}>
-            <BarChart
-              data={barData}
-              margin={{
-                top: 20,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray='3 3' />
-              <XAxis dataKey='name' />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey='Pending' stackId='a' fill={colors.Pending} />
-              <Bar dataKey='Working' stackId='a' fill={colors.Working} />
-              <Bar dataKey='Completed' stackId='a' fill={colors.Completed} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+      <div className='flex justify-between'>
+        <ProjectFilter
+          analytics={analytics}
+          onFilterChange={handleFilterChange}
+        />
+        <StatusFilter onStatusChange={toggleStatus} />
+      </div>
 
-        <div className='w-full'>
-          <ResponsiveContainer width='100%' height={600}>
-            <PieChart>
-              <Pie
-                activeIndex={activeIndex}
-                activeShape={renderActiveShape}
-                data={pieData}
-                cx='50%'
-                cy='50%'
-                innerRadius={100}
-                outerRadius={120}
-                dataKey='value'
-                onMouseEnter={onPieEnter}
-              >
-                {pieData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={`hsl(210, 90%, 70%)`}
-                  />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+      <div className='flex space-x-4 mt-4'>
+        <Button onClick={downloadCSV} className='btn'>
+          <FileTextIcon className='mr-2' /> Download CSV
+        </Button>
+        <Button onClick={downloadImage} className='btn'>
+          <ImageIcon className='mr-2' /> Download Image
+        </Button>
+        <Button onClick={downloadPDF} className='btn'>
+          <FileTextIcon className='mr-2' /> Download PDF
+        </Button>
+      </div>
+
+      <div ref={chartRef} className='grid grid-cols-1 md:grid-cols-2 gap-4 '>
+        <ResponsiveContainer width='100%' height={400}>
+          {renderChart('Bar Chart', filteredData, 0, () => {})}
+        </ResponsiveContainer>
+        <ResponsiveContainer width='100%' height={400}>
+          {renderChart('Pie Chart', filteredData, 0, () => {})}
+        </ResponsiveContainer>
+        <ResponsiveContainer width='100%' height={400}>
+          {renderChart('Line Chart', filteredData, 0, () => {})}
+        </ResponsiveContainer>
+        <ResponsiveContainer width='100%' height={400}>
+          {renderChart('Area Chart', filteredData, 0, () => {})}
+        </ResponsiveContainer>
       </div>
     </div>
   )

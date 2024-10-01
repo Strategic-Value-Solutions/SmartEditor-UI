@@ -259,7 +259,7 @@ export const CanvasProvider = ({ children }) => {
     const projectId = currentProject?.id
     const projectModelId = currentProjectModel?.id
     const pickModelComponentId = selectedTool?.id
-    console.log('pickModelComponentId,', selectedTool)
+    
 
     if (!projectId || !projectModelId || !pickModelComponentId) {
       toast.error('Project information is missing. Unable to save annotation.')
@@ -852,7 +852,7 @@ export const CanvasProvider = ({ children }) => {
         newAnnotation = group.toObject()
         canvas.renderAll()
 
-        console.log('selectedTool,', selectedTool)
+        
 
         // Save annotation to the server after adding to the canvas
         saveAnnotation(newAnnotation, currPage)
@@ -1492,7 +1492,7 @@ export const CanvasProvider = ({ children }) => {
 
 
   useEffect(() => {
-    console.log('selectedTool,', selectedTool)
+    
   }, [selectedTool])
 
   const addIcon = ({ icon, tool }) => {
@@ -1501,7 +1501,7 @@ export const CanvasProvider = ({ children }) => {
       return
     }
     setSelectedTool(tool)
-    console.log(tool)
+    
     setMode('addIcon')
     setActiveIcon(icon)
   }
