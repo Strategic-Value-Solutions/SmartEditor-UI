@@ -133,18 +133,12 @@ export default function Analytics() {
         </Button>
       </div>
 
-      <div ref={chartRef} className='grid grid-cols-1 md:grid-cols-2 gap-4 '>
+      <div ref={chartRef} className='flex flex-col space-y-8'>
         <ResponsiveContainer width='100%' height={400}>
           {renderChart('Bar Chart', filteredData, 0, () => {})}
         </ResponsiveContainer>
         <ResponsiveContainer width='100%' height={400}>
           {renderChart('Pie Chart', filteredData, 0, () => {})}
-        </ResponsiveContainer>
-        <ResponsiveContainer width='100%' height={400}>
-          {renderChart('Line Chart', filteredData, 0, () => {})}
-        </ResponsiveContainer>
-        <ResponsiveContainer width='100%' height={400}>
-          {renderChart('Area Chart', filteredData, 0, () => {})}
         </ResponsiveContainer>
       </div>
     </div>
