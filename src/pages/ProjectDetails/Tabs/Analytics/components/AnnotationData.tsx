@@ -1,12 +1,11 @@
 import {
   Table,
-  TableHeader,
   TableBody,
-  TableRow,
-  TableHead,
   TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table'
-import React from 'react'
 
 const AnnotationData = ({ analyticsData }: { analyticsData: any }) => {
   return (
