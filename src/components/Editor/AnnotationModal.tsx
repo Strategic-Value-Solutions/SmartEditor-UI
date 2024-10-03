@@ -4,6 +4,7 @@ import { Button } from '../ui/button'
 import { FileInput } from '../ui/file-upload'
 import { Input } from '../ui/input'
 import { useEditor } from './CanvasContext/CanvasContext'
+import GenerateReportModal from './components/GenerateReportModal'
 import {
   Dialog,
   DialogContent,
@@ -38,6 +39,7 @@ const AnnotationModal = ({ children }) => {
   const [status, setStatus] = useState(
     editor?.selectedAnnotation?.status || 'Pending'
   )
+  const [showGenerateReportModal, setShowGenerateReportModal] = useState(false)
   const [postDataType, setPostDataType] = useState('send-mail')
   const [postDataUrl, setPostDataUrl] = useState('')
   const [showInformation, setShowInformation] = useState(false)
@@ -46,6 +48,7 @@ const AnnotationModal = ({ children }) => {
   const [eventTriggers, setEventTriggers] = useState([])
   const [isReloadingEventTriggers, setIsReloadingEventTriggers] =
     useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null)
   const [file, setFile] = useState(null)
   const [projectSettings, setProjectSettings] = useState(null)
 
@@ -160,10 +163,31 @@ const AnnotationModal = ({ children }) => {
       getEventTriggersForAnnotation()
     }
   }, [editor.selectedAnnotation])
+  const handleShowReportGenerationModal = () => {
+    if (!selectedTemplate.id) {
+      toast.error('Please select a template to generate report')
+      return
+    }
+    setShowGenerateReportModal(true)
+    editor.setShowAnnotationModal(false)
+  }
+
+  const handleCloseGenerateReportModal = () => {
+    setShowGenerateReportModal(false)
+    editor.setShowAnnotationModal(true)
+    setSelectedTemplate(null)
+  }
 
   return (
     <div>
       {/* The Dialog component */}
+      <GenerateReportModal
+        showGenerateReportModal={showGenerateReportModal}
+        handleCloseGenerateReportModal={handleCloseGenerateReportModal}
+        template={selectedTemplate}
+        customImage={file}
+      />
+
       <Dialog
         open={editor.showAnnotationModal}
         onOpenChange={editor.setShowAnnotationModal}
@@ -268,28 +292,32 @@ const AnnotationModal = ({ children }) => {
                       </div>
                     )}
 
-                    {postDataType === 'generate-report' && (
-                      <div className='mt-4 text-sm text-gray-400 text-center'>
-                        <Select className='w-full '>
-                          <SelectTrigger>
-                            <SelectValue placeholder='Select a template' />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {templatesData.map((template) => (
-                              <SelectItem key={template.id} value={template.id}>
-                                {template.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          className='mt-2 flex h-8 w-fit items-center justify-center'
-                          onClick={() => setShowInformation(!showInformation)}
-                        >
-                          Generate Report
-                        </Button>
-                      </div>
-                    )}
+                {postDataType === 'generate-report' && (
+                  <div className='mt-4 text-sm text-gray-400 text-center'>
+                    <Select
+                      className='w-full '
+                      onValueChange={(value) => setSelectedTemplate(value)}
+                      value={selectedTemplate?.name}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select a template' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {templatesData.map((template) => (
+                          <SelectItem key={template.id} value={template}>
+                            {template.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      className='mt-2 flex h-8 w-fit items-center justify-center'
+                      onClick={handleShowReportGenerationModal}
+                    >
+                      Generate Report
+                    </Button>
+                  </div>
+                )}
 
                     <div className='flex flex-col gap-2 mt-3 w-full'>
                       <div className='flex items-center justify-between'>

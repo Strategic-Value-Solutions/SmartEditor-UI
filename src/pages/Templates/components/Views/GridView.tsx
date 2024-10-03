@@ -29,7 +29,7 @@ const Grid = ({
         {templates.length > 0 ? (
           templates.map((template: any, index: any) => (
             <TemplateCard
-            handleShowTemplateEditor={handleShowTemplateEditor}
+              handleShowTemplateEditor={handleShowTemplateEditor}
               template={template}
               key={template.id}
               onConfirm={handleDeleteButtonClick}

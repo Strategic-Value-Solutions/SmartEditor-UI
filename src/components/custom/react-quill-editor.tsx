@@ -1,3 +1,4 @@
+import he from 'he'
 import QuillDragAndDropModule from 'quill-drag-and-drop-module'
 import ImageResize from 'quill-image-resize-module-react'
 import { forwardRef } from 'react'
@@ -21,7 +22,7 @@ const ReactQuillEditor = forwardRef<any, ReactQuillEditorProps>(
       <ReactQuill
         ref={ref}
         theme='snow'
-        value={value}
+        value={he.decode(value)}
         onChange={(value) => onChange(value)}
         modules={{
           toolbar: [

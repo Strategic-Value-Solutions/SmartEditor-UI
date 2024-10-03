@@ -12,6 +12,11 @@ const saveAnnotations = async (
   return response.data.data
 }
 
+const getAnnotationById = async (annotationId: string) => {
+  const response = await api.get(`/project/annotation/${annotationId}`)
+  return response.data.data
+}
+
 const saveSingleAnnotation = async (
   projectId: string,
   projectModelId: string,
@@ -61,4 +66,5 @@ export default {
   saveSingleAnnotation,
   deleteSingleAnnotation,
   updateSingleAnnotation,
+  getAnnotationById,
 }
