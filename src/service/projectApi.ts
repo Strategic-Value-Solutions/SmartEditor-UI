@@ -45,6 +45,11 @@ const getAnalytics = async (projectId: any) => {
   return response.data.data
 }
 
+const getAnalyticsData = async (projectId: any) => {
+  const response = await api.get(`/project/${projectId}/analytics/data`)
+  return response.data.data
+}
+
 const getProjectModels = async (projectId: any) => {
   const response = await api.get(`/project/${projectId}/model`)
   return response.data.data
@@ -105,7 +110,7 @@ const downloadReport = async (projectId: string) => {
   link.setAttribute('download', `project_${projectId}_report.xlsx`)
   document.body.appendChild(link)
   link.click()
-  link?.parentNode?.removeChild(link) 
+  link?.parentNode?.removeChild(link)
   window.URL.revokeObjectURL(url)
   return response.data.data
 }
@@ -120,11 +125,17 @@ const updateSettings = async (projectId: string, data: any) => {
   return response.data.data
 }
 
+const createProjectModel = async (projectId: string, data: any) => {
+  const response = await api.post(`/project/${projectId}/model`, data)
+  return response.data.data
+}
+
 export default {
   createProject,
   updateProject,
   getProjects,
   getAnalytics,
+  getAnalyticsData,
   getCompletedProjects,
   getRecentProjects,
   getSharedProjects,
@@ -138,4 +149,5 @@ export default {
   downloadReport,
   getSettings,
   updateSettings,
+  createProjectModel,
 }

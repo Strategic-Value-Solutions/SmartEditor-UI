@@ -1,6 +1,3 @@
-import { renderChart } from './components/ChartRender'
-import ProjectFilter from './components/ProjectFilter'
-import StatusFilter from './components/StatusFilter'
 import { Button } from '@/components/ui/button'
 import projectApi from '@/service/projectApi'
 import { FileTextIcon, ImageIcon } from '@radix-ui/react-icons'
@@ -10,18 +7,25 @@ import 'jspdf-autotable'
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { ResponsiveContainer } from 'recharts'
+import AnnotationData from './components/AnnotationData'
+import { renderChart } from './components/ChartRender'
+import ProjectFilter from './components/ProjectFilter'
+import StatusFilter from './components/StatusFilter'
 
 export default function Analytics() {
   const chartRef = useRef(null)
   const { projectId } = useParams()
   const [analytics, setAnalytics] = useState<any>({})
+  const [analyticsData, setAnalyticsData] = useState<any>([])
   const [filter, setFilter] = useState('All')
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       const analytics = await projectApi.getAnalytics(projectId)
+      const analyticsData = await projectApi.getAnalyticsData(projectId)
       setAnalytics(analytics)
+      setAnalyticsData(analyticsData)
     }
     fetchAnalytics()
   }, [projectId])
@@ -102,7 +106,7 @@ export default function Analytics() {
       tableRows.push(row)
     })
 
-    doc.autoTable({
+    doc?.autoTable({
       head: [tableColumn],
       body: tableRows,
     })
@@ -141,6 +145,7 @@ export default function Analytics() {
           {renderChart('Pie Chart', filteredData, 0, () => {})}
         </ResponsiveContainer>
       </div>
+      <AnnotationData analyticsData={analyticsData} />
     </div>
   )
 }

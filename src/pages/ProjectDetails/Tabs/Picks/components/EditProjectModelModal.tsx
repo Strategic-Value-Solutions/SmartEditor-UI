@@ -75,10 +75,18 @@ function EditProjectModelModal({
         </DialogHeader>
         <DialogDescription>
           <div
-            className='flex h-full w-full items-center justify-center py-8'
+            className='flex flex-col gap-2 h-full w-full items-center justify-center py-8'
             {...getRootProps()}
           >
-            <div className='flex h-[10vh] w-full max-w-[40vw] items-center justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5'>
+            <div className='flex flex-col gap-2 w-full justify-start pb-2 px-4'>
+              {selectedPick?.attributes.map((attribute: any) => (
+                <div key={attribute.name} className='flex gap-2'>
+                  <p>{attribute.name} : </p>
+                  <p>{attribute.value}</p>
+                </div>
+              ))}
+            </div>
+            <div className='flex h-[10vh] w-full max-w-[50vw] items-center justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5'>
               {selectedPick?.file ? (
                 <p className='text-sm text-gray-600'>
                   <span className='font-medium'>

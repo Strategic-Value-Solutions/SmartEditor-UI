@@ -19,23 +19,42 @@ import {
   SelectItem,
 } from '@/components/ui/select'
 import { Toggle } from '@/components/ui/toggle'
+import projectApi from '@/service/projectApi'
 import { Plus, X } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 
 // Use Toggle component for chip-like structure
 
+const attributes = [
+  {
+    name: 'name',
+    type: 'text',
+    placeholder: 'Enter Project name',
+  },
+  {
+    name: 'clientName',
+    type: 'text',
+    placeholder: 'Client name',
+  },
+  {
+    name: 'Inspector name',
+    type: 'text',
+    placeholder: 'Inspector name',
+  },
+]
+
 const NewProjectModal = () => {
+  const { projectId } = useParams()
   const [projectName, setProjectName] = useState('')
   const [fields, setFields] = useState([{ name: '', type: '' }])
   const [selectedConfigurations, setSelectedConfigurations] = useState<
     string[]
   >([])
 
-  const handleCreateProject = () => {
-    
-    
-    
-  }
+  const [modelAttributesData, setModelAttributesData] = useState([])
+
+  const handleCreateProject = () => {}
 
   const handleFieldChange = (index: number, key: string, value: string) => {
     const updatedFields = [...fields]
@@ -61,6 +80,20 @@ const NewProjectModal = () => {
   }
 
   const configurations = ['Config A', 'Config B', 'Config C'] // Your predefined configurations
+
+  const createProjectModel = async () => {
+    const data = {
+      name: projectName,
+      attributes: modelAttributesData,
+      pickModelId: '37beca76-4e81-4f6b-a522-4bf2296d9dcb',
+    }
+    try {
+      const response = await projectApi.createProjectModel(projectId, data)
+      console.log(response)
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <Dialog>
@@ -98,62 +131,35 @@ const NewProjectModal = () => {
           </div>
 
           {/* Dynamic Inputs */}
-          <div>
-            <label className='text-sm dark:text-gray-300'>Fields</label>
-            {fields.map((field, index) => (
-              <div key={index} className='flex gap-2 items-center mt-2'>
+          <div className='space-y-4'>
+            Datas required from model configuration
+            {attributes.map((attribute) => (
+              <div key={attribute.name} className='flex flex-col'>
                 <Input
-                  value={field.name}
-                  onChange={(e) =>
-                    handleFieldChange(index, 'name', e.target.value)
-                  }
-                  placeholder='Field Name'
-                  className='w-2/3'
+                  id={attribute.name}
+                  type={attribute.type}
+                  placeholder={attribute.placeholder}
+                  className=' w-full'
+                  onChange={(e) => {
+                    const modelAttribute = modelAttributesData.find(
+                      (attr) => attr.name === attribute.name
+                    )
+                    if (modelAttribute) {
+                      modelAttribute.value = e.target.value
+                    } else {
+                      setModelAttributesData([
+                        ...modelAttributesData,
+                        {
+                          name: attribute.name,
+                          type: attribute.type,
+                          value: e.target.value,
+                        },
+                      ])
+                    }
+                  }}
                 />
-                <Select
-                  className='w-1/3'
-                  value={field.type}
-                  onValueChange={(value) =>
-                    handleFieldChange(index, 'type', value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select Type' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='text'>Text</SelectItem>
-                    <SelectItem value='number'>Number</SelectItem>
-                    <SelectItem value='date'>Date</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button onClick={() => removeField(index)} variant='danger'>
-                  <X size={16} />
-                </Button>
               </div>
             ))}
-            <Button className='mt-2' onClick={addField}>
-              Add Field
-              <Plus size={16} />
-            </Button>
-          </div>
-
-          {/* Toggle Selection for Configurations */}
-          <div>
-            <label className='text-sm dark:text-gray-300'>
-              Select Configurations
-            </label>
-            <div className='flex gap-2 mt-2'>
-              {configurations.map((config) => (
-                <Toggle
-                  key={config}
-                  pressed={selectedConfigurations.includes(config)}
-                  onPressedChange={() => handleConfigurationChange(config)}
-                  className={`px-3 py-1 rounded-full border ${selectedConfigurations.includes(config) ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                >
-                  {config}
-                </Toggle>
-              ))}
-            </div>
           </div>
         </div>
 
@@ -161,7 +167,7 @@ const NewProjectModal = () => {
           <DialogClose asChild>
             <Button variant='secondary'>Cancel</Button>
           </DialogClose>
-          <Button onClick={handleCreateProject}>Create Project</Button>
+          <Button onClick={createProjectModel}>Create Project modal</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
