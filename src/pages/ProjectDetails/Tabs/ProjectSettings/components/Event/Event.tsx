@@ -1,77 +1,95 @@
-import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from '@/components/ui/select'
-import { useState } from 'react'
+import { Switch } from '@/components/ui/switch'
+import projectApi from '@/service/projectApi'
+import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 
-const Index = () => {
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([])
+const EventSettings = () => {
+  const { projectId }: any = useParams()
 
-  const options = [
-    { value: 'send-mail', label: 'Send Mail' },
-    { value: 'post-data', label: 'Post Data' },
-    { value: 'generate-report', label: 'Generate Report' },
-  ]
+  const [eventSettings, setEventSettings] = useState({
+    enableEventTrigger: false,
+    enablePublishDataTrigger: false,
+    enableEmailTrigger: false,
+    enableReportGenerationTrigger: false,
+  })
 
-  const handleSelectOption = (value: string) => {
-    setSelectedOptions(
-      (prevSelected) =>
-        prevSelected.includes(value)
-          ? prevSelected.filter((item) => item !== value) // Remove if already selected
-          : [...prevSelected, value] // Add if not selected
-    )
+  useEffect(() => {
+    const fetchEventSettings = async () => {
+      try {
+        const settings = await projectApi.getSettings(projectId)
+        if (settings) {
+          setEventSettings(settings)
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    fetchEventSettings()
+  }, [projectId])
+
+  const handleToggle = async (attribute: string, value: boolean) => {
+    setEventSettings({ ...eventSettings, [attribute]: value })
+    try {
+      await projectApi.updateSettings(projectId, {
+        [attribute]: value,
+      })
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   return (
-    <div className='flex flex-col items-center gap-6 p-6'>
-      <h2 className='text-xl font-semibold text-gray-800'>Choose Actions</h2>
+    <div className='flex flex-col gap-6 p-4'>
+      <h2 className='text-xl font-semibold text-gray-800'>Event Settings</h2>
 
-      <div className='w-64'>
-        <Select onValueChange={handleSelectOption}>
-          <SelectTrigger className='w-full'>
-            <SelectValue placeholder='Select actions' />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <div className='flex flex-col gap-4 w-full'>
+        <div className='flex justify-between gap-2'>
+          <span>Enable Event Trigger for annotations</span>
+          <Switch
+            checked={eventSettings.enableEventTrigger}
+            onCheckedChange={(checked) =>
+              handleToggle('enableEventTrigger', checked)
+            }
+          />
+        </div>
 
-      {/* Display selected options as chips */}
-      <div className='mt-6'>
-        <p className='text-gray-600 text-md'>Selected Options:</p>
-        {selectedOptions.length > 0 ? (
-          <div className='mt-2 flex flex-wrap gap-2'>
-            {selectedOptions.map((opt) => (
-              <div
-                key={opt}
-                className='flex items-center gap-2 bg-gray-200 rounded-full px-4 py-2 text-gray-800 text-sm font-medium'
-              >
-                {options.find((o) => o.value === opt)?.label}
-                <Button
-                  variant='ghost'
-                  className='ml-2 text-gray-500 hover:text-gray-800'
-                  onClick={() => handleSelectOption(opt)}
-                >
-                  ✕
-                </Button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className='text-gray-500 mt-2'>No options selected.</p>
+        {eventSettings.enableEventTrigger && (
+          <>
+            <div className='flex justify-between gap-2'>
+              <span>Enable Publish Data Trigger</span>
+              <Switch
+                checked={eventSettings.enablePublishDataTrigger}
+                onCheckedChange={(checked) =>
+                  handleToggle('enablePublishDataTrigger', checked)
+                }
+              />
+            </div>
+
+            <div className='flex justify-between gap-2'>
+              <span>Enable Email Trigger</span>
+              <Switch
+                checked={eventSettings.enableEmailTrigger}
+                onCheckedChange={(checked) =>
+                  handleToggle('enableEmailTrigger', checked)
+                }
+              />
+            </div>
+
+            <div className='flex justify-between gap-2'>
+              <span>Enable Report Generation Trigger</span>
+              <Switch
+                checked={eventSettings.enableReportGenerationTrigger}
+                onCheckedChange={(checked) =>
+                  handleToggle('enableReportGenerationTrigger', checked)
+                }
+              />
+            </div>
+          </>
         )}
       </div>
     </div>
   )
 }
 
-export default Index
+export default EventSettings

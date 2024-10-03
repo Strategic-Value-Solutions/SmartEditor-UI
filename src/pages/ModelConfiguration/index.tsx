@@ -6,9 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/table'
-import NewTemplate from './components/Dialog/NewTemplate'
+import NewTemplate from './components/Dialog/NewModelconfiguration'
 import Header from './components/Header'
-import TemplateCard from './components/TemplateCard'
+import TemplateCard from './components/ModelConfigurationCard'
 import { Button } from '@/components/ui/button'
 import ConfirmationDialog from '@/components/ui/confirmation-dialog'
 import { RootState } from '@/store'
@@ -18,10 +18,10 @@ import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'sonner'
 
-const Templates = () => {
+const ModelConfiguration = () => {
   const [openTemplateModal, setOpenTemplateModal] = useState(false)
   const [openDeleteModal, setOpenDeleteModal] = useState(false)
-  const [selectedTemplate, setSelectedTemplate] = useState(null)
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null)
   const [viewType, setViewType] = useState('grid')
   const [isEdit, setIsEdit] = useState(false)
   const [search, setSearch] = useState('')
@@ -85,7 +85,7 @@ const Templates = () => {
 
   return (
     <div className='flex flex-col'>
-      <h3 className='flex h-8 flex-col pb-1 text-2xl'>Templates</h3>
+      <h3 className='flex h-8 flex-col pb-1 text-2xl'>Model Configuration</h3>
       <Header
         viewType={viewType}
         setViewType={setViewType}
@@ -161,4 +161,4 @@ const Templates = () => {
   )
 }
 
-export default Templates
+export default ModelConfiguration

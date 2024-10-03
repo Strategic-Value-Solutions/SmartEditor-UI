@@ -6,12 +6,12 @@ import Auth from './pages/Auth'
 import Editor from './pages/Editor/index'
 import Error from './pages/Error/Error'
 import Landing from './pages/Landing/src/main'
+import ModelConfiguration from './pages/ModelConfiguration'
 import ProjectDetails from './pages/ProjectDetails'
 import Invitations from './pages/ProjectInvitations'
 import Projects from './pages/Projects'
 import Templates from './pages/Templates'
 import ForgotPassword from './pages/forgot-password'
-import ProjectModelsConfiguration from './pages/projectModelsConfiguration'
 import ResetPassword from './pages/reset-password'
 import Signup from './pages/signup'
 import VerifyEmail from './pages/verify-email'
@@ -62,7 +62,7 @@ export const paths = {
     name: 'Project Models Configuration',
     path: '/configuration',
     roles: [ROLES.USER],
-    component: ProjectModelsConfiguration,
+    component: ModelConfiguration,
   },
   templates: {
     name: 'Templates',

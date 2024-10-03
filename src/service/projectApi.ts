@@ -105,8 +105,18 @@ const downloadReport = async (projectId: string) => {
   link.setAttribute('download', `project_${projectId}_report.xlsx`)
   document.body.appendChild(link)
   link.click()
-  link?.parentNode?.removeChild(link)
+  link?.parentNode?.removeChild(link) 
   window.URL.revokeObjectURL(url)
+  return response.data.data
+}
+
+const getSettings = async (projectId: string) => {
+  const response = await api.get(`/project/${projectId}/settings`)
+  return response.data.data
+}
+
+const updateSettings = async (projectId: string, data: any) => {
+  const response = await api.put(`/project/${projectId}/settings`, data)
   return response.data.data
 }
 
@@ -126,4 +136,6 @@ export default {
   completePick,
   getPickModelComponents,
   downloadReport,
+  getSettings,
+  updateSettings,
 }

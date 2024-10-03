@@ -32,7 +32,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'sonner'
 import { v4 } from 'uuid'
 
-const NewTemplate = ({
+const NewModelConfiguration = ({
   isEdit = false,
   selectedConfig,
   onClose,
@@ -366,4 +366,4 @@ const NewTemplate = ({
   )
 }
 
-export default NewTemplate
+export default NewModelConfiguration

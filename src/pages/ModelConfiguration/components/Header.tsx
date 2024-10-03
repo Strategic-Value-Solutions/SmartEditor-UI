@@ -1,5 +1,5 @@
 //@ts-nocheck
-import NewTemplate from './Dialog/NewTemplate'
+import NewTemplate from './Dialog/NewModelconfiguration'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -29,7 +29,7 @@ const Header = ({
           onClick={onHandleAddTemplate}
           className='flex h-8 items-center justify-center gap-2 p-2'
         >
-          New Template
+          New Configuration
           <Plus size={20} />
         </Button>
         <ViewTypeButtons
