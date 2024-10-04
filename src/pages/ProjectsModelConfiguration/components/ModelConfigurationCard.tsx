@@ -1,9 +1,8 @@
 // @ts-nocheck
-import StatusCapsule from '@/components/ui/status-capsule'
-import { File, Pencil, Trash2 } from 'lucide-react'
+import { File } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-const ProjectCard = ({
+const ModelConfigurationCard = ({
   project,
   handleRedirectToProjectModelScreen,
   onEdit,
@@ -23,11 +22,10 @@ const ProjectCard = ({
         </div>
         <div className='flex flex-col pt-2'>
           <p className='text-sm'>{name}</p>
-
         </div>
       </div>
     </div>
   )
 }
 
-export default ProjectCard
+export default ModelConfigurationCard

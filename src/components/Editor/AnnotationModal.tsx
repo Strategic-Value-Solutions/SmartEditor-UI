@@ -345,44 +345,7 @@ const AnnotationModal = ({ children }) => {
                         </div>
                       )}
                     </div>
-                    <div className='text-sm text-gray-400 text-center mt-3'>
-                      <div
-                        className='flex h-[12vh] w-full items-center justify-center py-8'
-                        {...getRootProps()}
-                      >
-                        <div className='flex h-[10vh] w-full max-w-[40vw] items-center justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5'>
-                          {file ? (
-                            <p className='text-sm text-gray-600'>
-                              <span className='font-medium'>{file.name}</span>
-                            </p>
-                          ) : (
-                            <>
-                              <div className='flex flex-col  justify-center items-center space-y-1 text-center'>
-                                <div
-                                  className={`text-md flex text-gray-600 text-center`}
-                                >
-                                  <label className='relative text-center cursor-pointer rounded-md bg-transparent font-medium text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-gray-500 focus-within:ring-offset-2 hover:text-indigo-500'>
-                                    <span>Upload a file</span>
-                                  </label>
-                                  <input
-                                    type='file'
-                                    className='sr-only'
-                                    accept='application/pdf,image/*'
-                                    {...getInputProps()}
-                                  />
-                                  <p className='pl-1'>
-                                    or drag and drop (optional)
-                                  </p>
-                                </div>
-                                <p className='text-sm'>
-                                  File url will be sent in the request or mail
-                                </p>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                  
                     <Button
                       onClick={handleSubmitPostData}
                       className='mt-4'

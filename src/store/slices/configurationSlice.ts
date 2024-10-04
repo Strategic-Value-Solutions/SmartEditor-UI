@@ -3,22 +3,22 @@ import { createSlice } from '@reduxjs/toolkit'
 // Function to load state from localStorage
 const loadState = () => {
   try {
-    const serializedState = localStorage.getItem('configsData')
+    const serializedState = localStorage.getItem('modelConfigurationsData')
     if (serializedState === null) {
       return {
-        configsData: [],
+        modelConfigurationsData: [],
       }
     }
     const parsedState = JSON.parse(serializedState)
     return {
-      configsData: Array.isArray(parsedState.configsData)
-        ? parsedState.configsData
+      modelConfigurationsData: Array.isArray(parsedState.modelConfigurationsData)
+        ? parsedState.modelConfigurationsData
         : [],
     }
   } catch (err) {
     console.error('Could not load state from localStorage', err)
     return {
-      configsData: [],
+      modelConfigurationsData: [],
     }
   }
 }
@@ -27,7 +27,7 @@ const loadState = () => {
 const saveState = (state: any) => {
   try {
     const serializedState = JSON.stringify(state)
-    localStorage.setItem('configsData', serializedState)
+    localStorage.setItem('modelConfigurationsData', serializedState)
   } catch (err) {
     console.error('Could not save state to localStorage', err)
   }
@@ -40,24 +40,24 @@ const configurationSlice = createSlice({
   initialState,
   reducers: {
     addConfig: (state, action) => {
-      state.configsData.push(action.payload)
+      state.modelConfigurationsData.push(action.payload)
       saveState(state)
     },
     setConfigs: (state, action) => {
-      state.configsData = action.payload
+      state.modelConfigurationsData = action.payload
       saveState(state)
     },
     updateConfig: (state, action) => {
-      const index = state.configsData.findIndex(
+      const index = state.modelConfigurationsData.findIndex(
         (config: any) => config.id === action.payload.id
       )
       if (index !== -1) {
-        state.configsData[index] = action.payload
+        state.modelConfigurationsData[index] = action.payload
         saveState(state)
       }
     },
     deleteConfig: (state, action) => {
-      state.configsData = state.configsData.filter(
+      state.modelConfigurationsData = state.modelConfigurationsData.filter(
         (config: any) => config.id !== action.payload
       )
       saveState(state)

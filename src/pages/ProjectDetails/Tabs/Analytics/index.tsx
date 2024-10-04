@@ -9,8 +9,6 @@ import { useParams } from 'react-router-dom'
 import { ResponsiveContainer } from 'recharts'
 import AnnotationData from './components/AnnotationData'
 import { renderChart } from './components/ChartRender'
-import ProjectFilter from './components/ProjectFilter'
-import StatusFilter from './components/StatusFilter'
 
 export default function Analytics() {
   const chartRef = useRef(null)
@@ -117,13 +115,13 @@ export default function Analytics() {
     <div className='flex flex-col h-full w-full space-y-8'>
       <h1 className='text-2xl font-bold'>Analytics</h1>
 
-      <div className='flex justify-between'>
+      {/* <div className='flex justify-between'>
         <ProjectFilter
           analytics={analytics}
           onFilterChange={handleFilterChange}
         />
         <StatusFilter onStatusChange={toggleStatus} />
-      </div>
+      </div> */}
 
       <div className='flex space-x-4 mt-4'>
         <Button onClick={downloadCSV} className='btn'>

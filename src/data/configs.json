@@ -2,7 +2,7 @@
   {
     "modelName": "Model 1",
     "mcc": "MCC1",
-    "fieldsData": {
+    "attributes": {
       "field1": "value1",
       "field2": "value2",
       "field3": "value3"
@@ -13,7 +13,7 @@
   {
     "modelName": "Model 2",
     "mcc": "MCC2",
-    "fieldsData": {
+    "attributes": {
       "field1": "value4",
       "field2": "value5",
       "field3": "value6"

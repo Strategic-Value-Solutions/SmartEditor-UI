@@ -1,5 +1,6 @@
 import { useEditor } from '../CanvasContext/CanvasContext'
 import ReactQuillEditor from '@/components/custom/react-quill-editor'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -9,15 +10,12 @@ import {
 } from '@/components/ui/dialog'
 import annotationApi from '@/service/annotationApi'
 import { getErrorMessage } from '@/utils'
-// Import vfs_fonts to solve font issue
 import htmlToPdfmake from 'html-to-pdfmake'
 import pdfMake from 'pdfmake/build/pdfmake'
-// Import pdfmake
 import pdfFonts from 'pdfmake/build/vfs_fonts'
 import { useEffect, useState } from 'react'
+import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
-
-// Import htmlToPdfmake
 
 pdfMake.vfs = pdfFonts.pdfMake.vfs // Set the pdf fonts
 
@@ -55,7 +53,6 @@ const handleDownloadPDF = (content: string, customImage: string | null) => {
   const documentDefinition = {
     content: [
       ...pdfContent,
-      // If there is an image, add it to the PDF content
       customImage
         ? {
             text: 'Uploaded Image:',
@@ -88,6 +85,21 @@ export default function GenerateReportModal({
   const [content, setContent] = useState(template?.content || '')
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
 
+  // Dropzone to handle file uploads
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: 'image/*',
+    onDrop: (acceptedFiles) => {
+      const file = acceptedFiles[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = () => {
+          setUploadedImage(reader.result as string) // Set the base64 data URI for the image
+        }
+        reader.readAsDataURL(file) // Convert image to Data URI
+      }
+    },
+  })
+
   useEffect(() => {
     setContent(template?.content || '')
   }, [template])
@@ -118,19 +130,6 @@ export default function GenerateReportModal({
     status: editor.selectedAnnotation?.status || 'No status',
   }
 
-  // Function to handle file input and convert image to Data URI (single image)
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files ? e.target.files[0] : null
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        // Add the image Data URI
-        setUploadedImage(reader.result as string)
-      }
-      reader.readAsDataURL(file) // Convert image to Data URI
-    }
-  }
-
   // Replace placeholders in the template content
   const previewContent = replacePlaceholders(content, selectedAnnotationData)
 
@@ -154,32 +153,44 @@ export default function GenerateReportModal({
             <ReactQuillEditor
               value={content}
               placeholder='Write your template content here...'
-              className='min-h-[400px]'
               onChange={(value) => setContent(value)} // Update content state
             />
-
-            {/* File input for single image upload */}
             <div className='mt-4'>
-              <input
-                type='file'
-                accept='image/*'
-                onChange={handleImageUpload} // Handle single image upload
-              />
+              <Button
+                onClick={() => handleDownloadPDF(previewContent, uploadedImage)} // Pass image and content
+              >
+                Download PDF
+              </Button>
             </div>
 
-            {/* Display uploaded image with remove option */}
-            {uploadedImage && (
-              <div className='mt-4'>
-                <h3>Uploaded Image:</h3>
-                <div className='flex items-center gap-4'>
-                  <img
-                    src={uploadedImage}
-                    alt='Uploaded Image'
-                    className='w-12 h-12 object-cover'
-                  />
-                </div>
+            {/* Dropzone for image upload */}
+            <div className='mt-4'>
+              <div
+                {...getRootProps()}
+                className='border-2 border-dashed border-gray-300 p-4 text-center cursor-pointer'
+              >
+                <input {...getInputProps()} />
+                <p className='text-gray-500'>
+                  Drag and drop an image, or click to select a file
+                </p>
               </div>
-            )}
+
+              {/* Display uploaded image */}
+              {uploadedImage && (
+                <div className='mt-4'>
+                  <h3>Uploaded Image:</h3>
+                  <div className='flex items-center gap-4'>
+                    <img
+                      src={uploadedImage}
+                      alt='Uploaded Image'
+                      className='w-12 h-12 object-cover'
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Button to download the PDF (below editor) */}
           </div>
 
           {/* Right side: Live preview of the content */}
@@ -197,16 +208,6 @@ export default function GenerateReportModal({
               className='prose dark:prose-invert overflow-hidden text-ellipsis'
               dangerouslySetInnerHTML={{ __html: previewContent }}
             ></div>
-
-            {/* Button to download the PDF */}
-            <div className='mt-4'>
-              <button
-                onClick={() => handleDownloadPDF(previewContent, uploadedImage)} // Pass image and content
-                className='bg-blue-500 text-white py-2 px-4 rounded'
-              >
-                Download PDF
-              </button>
-            </div>
           </div>
         </div>
       </DialogContent>
