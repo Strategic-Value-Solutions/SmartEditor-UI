@@ -97,7 +97,7 @@ export default function GenerateReportModal({
     const fetchAnnotation = async () => {
       try {
         const annotation = await annotationApi.getAnnotationById(
-          editor.selectedAnnotation.id
+          editor?.selectedAnnotation?.id
         )
         setCreatorDetails(annotation.createdBy) // Set creator details from fetched annotation
       } catch (error) {
