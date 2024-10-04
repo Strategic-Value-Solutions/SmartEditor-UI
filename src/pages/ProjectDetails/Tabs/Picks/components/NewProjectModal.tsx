@@ -8,30 +8,32 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select'
 import projectApi from '@/service/projectApi'
-import { RootState } from '@/store'
+import { AppDispatch, RootState } from '@/store'
+import { addModelToCurrentProject } from '@/store/slices/projectModelSlice'
 import { getErrorMessage } from '@/utils'
 import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 const NewProjectModal = () => {
   const { projectId } = useParams()
-  const [projectName, setProjectName] = useState('')
   const [selectedModelId, setSelectedModelId] = useState('')
   const [modelAttributesData, setModelAttributesData] = useState([])
+  const [open, setOpen] = useState(false) // To manage modal state
+  const dispatch = useDispatch<AppDispatch>()
 
   // Fetching model configurations from Redux store
   const modelConfigurationsData = useSelector(
@@ -57,13 +59,16 @@ const NewProjectModal = () => {
 
   const handleCreateProject = async () => {
     const data = {
-      name: projectName,
       attributes: modelAttributesData,
       pickModelId: selectedModelId,
     }
     try {
       const response = await projectApi.createProjectModel(projectId, data)
+
+      dispatch(addModelToCurrentProject(response))
+
       toast.success('Project created successfully')
+      setOpen(false) // Close modal on success
     } catch (error) {
       toast.error(getErrorMessage(error))
     }
@@ -76,13 +81,14 @@ const NewProjectModal = () => {
   }
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button className='flex h-8 items-center justify-center gap-2 p-2'>
-          New Project Model
-          <Plus size={20} />
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <Button
+        className='flex h-8 items-center justify-center gap-2 p-2'
+        onClick={() => setOpen(true)}
+      >
+        New Project Model
+        <Plus size={20} />
+      </Button>
 
       <DialogContent>
         <DialogHeader>
@@ -93,23 +99,6 @@ const NewProjectModal = () => {
         </DialogHeader>
 
         <div className='space-y-4 py-4'>
-          {/* Project Name */}
-          <div>
-            <label
-              htmlFor='project-name'
-              className='text-sm dark:text-gray-300'
-            >
-              Project Model Name
-            </label>
-            <Input
-              id='project-name'
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              className='mt-1 w-full'
-              placeholder='Enter your project model name'
-            />
-          </div>
-
           {/* Model Dropdown */}
           <div>
             <label className='text-sm dark:text-gray-300'>
@@ -134,10 +123,10 @@ const NewProjectModal = () => {
             <div className='space-y-4'>
               <h4>Model Attributes</h4>
               {modelAttributesData.map((attribute, index) => (
-                <div key={attribute.name} className='flex flex-col'>
-                  <label className='text-sm dark:text-gray-300'>
+                <div key={attribute.name} className='flex '>
+                  <Label className='text-sm dark:text-gray-300'>
                     {attribute.name}
-                  </label>
+                  </Label>
 
                   {attribute.type === 'image' || attribute.type === 'pdf' ? (
                     <Input
@@ -165,7 +154,9 @@ const NewProjectModal = () => {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant='secondary'>Cancel</Button>
+            <Button variant='secondary' onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
           </DialogClose>
           <Button onClick={handleCreateProject}>Create Project Model</Button>
         </DialogFooter>

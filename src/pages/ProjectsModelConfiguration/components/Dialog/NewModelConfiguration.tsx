@@ -107,9 +107,6 @@ const NewModelConfiguration = ({
     const newConfig = {
       id: isEdit ? selectedModelConfiguration.id : v4(), // Use existing ID if editing
       name: data.name,
-      attributes,
-      associatedConfigs: selectedConfigs,
-      lastUpdate: new Date().toISOString(), // Add a timestamp for the last update
     }
 
     if (isEdit) {
@@ -123,7 +120,14 @@ const NewModelConfiguration = ({
         name: newConfig.name,
         attributes: newConfig.attributes,
       })
-      dispatch(addModelConfiguration(newConfig))
+      dispatch(
+        addModelConfiguration({
+          ...newConfig,
+          attributes,
+          associatedConfigs: selectedConfigs,
+          lastUpdate: new Date().toISOString(),
+        })
+      )
     }
 
     onClose()

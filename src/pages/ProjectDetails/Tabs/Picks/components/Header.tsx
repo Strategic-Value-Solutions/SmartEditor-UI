@@ -1,11 +1,13 @@
+import NewProjectModal from './NewProjectModal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import ViewTypeButtons from '@/components/ui/view-type-buttons'
 import projectApi from '@/service/projectApi'
+import { getErrorMessage } from '@/utils'
 import { Download } from 'lucide-react'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import NewProjectModal from './NewProjectModal'
+import { toast } from 'sonner'
 
 interface HeaderProps {
   setViewType: (value: string) => void
@@ -43,7 +45,7 @@ const Header = ({
       setIsLoading(false)
       return response
     } catch (error) {
-      console.error(error)
+      toast.error(getErrorMessage(error))
     }
   }
 

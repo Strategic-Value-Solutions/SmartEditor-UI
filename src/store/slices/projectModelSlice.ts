@@ -132,14 +132,26 @@ const projectModelSlice = createSlice({
         throw new Error('Project model not found')
       }
     },
+    addModelToCurrentProject: (state, action) => {
+      const newModel = action.payload
+
+      // Find the current project model in the projectModels array
+
+      // Directly push the new model into the models array
+      state.projectModels.push(newModel)
+
+      // Save the updated state to localStorage
+      saveState(state)
+    },
   },
 })
 
 export const {
   setProjectModels,
   setCurrentProjectModel,
-  updateCurrentProjectModel, // New action to update fields of the current model
+  updateCurrentProjectModel,
   navigateToPick,
   setCurrentProjectModelById,
+  addModelToCurrentProject, // New action to add a new model
 } = projectModelSlice.actions
 export default projectModelSlice.reducer
