@@ -67,8 +67,8 @@ const NewProject = ({
     },
   })
   const [configs, setConfigs] = useState([])
-  const configsData = useSelector(
-    (state: RootState) => state.configurations.configsData || []
+  const modelConfigurationsData = useSelector(
+    (state: RootState) => state.modelConfiguration.modelConfigurationsData || []
   )
   const superStructures = useSelector(
     (state: RootState) => state.superStructure.superStructureData || []
@@ -79,15 +79,15 @@ const NewProject = ({
       form.setValue('name', selectedProject.name)
       form.setValue('clientName', selectedProject.clientName)
       form.setValue('superStructureId', selectedProject.superStructureId)
-      // form.setValue('config', selectedProject.config.modelName)
+      // form.setValue('config', selectedProject.config.name)
     } else {
       form.reset()
     }
   }, [isEdit, selectedProject, form])
 
   useEffect(() => {
-    setConfigs(configsData)
-  }, [configsData])
+    setConfigs(modelConfigurationsData)
+  }, [modelConfigurationsData])
 
   const onSubmit = async (data) => {
     try {
@@ -209,10 +209,10 @@ const NewProject = ({
                         <SelectContent>
                           {configs.map((config) => (
                             <SelectItem
-                              key={config.modelName}
-                              value={config.modelName}
+                              key={config.name}
+                              value={config.name}
                             >
-                              {config.modelName}
+                              {config.name}
                             </SelectItem>
                           ))}
                         </SelectContent>

@@ -18,7 +18,7 @@ interface Config {
   id: number
   modelName: string
   mcc: string
-  fieldsData: {
+  attributes: {
     field1: string
     field2: string
     field3: string
@@ -28,7 +28,7 @@ interface Config {
 }
 
 interface ProjectDataContextProps {
-  configsData: Config[]
+  modelConfigurationsData: Config[]
   setConfigsData: React.Dispatch<React.SetStateAction<Config[]>>
   projectsData: Project[]
   setProjectsData: React.Dispatch<React.SetStateAction<Project[]>>
@@ -55,19 +55,19 @@ const ProjectDataContextProvider = ({ children }: ProviderProps) => {
     return storedProjectName ? JSON.parse(storedProjectName) : ''
   })
 
-  const [configsData, setConfigsData] = useState<Config[]>(() => {
-    const storedConfigsData = localStorage.getItem('configsData')
+  const [modelConfigurationsData, setConfigsData] = useState<Config[]>(() => {
+    const storedConfigsData = localStorage.getItem('modelConfigurationsData')
     return storedConfigsData ? JSON.parse(storedConfigsData) : []
   })
 
   useEffect(() => {
-    localStorage.setItem('configsData', JSON.stringify(configsData))
+    localStorage.setItem('modelConfigurationsData', JSON.stringify(modelConfigurationsData))
     localStorage.setItem('projectsData', JSON.stringify(projectsData))
     localStorage.setItem('name', JSON.stringify(name))
-  }, [configsData, projectsData, name])
+  }, [modelConfigurationsData, projectsData, name])
 
   const value: ProjectDataContextProps = {
-    configsData,
+    modelConfigurationsData,
     setConfigsData,
     projectsData,
     setProjectsData,

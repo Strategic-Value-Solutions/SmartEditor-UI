@@ -41,7 +41,7 @@ function SelectPick({
   const [loading, setLoading] = useState(false)
   // Initialize local state to track selected field values
   const [fieldValues, setFieldValues] = useState(
-    currentProject?.config?.fieldsData.map((field: any) => ({
+    currentProject?.config?.attributes.map((field: any) => ({
       name: field.name,
       selectedValue: field?.values?.[0]?.fieldValue || '', // Set initial value if available
     }))
