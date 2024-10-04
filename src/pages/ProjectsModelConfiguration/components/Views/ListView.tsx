@@ -104,7 +104,7 @@ const ListView = ({
         }
         handleDeleteButtonClick={handleDeleteButtonClick}
         handleEditButtonClick={handleEditButtonClick}
-        title='Project Model Configuration'
+        title='Model Configuration'
       />
     </>
   )

@@ -60,7 +60,7 @@ const GridView = ({
         handleRedirectToProjectModelScreen={handleRedirectToProjectModelScreen}
         handleDeleteButtonClick={handleDeleteButtonClick}
         handleEditButtonClick={handleEditButtonClick}
-        title='Project Model Configuration'
+        title='Model Configuration'
       />
 
    
