@@ -6,6 +6,7 @@ import authApi from '@/service/authApi'
 import { AppDispatch } from '@/store'
 import { setAuth } from '@/store/slices/authSlice'
 import { getErrorMessage } from '@/utils'
+import Joi from 'joi'
 import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
@@ -40,36 +41,52 @@ const Signup = () => {
     },
   ]
 
+  // Define Joi schema for validating signup form
+  const schema = Joi.object({
+    email: Joi.string()
+      .email({ tlds: { allow: false } })
+      .required()
+      .messages({
+        'string.email': 'Please enter a valid email address',
+        'any.required': 'Email is required',
+      }),
+    name: Joi.string().min(2).required().messages({
+      'string.min': 'Name must be at least 2 characters long',
+      'any.required': 'Name is required',
+    }),
+    password: Joi.string()
+      .min(8)
+      .max(30)
+      .pattern(
+        new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*])')
+      )
+      .required()
+      .messages({
+        'string.min': 'Password must be at least 8 characters long',
+        'string.max': 'Password cannot be longer than 30 characters',
+        'string.pattern.base':
+          'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+      }),
+    confirmPassword: Joi.any().valid(Joi.ref('password')).required().messages({
+      'any.only': 'Passwords do not match',
+      'any.required': 'Please confirm your password',
+    }),
+  })
+
   const handleSignup = async () => {
     const { email, password, confirmPassword, name } = formData
-    if (!email) {
-      toast.error('Please enter your email address')
-      return
-    }
-    if (!password) {
-      toast.error('Please enter a password')
-      return
-    }
-    if (password !== confirmPassword) {
-      toast.error('Passwords do not match')
-      return
-    }
-    if (!name) {
-      toast.error('Please enter your name')
+
+    // Validate the form data using Joi
+    const { error } = schema.validate(
+      { email, password, confirmPassword, name },
+      { abortEarly: false }
+    )
+
+    if (error) {
+      error.details.forEach((err) => toast.error(err.message))
       return
     }
 
-    // Password strength validation
-    const passwordRegex =
-      /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/
-    if (!passwordRegex.test(password)) {
-      toast.error(
-        'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character'
-      )
-      return
-    }
-
-    // Try signup with the API
     try {
       setLoading(true)
       const response = await authApi.signup(formData)

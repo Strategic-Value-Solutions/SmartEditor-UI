@@ -18,6 +18,25 @@ import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
+// Exported logout function
+export const logout = (dispatch: any, navigate: any) => {
+  const keysToKeep = [
+    'editorTourCompleted',
+    'projectModelTourCompleted',
+    'projectTourCompleted',
+  ]
+
+  // Iterate over localStorage keys and remove all except the keysToKeep
+  Object.keys(localStorage).forEach((key) => {
+    if (!keysToKeep.includes(key)) {
+      localStorage.removeItem(key)
+    }
+  })
+
+  dispatch(resetAuth())
+  navigate(paths.auth.path)
+}
+
 export function UserNav() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -25,24 +44,6 @@ export function UserNav() {
   const { isCollapsed } = useSelector((state: RootState) => state.sidebar)
 
   const [imageError, setImageError] = useState(false)
-
-  const logout = () => {
-    const keysToKeep = [
-      'editorTourCompleted',
-      'projectModelTourCompleted',
-      'projectTourCompleted',
-    ]
-
-    // Iterate over localStorage keys and remove all except the keysToKeep
-    Object.keys(localStorage).forEach((key) => {
-      if (!keysToKeep.includes(key)) {
-        localStorage.removeItem(key)
-      }
-    })
-
-    dispatch(resetAuth())
-    navigate(paths.auth.path)
-  }
 
   const handleImageError = () => {
     setImageError(true)
@@ -105,7 +106,10 @@ export function UserNav() {
           <DropdownMenuSeparator />
           <DropdownMenuGroup>{/* Optional dropdown items */}</DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={logout} className='cursor-pointer'>
+          <DropdownMenuItem
+            onClick={() => logout(dispatch, navigate)}
+            className='cursor-pointer'
+          >
             Log out
             <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
           </DropdownMenuItem>

@@ -1,31 +1,35 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import authApi from '@/service/authApi'
+import { getErrorMessage } from '@/utils'
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const handleForgotPassword = async () => {
-    // TODO: Handle forgot password logic and send reset email
-    if (!email) {
-      toast.error('Please enter your email address')
-      return
+    try {
+      if (!email) {
+        toast.error('Please enter your email address')
+        return
+      }
+      setLoading(true)
+      await authApi.forgotPassword({ email })
+      navigate('/auth')
+      toast.success('Password reset link sent!')
+    } catch (error) {
+      toast.error(getErrorMessage(error))
+    } finally {
+      setLoading(false)
     }
-
-    await authApi.forgotPassword({ email })
-    navigate('/auth')
-    // Example: Call API to send password reset email (mock for now)
-    toast.success('Password reset link sent!')
-
-    // For now, redirect to reset password screen with a dummy token
   }
 
   return (
-    <div className='container flex justify-center items-center h-screen bg-gray-50'>
+    <div className='container flex justify-center items-center h-screen'>
       <div className='border p-6 rounded-lg shadow-md w-full max-w-md bg-white'>
         <h2 className='text-2xl font-bold text-gray-800 text-center mb-6'>
           Forgot Password
@@ -42,8 +46,9 @@ const ForgotPassword = () => {
           <Button
             className='w-full bg-gray-900 text-white py-2 rounded-md hover:bg-gray-800 transition duration-300'
             onClick={handleForgotPassword}
+            disabled={loading}
           >
-            Send Reset Link
+            {loading ? 'Sending...' : 'Send Reset Link'}
           </Button>
         </div>
         <p className='text-center text-sm text-gray-500 mt-4'>

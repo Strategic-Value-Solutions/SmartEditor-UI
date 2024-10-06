@@ -59,6 +59,7 @@ export const CanvasProvider = ({ children }) => {
   const [selectedTool, setSelectedTool] = useState(null)
   const [showAnnotationModal, setShowAnnotationModal] = useState(false)
   const [selectedAnnotation, setSelectedAnnotation] = useState(null)
+  const selectedToolRef = useRef(null)
   const currentProject = useSelector(
     (state: RootState) => state.project.currentProject
   )
@@ -255,11 +256,16 @@ export const CanvasProvider = ({ children }) => {
       status: annotation.status, // Set the status
     }
   }
+
+  useEffect(() => {
+    // Log to check tool ref
+    selectedToolRef.current = selectedTool
+  }, [selectedTool])
+
   const saveAnnotation = async (annotationData, pageNumber) => {
     const projectId = currentProject?.id
     const projectModelId = currentProjectModel?.id
-    const pickModelComponentId = selectedTool?.id
-    
+    const pickModelComponentId = selectedToolRef.current?.id
 
     if (!projectId || !projectModelId || !pickModelComponentId) {
       toast.error('Project information is missing. Unable to save annotation.')
@@ -276,7 +282,6 @@ export const CanvasProvider = ({ children }) => {
 
       toast.success('Annotation saved successfully')
       setToggleAnnotationFetch((prevState) => !prevState)
-      // Re-render the canvas to reflect the changes
       canvas.renderAll()
     } catch (error) {
       console.error('Failed to save annotation', error)
@@ -851,8 +856,6 @@ export const CanvasProvider = ({ children }) => {
         canvas.add(group)
         newAnnotation = group.toObject()
         canvas.renderAll()
-
-        
 
         // Save annotation to the server after adding to the canvas
         saveAnnotation(newAnnotation, currPage)
@@ -1481,7 +1484,7 @@ export const CanvasProvider = ({ children }) => {
         return function () {
           return fabric.util.object.extend(toObject.call(this), {
             id: uuidv4(),
-            ...selectedTool,
+            ...selectedToolRef.current,
           })
         }
       })(drawInstance.toObject)
@@ -1490,18 +1493,13 @@ export const CanvasProvider = ({ children }) => {
     }
   }
 
-
-  useEffect(() => {
-    
-  }, [selectedTool])
-
   const addIcon = ({ icon, tool }) => {
     if (!hasWriteAccess) {
       toast.error('You do not have write access to add shapes.')
       return
     }
+
     setSelectedTool(tool)
-    
     setMode('addIcon')
     setActiveIcon(icon)
   }
