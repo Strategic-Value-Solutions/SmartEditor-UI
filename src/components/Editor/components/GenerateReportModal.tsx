@@ -80,6 +80,7 @@ export default function GenerateReportModal({
   handleCloseGenerateReportModal,
   template,
 }: GenerateReportModalProps) {
+  if (!showGenerateReportModal) return null
   const editor = useEditor()
   const [creatorDetails, setCreatorDetails] = useState<any>(null) // To store creator details
   const [content, setContent] = useState(template?.content || '')
@@ -118,16 +119,16 @@ export default function GenerateReportModal({
     }
 
     fetchAnnotation()
-  }, [editor.selectedAnnotation])
+  }, [editor?.selectedAnnotation])
 
   // Get the selected annotation data from the editor context or the fetched creatorDetails
   const selectedAnnotationData = {
     annotationData:
-      JSON.stringify(editor.selectedAnnotation) || 'No annotation data',
+      JSON.stringify(editor?.selectedAnnotation) || 'No annotation data',
     customImage: uploadedImage || '', // No image if not uploaded
     createdByName: creatorDetails?.name || 'Unknown', // Use creatorDetails for name
     createdByEmail: creatorDetails?.email || 'No email', // Use creatorDetails for email
-    status: editor.selectedAnnotation?.status || 'No status',
+    status: editor?.selectedAnnotation?.status || 'No status',
   }
 
   // Replace placeholders in the template content

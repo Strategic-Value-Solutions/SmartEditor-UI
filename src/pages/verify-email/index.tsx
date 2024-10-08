@@ -1,3 +1,4 @@
+import { logout } from '@/components/custom/user-nav'
 import { Button } from '@/components/ui/button'
 import { paths } from '@/router'
 import authApi from '@/service/authApi'
@@ -74,7 +75,7 @@ const EmailVerification = React.memo(() => {
   }, [timer])
 
   return (
-    <div className='flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4'>
+    <div className='flex flex-col items-center justify-center min-h-screen  p-4'>
       <div className='bg-white p-6 rounded-lg shadow-md w-full max-w-md'>
         <div className='text-center'>
           <Mail className='h-12 w-12 text-blue-500 mx-auto mb-4' />
@@ -129,6 +130,9 @@ const EmailVerification = React.memo(() => {
               </p>
             </>
           )}
+          <Button onClick={() => logout(dispatch, navigate)} className='mt-4'>
+            Log out
+          </Button>
         </div>
       </div>
     </div>

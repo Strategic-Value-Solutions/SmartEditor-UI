@@ -20,9 +20,11 @@ import AuthenticationRoute from './routes/AuthenticationRoute'
 import PrivateRoute from './routes/PrivateRoute'
 import VerificationRoute from './routes/VerificationRoute'
 import templateApi from './service/templateApi'
+import { RootState } from './store'
 import { setTemplatesData } from './store/slices/templateSlice'
 import { getErrorMessage } from './utils'
 import { useEffect } from 'react'
+import { useSelector } from 'react-redux'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { toast } from 'sonner'
 
@@ -110,6 +112,8 @@ export const paths = {
 }
 
 const Router = () => {
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth)
+
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
@@ -119,7 +123,9 @@ const Router = () => {
         toast.error(getErrorMessage(error))
       }
     }
-    fetchTemplates()
+    if (isAuthenticated) {
+      fetchTemplates()
+    }
   }, [])
   return (
     <BrowserRouter>
