@@ -130,6 +130,18 @@ const createProjectModel = async (projectId: string, data: any) => {
   return response.data.data
 }
 
+const createProjectModelAttributes = async (
+  projectId: string,
+  projectModelId: string,
+  data: any
+) => {
+  const response = await api.post(
+    `/project/${projectId}/model/${projectModelId}/attributes`,
+    data
+  )
+  return response.data.data
+}
+
 export default {
   createProject,
   updateProject,
@@ -150,4 +162,5 @@ export default {
   getSettings,
   updateSettings,
   createProjectModel,
+  createProjectModelAttributes,
 }

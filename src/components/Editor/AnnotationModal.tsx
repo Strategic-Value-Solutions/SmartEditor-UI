@@ -1,5 +1,4 @@
 //@ts-nocheck
-import projectApi from '@/service/projectApi'
 import { Button } from '../ui/button'
 import { FileInput } from '../ui/file-upload'
 import { Input } from '../ui/input'
@@ -20,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import eventTriggerApi from '@/service/eventTriggerApi'
+import projectApi from '@/service/projectApi'
 import { ReloadIcon } from '@radix-ui/react-icons'
 import { CheckCircleIcon, Loader2, Webhook } from 'lucide-react'
 import PropTypes from 'prop-types'
@@ -223,7 +223,7 @@ const AnnotationModal = ({ children }) => {
             </Select>
           </div>
 
-          {projectSettings?.enableEventTrigger && (
+          {projectSettings?.enableEventTrigger ? (
             <>
               <div className='flex flex-col justify-center border p-2 rounded-md shadow-md'>
                 <p className='text-md font-semibold flex items-center gap-2'>
@@ -292,32 +292,32 @@ const AnnotationModal = ({ children }) => {
                       </div>
                     )}
 
-                {postDataType === 'generate-report' && (
-                  <div className='mt-4 text-sm text-gray-400 text-center'>
-                    <Select
-                      className='w-full '
-                      onValueChange={(value) => setSelectedTemplate(value)}
-                      value={selectedTemplate?.name}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder='Select a template' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {templatesData.map((template) => (
-                          <SelectItem key={template.id} value={template}>
-                            {template.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      className='mt-2 flex h-8 w-fit items-center justify-center'
-                      onClick={handleShowReportGenerationModal}
-                    >
-                      Generate Report
-                    </Button>
-                  </div>
-                )}
+                    {postDataType === 'generate-report' && (
+                      <div className='mt-4 text-sm text-gray-400 text-center'>
+                        <Select
+                          className='w-full '
+                          onValueChange={(value) => setSelectedTemplate(value)}
+                          value={selectedTemplate?.name}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder='Select a template' />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {templatesData.map((template) => (
+                              <SelectItem key={template.id} value={template}>
+                                {template.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          className='mt-2 flex h-8 w-fit items-center justify-center'
+                          onClick={handleShowReportGenerationModal}
+                        >
+                          Generate Report
+                        </Button>
+                      </div>
+                    )}
 
                     <div className='flex flex-col gap-2 mt-3 w-full'>
                       <div className='flex items-center justify-between'>
@@ -345,7 +345,7 @@ const AnnotationModal = ({ children }) => {
                         </div>
                       )}
                     </div>
-                  
+
                     <Button
                       onClick={handleSubmitPostData}
                       className='mt-4'
@@ -404,6 +404,11 @@ const AnnotationModal = ({ children }) => {
                 </div>
               </div>
             </>
+          ) : (
+            <div className='text-sm text-gray-400 text-center'>
+              Trigger disabled. You can change trigger options from project
+              settings
+            </div>
           )}
 
           {/* Any additional content */}

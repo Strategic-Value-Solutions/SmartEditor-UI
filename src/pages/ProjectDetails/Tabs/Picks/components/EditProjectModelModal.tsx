@@ -41,7 +41,9 @@ function EditProjectModelModal({
   projectId,
 }: any) {
   const [loading, setLoading] = useState(false)
-  const [fields, setFields] = useState([{ fieldName: '', fieldType: 'text' }]) // Initialize fields with default values
+  const [fields, setFields] = useState([
+    { fieldName: '', fieldType: 'text', value: '' },
+  ]) // Initialize fields with default values
   const formMethods = useForm() // Initialize react-hook-form
   const { control } = formMethods
 
@@ -157,15 +159,30 @@ function EditProjectModelModal({
   }
 
   // When saving the modal, map fields back to selectedPick.attributes
-  const handleSave = () => {
-    setSelectedPick((prevState: any) => ({
-      ...prevState,
-      attributes: fields.map((field) => ({
-        name: field.fieldName,
-        type: field.fieldType,
-        value: field.value,
-      })),
-    }))
+  const handleSave = async (e: any) => {
+    e.preventDefault()
+    try {
+      setLoading(true)
+      const response = await projectApi.createProjectModelAttributes(
+        projectId,
+        selectedPick.id,
+        {
+          attributes: fields.map((field) => ({
+            name: field.fieldName,
+            type: field.fieldType,
+            value: field.value,
+          })),
+        }
+      )
+      setSelectedPick((prevState: any) => ({
+        ...prevState,
+        attributes: response,
+      }))
+    } catch (error) {
+      toast.error(getErrorMessage(error))
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -179,7 +196,7 @@ function EditProjectModelModal({
         </DialogHeader>
         <DialogDescription>
           <FormProvider {...formMethods}>
-            <form>
+            <form onSubmit={handleSave}>
               <div className='flex flex-col gap-2 h-full w-full items-center justify-center py-8'>
                 {/* Dynamic fields */}
                 <div className='flex flex-col'>
@@ -290,7 +307,9 @@ function EditProjectModelModal({
                       </div>
                     ))}
                   </div>
-                  <Button className='mt-4'>Submit</Button>
+                  <Button className='mt-4' type='submit'>
+                    Submit
+                  </Button>
                 </div>
 
                 {/* Dropzone (moved to last) */}
