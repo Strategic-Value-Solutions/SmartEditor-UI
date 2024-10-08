@@ -19,6 +19,9 @@ const AnnotationData = ({ analyticsData }: { analyticsData: any }) => {
             <TableHead className='text-left'>Type</TableHead>
             <TableHead className='text-left'>Inspector Name</TableHead>
             <TableHead className='text-left'>Status</TableHead>
+            {analyticsData?.attributes?.map((attribute: any) => (
+              <TableHead className='text-left'>{attribute.name}</TableHead>
+            ))}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -35,6 +38,9 @@ const AnnotationData = ({ analyticsData }: { analyticsData: any }) => {
               </TableCell>
               <TableCell className='text-left'>{data.createdBy.name}</TableCell>
               <TableCell className='text-left'>{data.status}</TableCell>
+              {analyticsData?.attributes?.map((attribute: any) => (
+                <TableCell className='text-left'>{attribute.value}</TableCell>
+              ))}
             </TableRow>
           ))}
         </TableBody>

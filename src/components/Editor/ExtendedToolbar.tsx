@@ -33,7 +33,7 @@ export default function ExtendedToolbar({ tools }: { tools: any[] }) {
       }}
       id='toolbar'
     >
-      <div className='flex flex-col items-center justify-center w-full h-10 mt-12 text-white'>
+      <div className='flex flex-col items-center justify-center w-full h-20 mt-12 text-white'>
         <button
           id='back'
           className='flex items-center justify-center w-4/5 px-4 py-2 mb-2 text-white transition rounded-lg h-10 hover:opacity-90'
@@ -54,7 +54,7 @@ export default function ExtendedToolbar({ tools }: { tools: any[] }) {
           </div>
         </div>
       </div>
-      <div className='flex flex-col items-center justify-center gap-3 h-[calc(100vh-150px)] mt-2 mx-auto'>
+      <div className='grid grid-cols-2 mt-8 justify-center gap-3 h-[70vh] overflow-y-auto'>
         {tools.map((tool: any, index: number) => (
           <TooltipProvider key={`${index}-provider`}>
             <Tooltip>

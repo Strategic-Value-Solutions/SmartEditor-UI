@@ -88,7 +88,7 @@ export default function GenerateReportModal({
   // Dropzone to handle file uploads
   const { getRootProps, getInputProps } = useDropzone({
     accept: 'image/*',
-    onDrop: (acceptedFiles) => {
+    onDrop: (acceptedFiles: File[]) => {
       const file = acceptedFiles[0]
       if (file) {
         const reader = new FileReader()
@@ -111,7 +111,7 @@ export default function GenerateReportModal({
         const annotation = await annotationApi.getAnnotationById(
           editor?.selectedAnnotation?.id
         )
-        setCreatorDetails(annotation.createdBy) // Set creator details from fetched annotation
+        setCreatorDetails(annotation?.createdBy) // Set creator details from fetched annotation
       } catch (error) {
         toast.error(getErrorMessage(error))
       }

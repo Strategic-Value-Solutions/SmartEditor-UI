@@ -25,10 +25,17 @@ const deleteSuperStructure = async (data: any) => {
   return response.data.data
 }
 
+const subStructures = async (superStructureId: string) => {
+  const response = await api.get(
+    `/super-structure/${superStructureId}/sub-structures`
+  )
+  return response.data.data
+}
 export default {
   getSuperStructures,
   getSuperStructure,
   createSuperStructure,
   updateSuperStructure,
   deleteSuperStructure,
+  subStructures,
 }

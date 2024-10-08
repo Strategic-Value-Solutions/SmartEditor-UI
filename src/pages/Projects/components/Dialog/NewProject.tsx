@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import projectApi from '@/service/projectApi'
+import superStructureApi from '@/service/superStructureApi'
 import { RootState } from '@/store'
 import {
   addProject,
@@ -43,7 +44,8 @@ import { z } from 'zod'
 const newProjectSchema = z.object({
   name: z.string().nonempty('Project name is required'),
   clientName: z.string().nonempty('Client name is required'),
-  superStructureId: z.string().nonempty('Supermodel Type is required'),
+  superStructureId: z.string().nonempty('Structure Type is required'),
+  subStructureId: z.string().nonempty('SubStructure Type is required'),
   // config: z.string().nonempty('Configuration is required'),
 })
 
@@ -57,12 +59,15 @@ const NewProject = ({
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
+  const [subStructures, setSubStructures] = useState([])
+
   const form = useForm({
     resolver: zodResolver(newProjectSchema),
     defaultValues: {
       name: '',
       clientName: '',
       superStructureId: '',
+      subStructureId: '',
       // config: '',
     },
   })
@@ -79,6 +84,7 @@ const NewProject = ({
       form.setValue('name', selectedProject.name)
       form.setValue('clientName', selectedProject.clientName)
       form.setValue('superStructureId', selectedProject.superStructureId)
+      form.setValue('subStructureId', selectedProject.subStructureId)
       // form.setValue('config', selectedProject.config.name)
     } else {
       form.reset()
@@ -89,12 +95,30 @@ const NewProject = ({
     setConfigs(modelConfigurationsData)
   }, [modelConfigurationsData])
 
+  useEffect(() => {
+    if (!form.getValues('superStructureId')) return
+
+    const fetchSubStructures = async () => {
+      try {
+        const response = await superStructureApi.subStructures(
+          form.getValues('superStructureId')
+        )
+        setSubStructures(response)
+      } catch (error) {
+        toast.error(getErrorMessage(error))
+      }
+    }
+
+    fetchSubStructures()
+  }, [form.watch('superStructureId')])
+
   const onSubmit = async (data) => {
     try {
       const projectData = {
         name: data.name,
         clientName: data.clientName,
         superStructureId: data.superStructureId,
+        subStructureId: data.subStructureId,
       }
 
       if (isEdit) {
@@ -165,14 +189,14 @@ const NewProject = ({
                   name='superStructureId'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Supermodel Type</FormLabel>
+                      <FormLabel>Structure Type</FormLabel>
                       <FormControl>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder='Supermodel Type' />
+                            <SelectValue placeholder='Structure Type' />
                           </SelectTrigger>
                           <SelectContent>
                             {superStructures.map((superStructure: any) => (
@@ -191,6 +215,38 @@ const NewProject = ({
                     </FormItem>
                   )}
                 />
+                {subStructures.length > 0 && (
+                  <FormField
+                    control={form.control}
+                    name='subStructureId'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>SubStructure Type</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder='SubStructure Type' />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {subStructures.map((subStructure: any) => (
+                                <SelectItem
+                                  key={subStructure.id}
+                                  value={subStructure.id}
+                                >
+                                  {subStructure.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
                 {/* <FormField
                   control={form.control}
                   name='config'

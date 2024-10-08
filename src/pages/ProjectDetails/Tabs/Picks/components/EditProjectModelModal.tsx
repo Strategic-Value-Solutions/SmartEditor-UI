@@ -81,7 +81,13 @@ function EditProjectModelModal({
             <div className='flex flex-col gap-2 w-full justify-start pb-2 px-4'>
               {selectedPick?.attributes.map((attribute: any) => (
                 <div key={attribute.name} className='flex gap-2'>
-                  <p>{attribute.name} : </p>
+                  <p>
+                    {attribute.name
+                      .split(/(?=[A-Z])/)
+                      .join(' ')
+                      .replace(/^./, (str: string) => str.toUpperCase())}{' '}
+                    :{' '}
+                  </p>
                   <p>{attribute.value}</p>
                 </div>
               ))}

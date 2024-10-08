@@ -47,11 +47,13 @@ const NewProjectModal = () => {
         (model) => model.id === selectedModelId
       )
       if (selectedModel) {
-        const initialAttributes = selectedModel.attributes.map((attribute) => ({
-          name: attribute.name,
-          type: attribute.type,
-          value: '', // Initial value for each attribute
-        }))
+        const initialAttributes = selectedModel?.attributes?.map(
+          (attribute) => ({
+            name: attribute.name,
+            type: attribute.type,
+            value: '', // Initial value for each attribute
+          })
+        )
         setModelAttributesData(initialAttributes)
       }
     }
@@ -119,13 +121,16 @@ const NewProjectModal = () => {
           </div>
 
           {/* Dynamic Inputs Based on Selected Model */}
-          {selectedModelId && modelAttributesData.length > 0 && (
+          {selectedModelId && modelAttributesData?.length > 0 && (
             <div className='space-y-4'>
               <h4>Model Attributes</h4>
-              {modelAttributesData.map((attribute, index) => (
-                <div key={attribute.name} className='flex '>
-                  <Label className='text-sm dark:text-gray-300'>
-                    {attribute.name}
+              {modelAttributesData?.map((attribute, index) => (
+                <div key={attribute.name} className='flex items-center gap-2'>
+                  <Label className='text-sm dark:text-gray-300 w-40'>
+                    {attribute.name
+                      .split(/(?=[A-Z])/)
+                      .join(' ')
+                      .replace(/^./, (str) => str.toUpperCase())}
                   </Label>
 
                   {attribute.type === 'image' || attribute.type === 'pdf' ? (
@@ -140,7 +145,10 @@ const NewProjectModal = () => {
                     <Input
                       type={attribute.type}
                       value={attribute.value}
-                      placeholder={`Enter ${attribute.name}`}
+                      placeholder={`Enter ${attribute.name
+                        .split(/(?=[A-Z])/)
+                        .join(' ')
+                        .replace(/^./, (str) => str.toUpperCase())}`}
                       onChange={(e) =>
                         handleAttributeChange(index, e.target.value)
                       }

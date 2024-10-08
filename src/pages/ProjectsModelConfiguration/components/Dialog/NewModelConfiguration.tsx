@@ -118,7 +118,8 @@ const NewModelConfiguration = ({
     } else {
       await projectModelConfigurationApi.createModel({
         name: newConfig.name,
-        attributes: newConfig.attributes,
+        attributes,
+        configurations: selectedConfigs,
       })
       dispatch(
         addModelConfiguration({
