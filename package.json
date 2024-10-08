@@ -94,6 +94,7 @@
   "devDependencies": {
     "@types/axios": "^0.14.0",
     "@types/file-saver": "^2.0.7",
+    "@types/html-to-pdfmake": "^2.4.4",
     "@types/node": "^22.0.1",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
