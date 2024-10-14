@@ -39,7 +39,7 @@ function PdfCanvas({
 
   // const extension = getFileExtension(pick.fileUrl).toLowerCase()
   const isPdf = isFilePdf(pick.fileUrl)
-  console.log(pick.fileUrl)
+
   // Function for handling PDF load success
   function onDocumentLoadSuccess({
     numPages,

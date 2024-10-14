@@ -14,6 +14,8 @@ import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
+const iconDefaultSize = 40
+
 const editorFunctions = createContext()
 // Extend fabric objects globally to include custom properties like 'id' and 'status'
 // Safely extend fabric.Object prototype to include custom properties (id, status)
@@ -485,8 +487,8 @@ export const CanvasProvider = ({ children }) => {
         cachedImgElement.src = activeIconRef.current
 
         cachedImgElement.onload = () => {
-          const imgWidth = cachedImgElement.width
-          const imgHeight = cachedImgElement.height
+          const imgWidth = iconDefaultSize
+          const imgHeight = iconDefaultSize
 
           // Coordinates for the edges of the rectangle
           const leftX = pointer.x - imgWidth / 2 // Left edge
@@ -535,8 +537,8 @@ export const CanvasProvider = ({ children }) => {
         }
       } else {
         // If the image is already cached, draw the rectangle immediately
-        const imgWidth = cachedImgElement.width
-        const imgHeight = cachedImgElement.height
+        const imgWidth = iconDefaultSize
+        const imgHeight = iconDefaultSize
 
         const leftX = pointer.x - imgWidth / 2 // Left edge
         const rightX = pointer.x + imgWidth / 2 // Right edge
@@ -828,8 +830,8 @@ export const CanvasProvider = ({ children }) => {
           left: x,
           top: y,
           selectable: true,
-          scaleX: 1,
-          scaleY: 1,
+          scaleX: iconDefaultSize / imgElement.width,
+          scaleY: iconDefaultSize / imgElement.height,
         })
 
         const rect = new fabric.Rect({
@@ -837,8 +839,8 @@ export const CanvasProvider = ({ children }) => {
           originY: 'center',
           left: x,
           top: y,
-          width: img.width,
-          height: img.height,
+          width: iconDefaultSize,
+          height: iconDefaultSize,
           fill: 'transparent',
           stroke: borderColor,
           strokeWidth: 2,

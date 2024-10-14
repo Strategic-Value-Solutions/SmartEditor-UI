@@ -49,6 +49,7 @@ const NewProjectModal = () => {
         (model) => model.id === selectedModelId
       )
       if (selectedModel) {
+        console.log(selectedModel)
         const initialAttributes = selectedModel?.attributes?.map(
           (attribute) => ({
             name: attribute.name,
