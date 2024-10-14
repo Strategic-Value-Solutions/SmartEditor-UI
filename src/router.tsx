@@ -86,7 +86,7 @@ export const paths = {
   },
   adminDashboard: {
     name: 'Admin Dashboard',
-    path: '/admin',
+    path: '/super-structure',
     roles: [ROLES.ADMIN], // only admin can access
     component: SuperStructure, // Replace with your actual admin component
   },

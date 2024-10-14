@@ -5,7 +5,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../../../../components/ui/table'
+} from '@/components/ui/table'
 import { PROJECT_ACCESS_ROLES } from '@/Tours/constants'
 import { Button } from '@/components/ui/button'
 import StatusCapsule from '@/components/ui/status-capsule'

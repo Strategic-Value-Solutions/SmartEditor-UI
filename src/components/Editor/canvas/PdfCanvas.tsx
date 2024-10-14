@@ -2,16 +2,13 @@
 import AnnotationModal from '../AnnotationModal'
 import Loader from '../Loader'
 import PdfCanvasButtons from './PdfCanvasButtons'
-import { editorSteps } from '@/Tours/constants'
 import { RootState } from '@/store'
+import { isFilePdf } from '@/utils'
 import { useTour } from '@reactour/tour'
 import { useState } from 'react'
 import { Document, Page } from 'react-pdf'
 import { useSelector } from 'react-redux'
-import { Rnd } from 'react-rnd'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
-
-// Import react-rnd
 
 function PdfCanvas({
   editor,
@@ -35,6 +32,15 @@ function PdfCanvas({
   const isEditorTourCompleted =
     localStorage.getItem('editorTourCompleted')?.toString() === 'true'
 
+  // Function to get the file extension
+  function getFileExtension(url) {
+    return url.split('.').pop().split(/\#|\?/)[0]
+  }
+
+  // const extension = getFileExtension(pick.fileUrl).toLowerCase()
+  const isPdf = isFilePdf(pick.fileUrl)
+  console.log(pick.fileUrl)
+  // Function for handling PDF load success
   function onDocumentLoadSuccess({
     numPages,
     originalHeight,
@@ -43,19 +49,17 @@ function PdfCanvas({
     editor.setNumPages(numPages)
     editor.setCurrPage(1)
 
-    // Set max width to 80% of the window's width
+    // Set max width and height
     const maxWidth = window.innerWidth * 0.8
-    // Set max height to 90% of the window's height
     const maxHeight = window.innerHeight * 0.9
 
-    // Calculate aspect ratio of the original document
+    // Calculate aspect ratio
     const aspectRatio = originalWidth / originalHeight
 
-    // Set width to maxWidth, and calculate height based on the aspect ratio
+    // Calculate dimensions
     let width = maxWidth
     let height = width / aspectRatio
 
-    // If the calculated height is more than maxHeight, adjust the width accordingly
     if (height > maxHeight) {
       height = maxHeight
       width = height * aspectRatio
@@ -63,11 +67,47 @@ function PdfCanvas({
 
     setPdfPageDimensions({ width, height })
     setPageDimensions({ width, height })
-    editor.addPdfDimensions({ width, height }) // Adds displayed dimensions to editor
+    editor.addPdfDimensions({ width, height })
     editor.setCanvas(initCanvas(width, height))
 
-    // Store both original and displayed dimensions in the editor
+    // Store original dimensions
     editor.setOriginalPdfDimensions({ originalWidth, originalHeight })
+  }
+
+  // Function for handling image load success
+  function onImageLoadSuccess(event) {
+    const { naturalWidth, naturalHeight } = event.target
+
+    // Set max width and height
+    const maxWidth = window.innerWidth * 0.8
+    const maxHeight = window.innerHeight * 0.9
+
+    // Calculate aspect ratio
+    const aspectRatio = naturalWidth / naturalHeight
+
+    // Calculate dimensions
+    let width = maxWidth
+    let height = width / aspectRatio
+
+    if (height > maxHeight) {
+      height = maxHeight
+      width = height * aspectRatio
+    }
+
+    setPdfPageDimensions({ width, height })
+    setPageDimensions({ width, height })
+    editor.addPdfDimensions({ width, height })
+    editor.setCanvas(initCanvas(width, height))
+
+    // Store original dimensions
+    editor.setOriginalPdfDimensions({
+      originalWidth: naturalWidth,
+      originalHeight: naturalHeight,
+    })
+
+    // Since it's an image, set number of pages to 1
+    editor.setNumPages(1)
+    editor.setCurrPage(1)
   }
 
   return (
@@ -93,8 +133,8 @@ function PdfCanvas({
           id='singlePageExport'
           className={`relative flex items-center justify-center ${
             editor.theme
-              ? 'bg-[rgb(20,20,20)] text-white'
-              : 'bg-white text-black'
+              ? 'border-none bg-[rgb(25,25,25)] shadow-[0px_0px_16px_rgb(0,0,0)]'
+              : 'border shadow-lg'
           }`}
           style={{
             maxWidth: '100%',
@@ -109,20 +149,78 @@ function PdfCanvas({
             </>
           )}
 
-          <Document
-            file={pick.fileUrl}
-            onLoadSuccess={(pdf) =>
-              pdf.getPage(editor.currPage).then((page) =>
-                onDocumentLoadSuccess({
-                  numPages: pdf.numPages,
-                  originalHeight: page.view[3],
-                  originalWidth: page.view[2],
-                })
-              )
-            }
-            className='flex justify-center mb-20'
-            id='doc'
-          >
+          {isPdf ? (
+            // PDF Rendering
+            <Document
+              file={pick.fileUrl}
+              onLoadSuccess={(pdf) =>
+                pdf.getPage(editor.currPage).then((page) =>
+                  onDocumentLoadSuccess({
+                    numPages: pdf.numPages,
+                    originalHeight: page.view[3],
+                    originalWidth: page.view[2],
+                  })
+                )
+              }
+              className='flex justify-center mb-20'
+              id='doc'
+            >
+              <TransformWrapper
+                initialScale={1}
+                wheel={{ disabled: !editor.allowPinchZoom }}
+                pinch={{ disabled: !editor.allowPinchZoom }}
+                panning={{ disabled: !editor.allowPinchZoom }}
+              >
+                {({ zoomIn, zoomOut, resetTransform }) => (
+                  <>
+                    <TransformComponent>
+                      <div
+                        className='absolute z-[9]'
+                        id='canvasWrapper'
+                        style={{
+                          visibility: 'visible',
+                          width: pageDimensions.width + 'px',
+                          height: pageDimensions.height + 'px',
+                          top: 0,
+                          left: 0,
+                        }}
+                      >
+                        <canvas
+                          id='canvas'
+                          width={pageDimensions.width}
+                          height={pageDimensions.height}
+                        />
+                      </div>
+                      <div
+                        id='pdfWrapper'
+                        className={`${
+                          !editor.isExporting && editor.theme
+                            ? 'border-none bg-[rgb(25,25,25)] shadow-[0px_0px_16px_rgb(0,0,0)]'
+                            : 'border shadow-lg'
+                        }`}
+                      >
+                        <Page
+                          pageNumber={editor.currPage}
+                          width={pageDimensions.width}
+                          height={pageDimensions.height}
+                        />
+                      </div>
+                    </TransformComponent>
+                    <PdfCanvasButtons
+                      editor={editor}
+                      changePage={changePage}
+                      pick={pick}
+                      handleSaveAnnotations={handleSaveAnnotations}
+                      zoomIn={zoomIn}
+                      zoomOut={zoomOut}
+                      resetTransform={resetTransform}
+                    />
+                  </>
+                )}
+              </TransformWrapper>
+            </Document>
+          ) : (
+            // Image Rendering
             <TransformWrapper
               initialScale={1}
               wheel={{ disabled: !editor.allowPinchZoom }}
@@ -137,8 +235,8 @@ function PdfCanvas({
                       id='canvasWrapper'
                       style={{
                         visibility: 'visible',
-                        width: pageDimensions.width + 'px', // Match canvas width to PDF
-                        height: pageDimensions.height + 'px', // Match canvas height to PDF
+                        width: pageDimensions.width + 'px',
+                        height: pageDimensions.height + 'px',
                         top: 0,
                         left: 0,
                       }}
@@ -150,23 +248,25 @@ function PdfCanvas({
                       />
                     </div>
                     <div
-                      id='pdfWrapper'
+                      id='imageWrapper'
                       className={`${
                         !editor.isExporting && editor.theme
                           ? 'border-none bg-[rgb(25,25,25)] shadow-[0px_0px_16px_rgb(0,0,0)]'
                           : 'border shadow-lg'
                       }`}
                     >
-                      <Page
-                        pageNumber={editor.currPage}
-                        width={pageDimensions.width} // Match PDF width
-                        height={pageDimensions.height} // Match PDF height
+                      <img
+                        src={pick.fileUrl}
+                        onLoad={onImageLoadSuccess}
+                        width={pageDimensions.width}
+                        height={pageDimensions.height}
+                        alt='Uploaded file'
                       />
                     </div>
                   </TransformComponent>
                   <PdfCanvasButtons
                     editor={editor}
-                    changePage={changePage}
+                    changePage={changePage} // May need adjustment for images
                     pick={pick}
                     handleSaveAnnotations={handleSaveAnnotations}
                     zoomIn={zoomIn}
@@ -176,7 +276,7 @@ function PdfCanvas({
                 </>
               )}
             </TransformWrapper>
-          </Document>
+          )}
         </div>
       </div>
     </div>

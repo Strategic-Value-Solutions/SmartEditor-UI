@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -7,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
 import { Pencil, Trash2 } from 'lucide-react'
 
 type ListViewProps = {

@@ -9,9 +9,15 @@ const superStructureSlice = createSlice({
     setSuperStructureData: (state, action) => {
       state.superStructureData = action.payload
     },
+    deleteSuperStructure: (state, action) => {
+      state.superStructureData = state.superStructureData.filter(
+        (superStructure: any) => superStructure.id !== action.payload
+      )
+    },
   },
 })
 
-export const { setSuperStructureData } = superStructureSlice.actions
-    
+export const { setSuperStructureData, deleteSuperStructure } =
+  superStructureSlice.actions
+
 export default superStructureSlice.reducer

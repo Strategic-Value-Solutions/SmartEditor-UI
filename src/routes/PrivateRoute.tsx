@@ -17,7 +17,7 @@ const PrivateRoute = ({ children }: any) => {
     return <Navigate to='/auth' replace />
   }
   if (user?.role === ROLES.ADMIN) {
-    return <Navigate to='/admin' replace />
+    return <Navigate to='/super-structure' replace />
   }
 
   return <AppShell>{children}</AppShell>

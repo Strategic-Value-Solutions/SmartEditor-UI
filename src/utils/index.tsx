@@ -106,3 +106,8 @@ export async function changeSvgColor(svgUrl: string, color: string) {
   // Return the modified SVG as a base64-encoded string
   return `data:image/svg+xml;base64,${btoa(svgText)}`
 }
+
+export function isFilePdf(fileUrl: string): boolean {
+  // Check if the URL contains the keyword "pdf" to identify it as a PDF
+  return fileUrl?.toLowerCase().includes('.pdf')
+}
