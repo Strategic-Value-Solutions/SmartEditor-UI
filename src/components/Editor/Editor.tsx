@@ -198,7 +198,6 @@ export default function Editor() {
   }
 
   const fetchComponents = async () => {
-    setLoading(true)
     let response
     do {
       try {
@@ -209,7 +208,6 @@ export default function Editor() {
       }
     } while (response.length === 0)
     setComponents(response)
-    setLoading(false)
   }
 
   useEffect(() => {
