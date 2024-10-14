@@ -11,13 +11,14 @@ import {
 import annotationApi from '@/service/annotationApi'
 import { getErrorMessage } from '@/utils'
 import htmlToPdfmake from 'html-to-pdfmake'
-import pdfMake from 'pdfmake/build/pdfmake'
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
 
 
+import * as pdfMake from 'pdfmake/build/pdfmake';
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 // Set the pdf fonts
 
