@@ -60,14 +60,14 @@ const Header = ({
           onChange={(e) => setSearch(e.target.value)}
         />
         <div className='flex flex-row items-center justify-end gap-2'>
-          <Button
+          {/* <Button
             onClick={() => downloadReport()}
             className='flex h-8 items-center justify-center gap-2 p-2'
             disabled={isLoading}
           >
             {isLoading ? 'Downloading...' : 'Download report'}
             <Download size={20} />
-          </Button>
+          </Button> */}
           <NewProjectModal />
           <ViewTypeButtons
             handleViewChange={handleViewChange}

@@ -1,14 +1,23 @@
+import AnnotationData from './components/AnnotationData'
+import { renderChart } from './components/ChartRender'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import projectApi from '@/service/projectApi'
+import { RootState } from '@/store'
 import { FileTextIcon, ImageIcon } from '@radix-ui/react-icons'
 import { toPng } from 'html-to-image'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import { useEffect, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { ResponsiveContainer } from 'recharts'
-import AnnotationData from './components/AnnotationData'
-import { renderChart } from './components/ChartRender'
 
 export default function Analytics() {
   const chartRef = useRef(null)
@@ -18,15 +27,26 @@ export default function Analytics() {
   const [filter, setFilter] = useState('All')
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
 
+  const { projectModels } = useSelector(
+    (state: RootState) => state.projectModels
+  )
+  const [selectedModel, setSelectedModel] = useState<string>(
+    projectModels?.[0]?.id || ''
+  )
+
   useEffect(() => {
+    if (!selectedModel) return
+
     const fetchAnalytics = async () => {
-      const analytics = await projectApi.getAnalytics(projectId)
-      const analyticsData = await projectApi.getAnalyticsData(projectId)
+      const [analytics, analyticsData] = await Promise.all([
+        projectApi.getAnalytics(projectId, selectedModel),
+        projectApi.getAnalyticsData(projectId, selectedModel),
+      ])
       setAnalytics(analytics)
       setAnalyticsData(analyticsData)
     }
     fetchAnalytics()
-  }, [projectId])
+  }, [projectId, selectedModel])
 
   const handleFilterChange = (value: string | undefined) => {
     if (!value) {
@@ -123,16 +143,36 @@ export default function Analytics() {
         <StatusFilter onStatusChange={toggleStatus} />
       </div> */}
 
-      <div className='flex space-x-4 mt-4'>
-        <Button onClick={downloadCSV} className='btn'>
-          <FileTextIcon className='mr-2' /> Download CSV
-        </Button>
-        <Button onClick={downloadImage} className='btn'>
-          <ImageIcon className='mr-2' /> Download Image
-        </Button>
-        <Button onClick={downloadPDF} className='btn'>
-          <FileTextIcon className='mr-2' /> Download PDF
-        </Button>
+      <div className='flex justify-between'>
+        <div>
+          <Select
+            defaultValue={projectModels?.[0]?.id || ''}
+            value={selectedModel}
+            onValueChange={(value) => setSelectedModel(value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='Select a model' />
+              <SelectContent>
+                {projectModels.map((model: any) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    {model?.name || model?.pickModel?.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </SelectTrigger>
+          </Select>
+        </div>
+        <div className='flex space-x-4 mt-4'>
+          <Button onClick={downloadCSV} className='btn'>
+            <FileTextIcon className='mr-2' /> Download CSV
+          </Button>
+          <Button onClick={downloadImage} className='btn'>
+            <ImageIcon className='mr-2' /> Download Image
+          </Button>
+          <Button onClick={downloadPDF} className='btn'>
+            <FileTextIcon className='mr-2' /> Download PDF
+          </Button>
+        </div>
       </div>
 
       <div ref={chartRef} className='flex flex-col space-y-8'>
@@ -143,7 +183,12 @@ export default function Analytics() {
           {renderChart('Pie Chart', filteredData, 0, () => {})}
         </ResponsiveContainer>
       </div>
-      <AnnotationData analyticsData={analyticsData} />
+      <AnnotationData
+        projectModel={projectModels.find(
+          (model: any) => model.id === selectedModel
+        )}
+        analyticsData={analyticsData}
+      />
     </div>
   )
 }

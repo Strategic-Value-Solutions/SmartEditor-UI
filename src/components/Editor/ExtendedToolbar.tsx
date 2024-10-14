@@ -8,6 +8,7 @@ import {
 import imageConstants from '@/constants/imageConstants'
 import { MoveLeft } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { Button } from '../ui/button'
 
 export default function ExtendedToolbar({ tools }: { tools: any[] }) {
   const editor = useEditor() as any
@@ -34,7 +35,7 @@ export default function ExtendedToolbar({ tools }: { tools: any[] }) {
       id='toolbar'
     >
       <div className='flex flex-col items-center justify-center w-full h-20 mt-12 text-white'>
-        <button
+        <Button
           id='back'
           className='flex items-center justify-center w-4/5 px-4 py-2 mb-2 text-white transition rounded-lg h-10 hover:opacity-90'
           onClick={handleBack}
@@ -43,7 +44,7 @@ export default function ExtendedToolbar({ tools }: { tools: any[] }) {
         >
           <MoveLeft className='mr-2' />
           <span>Back</span>
-        </button>
+        </Button>
         <div
           className='flex flex-col items-center justify-center w-4/5 p-2 mb-2 text-sm text-white rounded-lg'
           style={buttonStyle}
@@ -54,7 +55,7 @@ export default function ExtendedToolbar({ tools }: { tools: any[] }) {
           </div>
         </div>
       </div>
-      <div className='grid grid-cols-2 mt-8 justify-center gap-3 h-[70vh] overflow-y-auto'>
+      <div className='flex flex-col items-center justify-center gap-4 mt-8  h-[70vh]'>
         {tools.map((tool: any, index: number) => (
           <TooltipProvider key={`${index}-provider`}>
             <Tooltip>
@@ -62,7 +63,7 @@ export default function ExtendedToolbar({ tools }: { tools: any[] }) {
                 <button
                   key={`${index}-primary`}
                   type='button'
-                  className='flex items-center justify-center w-10 h-10 p-1 transition rounded-lg'
+                  className='flex items-center justify-center w-12 h-12 p-2 transition rounded-lg hover:shadow-lg'
                   onClick={() => {
                     editor.addIcon({
                       icon: imageConstants[tool.imageUrl],
@@ -82,7 +83,7 @@ export default function ExtendedToolbar({ tools }: { tools: any[] }) {
                   <img
                     src={imageConstants[tool.imageUrl]}
                     alt={tool?.name?.toLowerCase()}
-                    className='w-full'
+                    className='w-6 h-6'
                     style={{
                       filter: 'contrast(1.2) brightness(0.9)',
                     }}

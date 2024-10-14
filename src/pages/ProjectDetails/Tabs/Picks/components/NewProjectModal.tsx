@@ -30,6 +30,7 @@ import { toast } from 'sonner'
 
 const NewProjectModal = () => {
   const { projectId } = useParams()
+  const [customModelName, setCustomModelName] = useState('')
   const [selectedModelId, setSelectedModelId] = useState('')
   const [modelAttributesData, setModelAttributesData] = useState([])
   const [open, setOpen] = useState(false) // To manage modal state
@@ -41,6 +42,7 @@ const NewProjectModal = () => {
   )
 
   useEffect(() => {
+    console.log(selectedModelId)
     // Reset attributes when a new model is selected
     if (selectedModelId) {
       const selectedModel = modelConfigurationsData.find(
@@ -63,7 +65,10 @@ const NewProjectModal = () => {
     const data = {
       attributes: modelAttributesData,
       pickModelId: selectedModelId,
+      name: customModelName,
     }
+
+    console.log(data)
     try {
       const response = await projectApi.createProjectModel(projectId, data)
 
@@ -102,11 +107,32 @@ const NewProjectModal = () => {
 
         <div className='space-y-4 py-4'>
           {/* Model Dropdown */}
+          <div className='flex flex-col gap-2'>
+            <label
+              className='text-sm dark:text-gray-300'
+              htmlFor='custom-model-name'
+            >
+              Custom Model Name (Optional)
+            </label>
+            <small className='text-xsm dark:text-gray-300 text-gray-500'>
+              You can use this to identify with custom name or we will use model
+              configuration name
+            </small>
+            <Input
+              type='text'
+              placeholder='Enter custom model name'
+              className='w-full'
+              value={customModelName}
+              onChange={(e) => setCustomModelName(e.target.value)}
+              id='custom-model-name'
+            />
+          </div>
           <div>
             <label className='text-sm dark:text-gray-300'>
               Select Model Configuration
             </label>
-            <Select onValueChange={setSelectedModelId}>
+            {console.log(modelConfigurationsData)}
+            <Select onValueChange={(value) => setSelectedModelId(value)}>
               <SelectTrigger>
                 <SelectValue placeholder='Select a model' />
               </SelectTrigger>

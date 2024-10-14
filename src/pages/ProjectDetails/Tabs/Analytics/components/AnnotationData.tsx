@@ -7,10 +7,18 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-const AnnotationData = ({ analyticsData }: { analyticsData: any }) => {
+const AnnotationData = ({
+  projectModel,
+  analyticsData,
+}: {
+  projectModel: any
+  analyticsData: any
+}) => {
   return (
-    <div className='w-full'>
-      <p className='text-lg font-medium'>Pick 6 Data</p>
+    <div className='w-full p-3'>
+      <p className='text-lg font-medium'>
+        {projectModel?.name || projectModel?.pickModel?.name} Data
+      </p>
       <Table>
         <TableHeader>
           <TableRow>

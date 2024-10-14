@@ -198,6 +198,7 @@ export default function Editor() {
   }
 
   const fetchComponents = async () => {
+    setLoading(true)
     try {
       const response = await projectApi.getPickModelComponents(
         projectId,
@@ -206,6 +207,8 @@ export default function Editor() {
       setComponents(response)
     } catch (error) {
       toast.error(getErrorMessage(error))
+    } finally {
+      setLoading(false)
     }
   }
 

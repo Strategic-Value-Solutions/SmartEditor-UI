@@ -116,7 +116,7 @@ const NewModelConfiguration = ({
         newConfig
       )
     } else {
-      await projectModelConfigurationApi.createModel({
+      const createModelResponse = await projectModelConfigurationApi.createModel({
         name: newConfig.name,
         attributes,
         configurations: selectedConfigs,
@@ -127,6 +127,7 @@ const NewModelConfiguration = ({
           attributes,
           associatedConfigs: selectedConfigs,
           lastUpdate: new Date().toISOString(),
+          ...createModelResponse,
         })
       )
     }

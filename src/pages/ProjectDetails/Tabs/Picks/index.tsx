@@ -179,7 +179,7 @@ const ProjectModels = () => {
 
       {/* Show skeleton cards when loading */}
       {loading ? (
-        <div className='grid grid-cols-1 md:grid-cols-6 gap-4'>
+        <div className='grid grid-cols-1 md:grid-cols-6 gap-4 mt-5'>
           {Array.from({ length: 6 }).map((_, index) => (
             <SkeletonCard key={index} />
           ))}

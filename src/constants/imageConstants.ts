@@ -38,6 +38,7 @@ import noData from '../assets/images/nodata.svg'
 import pilot from '../assets/images/pilot.png'
 import reflecting from '../assets/images/reflecting.png'
 import removeCursor from '../assets/images/remove.svg'
+import mriConstants from './mriConstants'
 
 const imageConstants: any = {
   noData,
@@ -80,6 +81,7 @@ const imageConstants: any = {
   wingWall,
   removeCursor,
   pilot,
+  ...mriConstants,
 }
 
 export default imageConstants

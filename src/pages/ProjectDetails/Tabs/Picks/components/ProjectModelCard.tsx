@@ -23,6 +23,7 @@ const ProjectModelCard = ({
       className={`relative border rounded-md p-2 ${'border-gray-300 bg-white dark:bg-gray-500 dark:border-gray-700'}`}
       style={{ marginBottom: '0.5rem' }} // Minimal bottom margin
     >
+      <h3 className='text-sm font-light mb-2'>{currentProject.name}</h3>
       <div className={`flex justify-center items-center h-32 bg-gray-100`}>
         {projectModel.fileUrl ? (
           <div className='mb-1 text-gray-500 flex justify-center w-full items-center cursor-pointer'>
@@ -64,7 +65,9 @@ const ProjectModelCard = ({
           </div>
         )}
       </div>
-      <h4 className='mt-1 text-base'>{projectModel?.pickModel?.name}</h4>
+      <h4 className='mt-1 text-base'>
+        {projectModel?.name || projectModel?.pickModel?.name}
+      </h4>
 
       <div className='mt-1 flex items-center justify-between gap-1'>
         <StatusCapsule

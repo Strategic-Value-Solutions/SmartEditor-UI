@@ -40,13 +40,17 @@ const deleteProject = async (projectId: any) => {
   return response.data.data
 }
 
-const getAnalytics = async (projectId: any) => {
-  const response = await api.get(`/project/${projectId}/analytics`)
+const getAnalytics = async (projectId: any, projectModelId: any) => {
+  const response = await api.get(
+    `/project/${projectId}/analytics?projectModelId=${projectModelId}`
+  )
   return response.data.data
 }
 
-const getAnalyticsData = async (projectId: any) => {
-  const response = await api.get(`/project/${projectId}/analytics/data`)
+const getAnalyticsData = async (projectId: any, projectModelId: any) => {
+  const response = await api.get(
+    `/project/${projectId}/analytics/data?projectModelId=${projectModelId}`
+  )
   return response.data.data
 }
 
