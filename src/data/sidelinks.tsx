@@ -52,9 +52,9 @@ export const sideLinks: SideLink[] = [
     roles: [ROLES.USER],
   },
   {
-    title: 'Admin Panel',
+    title: 'Super Structure',
     label: '',
-    href: '/admin',
+    href: '/super-structure',
     icon: <Box size={18} />,
     roles: [ROLES.ADMIN],
   },
