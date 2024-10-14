@@ -184,7 +184,7 @@ export default function Analytics() {
         </ResponsiveContainer>
       </div>
       <AnnotationData
-        projectModel={projectModels.find(
+        projectModel={projectModels?.find(
           (model: any) => model.id === selectedModel
         )}
         analyticsData={analyticsData}
