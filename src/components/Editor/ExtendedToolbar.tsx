@@ -1,4 +1,5 @@
-import { useEditor } from '@/components/Editor/CanvasContext/CanvasContext'
+import { Button } from '../ui/button'
+import { useEditor } from './CanvasContext/CanvasContext'
 import {
   Tooltip,
   TooltipContent,
@@ -8,7 +9,6 @@ import {
 import imageConstants from '@/constants/imageConstants'
 import { MoveLeft } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Button } from '../ui/button'
 
 export default function ExtendedToolbar({ tools }: { tools: any[] }) {
   const editor = useEditor() as any
