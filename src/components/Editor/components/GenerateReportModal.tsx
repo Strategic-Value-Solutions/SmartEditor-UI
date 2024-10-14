@@ -17,7 +17,25 @@ import { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
 
-pdfMake.vfs = pdfFonts.pdfMake.vfs
+// pdfMake?.vfs = pdfFonts?.pdfMake?.vfs
+
+pdfMake.vfs = {}
+pdfMake.DynamicContent = {
+  content: {
+    widths: '100%',
+  },
+}
+pdfMake.fonts = {
+  Roboto: {
+    normal:
+      'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf',
+    bold: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf',
+    italics:
+      'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf',
+    bolditalics:
+      'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf',
+  },
+}
 
 // Set the pdf fonts
 
