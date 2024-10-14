@@ -17,10 +17,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import templateApi from '@/service/templateApi'
-import {
-  addTemplate,
-  updateTemplate
-} from '@/store/slices/templateSlice'
+import { addTemplate, updateTemplate } from '@/store/slices/templateSlice'
 import { getErrorMessage } from '@/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
@@ -30,7 +27,6 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-// Schema validation
 const newTemplateSchema = z.object({
   name: z.string().nonempty('Template name is required'),
   description: z.string().nonempty('Description is required'),
@@ -55,7 +51,6 @@ const NewTemplate = ({
   })
 
   useEffect(() => {
-    // Pre-populate form fields in case of edit
     if (isEdit && selectedTemplate) {
       form.setValue('name', selectedTemplate.name)
       form.setValue('description', selectedTemplate.description)
@@ -64,13 +59,11 @@ const NewTemplate = ({
     }
   }, [isEdit, selectedTemplate, form])
 
-  // Ensure this is called on form submission
   const onSubmit = async (data) => {
     try {
-       // Debug log
       const templateData = {
         name: data.name,
-        description: data.description
+        description: data.description,
       }
 
       if (isEdit) {
@@ -81,14 +74,14 @@ const NewTemplate = ({
         dispatch(updateTemplate(response))
       } else {
         const response = await templateApi.createTemplate(templateData)
-        
+
         dispatch(addTemplate(response))
       }
 
       onClose()
       form.reset()
     } catch (error) {
-      console.error('Form submission error', error) // Debug log
+      console.error('Form submission error', error)
       toast.error(getErrorMessage(error))
     }
   }
@@ -106,7 +99,7 @@ const NewTemplate = ({
             <Form {...form}>
               <form
                 noValidate
-                onSubmit={form.handleSubmit(onSubmit)} // Ensure this is correct
+                onSubmit={form.handleSubmit(onSubmit)}
                 className='space-y-4'
               >
                 <FormField
