@@ -199,17 +199,17 @@ export default function Editor() {
 
   const fetchComponents = async () => {
     setLoading(true)
-    try {
-      const response = await projectApi.getPickModelComponents(
-        projectId,
-        pickId
-      )
-      setComponents(response)
-    } catch (error) {
-      toast.error(getErrorMessage(error))
-    } finally {
-      setLoading(false)
-    }
+    let response
+    do {
+      try {
+        response = await projectApi.getPickModelComponents(projectId, pickId)
+      } catch (error) {
+        toast.error(getErrorMessage(error))
+        return
+      }
+    } while (response.length === 0)
+    setComponents(response)
+    setLoading(false)
   }
 
   useEffect(() => {
