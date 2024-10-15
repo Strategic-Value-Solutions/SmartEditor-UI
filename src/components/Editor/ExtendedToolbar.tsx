@@ -1,3 +1,4 @@
+import { Button } from '../ui/button'
 import { useEditor } from '@/components/Editor/CanvasContext/CanvasContext'
 import {
   Tooltip,
@@ -7,13 +8,40 @@ import {
 } from '@/components/ui/tooltip'
 import imageConstants from '@/constants/imageConstants'
 import { MoveLeft } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Button } from '../ui/button'
+
+// Your SVG resizing function
+const resizeSVG = (svgUrl: string, width: number = 40, height: number = 40) => {
+  return new Promise<string>((resolve, reject) => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.src = svgUrl
+
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      const context = canvas.getContext('2d')
+
+      canvas.width = width
+      canvas.height = height
+
+      context?.drawImage(img, 0, 0, width, height)
+      const resizedDataUrl = canvas.toDataURL('image/png')
+
+      resolve(resizedDataUrl)
+    }
+
+    img.onerror = (err) => reject(err)
+  })
+}
 
 export default function ExtendedToolbar({ tools }: { tools: any[] }) {
   const editor = useEditor() as any
   const { projectId } = useParams()
   const navigate = useNavigate()
+  const [resizedIcons, setResizedIcons] = useState<{ [key: string]: string }>(
+    {}
+  )
 
   const handleBack = () => {
     navigate(`/project/${projectId}`)
@@ -23,6 +51,28 @@ export default function ExtendedToolbar({ tools }: { tools: any[] }) {
     background: 'linear-gradient(145deg, #a0a0a0, #808080)',
     boxShadow: '2px 2px 4px #707070, -2px -2px 4px #b0b0b0',
   }
+
+  useEffect(() => {
+    // Resize the icons on component mount
+    const resizeAllIcons = async () => {
+      const resizedIconsMap: { [key: string]: string } = {}
+
+      for (const tool of tools) {
+        const svgUrl = imageConstants[tool.imageUrl]
+        if (svgUrl) {
+          try {
+            const resizedIcon = await resizeSVG(svgUrl)
+            resizedIconsMap[tool.imageUrl] = resizedIcon
+          } catch (err) {
+            console.error('Failed to resize icon', tool.imageUrl, err)
+          }
+        }
+      }
+      setResizedIcons(resizedIconsMap)
+    }
+
+    resizeAllIcons()
+  }, [tools])
 
   return (
     <div
@@ -66,7 +116,7 @@ export default function ExtendedToolbar({ tools }: { tools: any[] }) {
                   className='flex items-center justify-center w-12 h-12 p-2 transition rounded-lg hover:shadow-lg'
                   onClick={() => {
                     editor.addIcon({
-                      icon: imageConstants[tool.imageUrl],
+                      icon: resizedIcons[tool.imageUrl], // Use resized icon
                       tool,
                     })
                     window.localStorage.setItem(
@@ -81,7 +131,10 @@ export default function ExtendedToolbar({ tools }: { tools: any[] }) {
                   aria-label={`Add ${tool.name}`}
                 >
                   <img
-                    src={imageConstants[tool.imageUrl]}
+                    src={
+                      resizedIcons[tool.imageUrl] ||
+                      imageConstants[tool.imageUrl]
+                    }
                     alt={tool?.name?.toLowerCase()}
                     className='w-6 h-6'
                     style={{

@@ -1,7 +1,8 @@
 import ActionButtons from './ActionButtons'
 import StatusCapsule from '@/components/ui/status-capsule'
 import { RootState } from '@/store'
-import { hasPickWriteAccess, hasProjectWriteAccess } from '@/utils'
+import { hasPickWriteAccess } from '@/utils'
+import { isFilePdf } from '@/utils'
 import { Document, Page } from 'react-pdf'
 import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
@@ -26,22 +27,36 @@ const ProjectModelCard = ({
       <h3 className='text-sm font-light mb-2'>{currentProject.name}</h3>
       <div className={`flex justify-center items-center h-32 bg-gray-100`}>
         {projectModel.fileUrl ? (
-          <div className='mb-1 text-gray-500 flex justify-center w-full items-center cursor-pointer'>
-            <Document
+          isFilePdf(projectModel.fileUrl) ? (
+            <div className='mb-1 text-gray-500 flex justify-center w-full items-center cursor-pointer'>
+              <Document
+                onClick={() => handleRedirectToEditor(projectModel)}
+                file={projectModel.fileUrl}
+                loading={<div>Loading thumbnail...</div>}
+              >
+                <Page
+                  pageNumber={1}
+                  width={80} // Smaller width
+                  height={16} // Smaller height
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                  className='max-w-full max-h-full object-contain'
+                />
+              </Document>
+            </div>
+          ) : (
+            <div
+              className='mb-1 text-gray-500 flex justify-center w-full items-center cursor-pointer'
               onClick={() => handleRedirectToEditor(projectModel)}
-              file={projectModel.fileUrl}
-              loading={<div>Loading thumbnail...</div>}
             >
-              <Page
-                pageNumber={1}
-                width={80} // Smaller width
-                height={16} // Smaller height
-                renderTextLayer={false}
-                renderAnnotationLayer={false}
+              <img
+                src={projectModel.fileUrl}
+                alt='Thumbnail'
                 className='max-w-full max-h-full object-contain'
+                // style={{ width: 80, height: 80 }}
               />
-            </Document>
-          </div>
+            </div>
+          )
         ) : (
           <div
             onClick={() => {
