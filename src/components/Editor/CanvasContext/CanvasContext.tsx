@@ -484,7 +484,7 @@ export const CanvasProvider = ({ children }) => {
     // Save the current state of the context
     overlayCtx.save()
 
-    // If there's an icon selected (activeIcon), show the preview rectangle
+    // If there's an icon selected (activeIcon), show the preview rectangle and image
     if (activeIconRef.current) {
       // If the image is not cached, load it
       if (!cachedImgElement) {
@@ -497,11 +497,9 @@ export const CanvasProvider = ({ children }) => {
 
           // Coordinates for the edges of the rectangle
           const leftX = pointer.x - imgWidth / 2 // Left edge
-          const rightX = pointer.x + imgWidth / 2 // Right edge
           const topY = pointer.y - imgHeight / 2 // Top edge
-          const bottomY = pointer.y + imgHeight / 2 // Bottom edge
 
-          // Draw the rectangle preview first
+          // Draw the rectangle preview
           overlayCtx.beginPath()
           overlayCtx.strokeStyle = 'rgba(244, 162, 97, 0.8)' // Border color for rectangle
           overlayCtx.lineWidth = 2
@@ -509,46 +507,33 @@ export const CanvasProvider = ({ children }) => {
           overlayCtx.rect(leftX, topY, imgWidth, imgHeight)
           overlayCtx.stroke()
 
-          // Now draw crosshairs from the rectangle edges in both directions
-          // Vertical crosshairs (extend upwards and downwards from left and right edges)
-          overlayCtx.beginPath()
-          // Left vertical crosshair (upwards and downwards from the left edge)
-          overlayCtx.moveTo(leftX, 0) // From the top of the canvas to the left edge of the rectangle
-          overlayCtx.lineTo(leftX, topY) // Top of the rectangle
-          overlayCtx.moveTo(leftX, bottomY) // Bottom of the rectangle
-          overlayCtx.lineTo(leftX, canvasHeight) // Down to the bottom of the canvas
+          // Draw the image within the rectangle
+          overlayCtx.drawImage(
+            cachedImgElement,
+            leftX,
+            topY,
+            imgWidth,
+            imgHeight
+          )
 
-          // Right vertical crosshair (upwards and downwards from the right edge)
-          overlayCtx.moveTo(rightX, 0) // From the top of the canvas to the right edge of the rectangle
-          overlayCtx.lineTo(rightX, topY) // Top of the rectangle
-          overlayCtx.moveTo(rightX, bottomY) // Bottom of the rectangle
-          overlayCtx.lineTo(rightX, canvasHeight) // Down to the bottom of the canvas
-          overlayCtx.stroke()
-
-          // Horizontal crosshairs (extend leftwards and rightwards from top and bottom edges)
-          overlayCtx.beginPath()
-          // Top horizontal crosshair (leftwards and rightwards from the top edge)
-          overlayCtx.moveTo(0, topY) // From the left of the canvas to the top of the rectangle
-          overlayCtx.lineTo(leftX, topY) // Left edge of rectangle
-          overlayCtx.moveTo(rightX, topY) // Right edge of rectangle
-          overlayCtx.lineTo(canvasWidth, topY) // Extend to the right of the canvas
-
-          // Bottom horizontal crosshair (leftwards and rightwards from the bottom edge)
-          overlayCtx.moveTo(0, bottomY) // From the left of the canvas to the bottom of the rectangle
-          overlayCtx.lineTo(leftX, bottomY) // Left edge of rectangle
-          overlayCtx.moveTo(rightX, bottomY) // Right edge of rectangle
-          overlayCtx.lineTo(canvasWidth, bottomY) // Extend to the right of the canvas
-          overlayCtx.stroke()
+          // Draw crosshairs from the rectangle edges in both directions
+          drawCrosshairs(
+            overlayCtx,
+            leftX,
+            topY,
+            imgWidth,
+            imgHeight,
+            canvasWidth,
+            canvasHeight
+          )
         }
       } else {
-        // If the image is already cached, draw the rectangle immediately
+        // If the image is already cached, draw the rectangle and image immediately
         const imgWidth = iconDefaultSize
         const imgHeight = iconDefaultSize
 
         const leftX = pointer.x - imgWidth / 2 // Left edge
-        const rightX = pointer.x + imgWidth / 2 // Right edge
         const topY = pointer.y - imgHeight / 2 // Top edge
-        const bottomY = pointer.y + imgHeight / 2 // Bottom edge
 
         // Draw the rectangle preview
         overlayCtx.beginPath()
@@ -558,41 +543,54 @@ export const CanvasProvider = ({ children }) => {
         overlayCtx.rect(leftX, topY, imgWidth, imgHeight)
         overlayCtx.stroke()
 
-        // Now draw crosshairs from the rectangle edges in both directions
-        // Vertical crosshairs (extend upwards and downwards from left and right edges)
-        overlayCtx.beginPath()
-        // Left vertical crosshair (upwards and downwards from the left edge)
-        overlayCtx.moveTo(leftX, 0) // From the top of the canvas to the left edge of the rectangle
-        overlayCtx.lineTo(leftX, topY) // Top of the rectangle
-        overlayCtx.moveTo(leftX, bottomY) // Bottom of the rectangle
-        overlayCtx.lineTo(leftX, canvasHeight) // Down to the bottom of the canvas
+        // Draw the image within the rectangle
+        overlayCtx.drawImage(cachedImgElement, leftX, topY, imgWidth, imgHeight)
 
-        // Right vertical crosshair (upwards and downwards from the right edge)
-        overlayCtx.moveTo(rightX, 0) // From the top of the canvas to the right edge of the rectangle
-        overlayCtx.lineTo(rightX, topY) // Top of the rectangle
-        overlayCtx.moveTo(rightX, bottomY) // Bottom of the rectangle
-        overlayCtx.lineTo(rightX, canvasHeight) // Down to the bottom of the canvas
-        overlayCtx.stroke()
-
-        // Horizontal crosshairs (extend leftwards and rightwards from top and bottom edges)
-        overlayCtx.beginPath()
-        // Top horizontal crosshair (leftwards and rightwards from the top edge)
-        overlayCtx.moveTo(0, topY) // From the left of the canvas to the top of the rectangle
-        overlayCtx.lineTo(leftX, topY) // Left edge of rectangle
-        overlayCtx.moveTo(rightX, topY) // Right edge of rectangle
-        overlayCtx.lineTo(canvasWidth, topY) // Extend to the right of the canvas
-
-        // Bottom horizontal crosshair (leftwards and rightwards from the bottom edge)
-        overlayCtx.moveTo(0, bottomY) // From the left of the canvas to the bottom of the rectangle
-        overlayCtx.lineTo(leftX, bottomY) // Left edge of rectangle
-        overlayCtx.moveTo(rightX, bottomY) // Right edge of rectangle
-        overlayCtx.lineTo(canvasWidth, bottomY) // Extend to the right of the canvas
-        overlayCtx.stroke()
+        // Draw crosshairs from the rectangle edges in both directions
+        drawCrosshairs(
+          overlayCtx,
+          leftX,
+          topY,
+          imgWidth,
+          imgHeight,
+          canvasWidth,
+          canvasHeight
+        )
       }
     }
 
     // Restore the context state to avoid affecting other drawings
     overlayCtx.restore()
+  }
+
+  // Helper function to draw crosshairs around the rectangle
+  const drawCrosshairs = (
+    ctx,
+    leftX,
+    topY,
+    imgWidth,
+    imgHeight,
+    canvasWidth,
+    canvasHeight
+  ) => {
+    const rightX = leftX + imgWidth // Right edge
+    const bottomY = topY + imgHeight // Bottom edge
+
+    // Draw vertical crosshairs
+    ctx.beginPath()
+    ctx.moveTo(leftX, 0) // From the top of the canvas to the left edge of the rectangle
+    ctx.lineTo(leftX, canvasHeight) // Down to the bottom of the canvas
+    ctx.moveTo(rightX, 0)
+    ctx.lineTo(rightX, canvasHeight)
+    ctx.stroke()
+
+    // Draw horizontal crosshairs
+    ctx.beginPath()
+    ctx.moveTo(0, topY) // From the left of the canvas to the top of the rectangle
+    ctx.lineTo(canvasWidth, topY)
+    ctx.moveTo(0, bottomY)
+    ctx.lineTo(canvasWidth, bottomY)
+    ctx.stroke()
   }
 
   // Handle mouse move event to draw the enhanced crosshairs and rectangle preview
@@ -930,13 +928,16 @@ export const CanvasProvider = ({ children }) => {
 
   const updateCursorStyle = () => {
     if (!canvas) return
+    const transparentCursor =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAwAB/fi2DW4AAAAASUVORK5CYII='
     if (mode === 'erase') {
       canvas.defaultCursor = `url(${imageConstants.removeCursor}) 12 12, auto`
       canvas.hoverCursor = `url(${imageConstants.removeCursor}) 12 12, auto`
     } else if (mode === 'select' || mode === 'move') {
       canvas.defaultCursor = `url(${imageConstants.SelectIcon}) 12 12, auto`
     } else if (mode === 'addIcon') {
-      canvas.defaultCursor = `url(${activeIconRef.current}) 12 12, auto`
+      canvas.defaultCursor = `url(${transparentCursor}), auto`
+      canvas.hoverCursor = `url(${transparentCursor}), auto`
     } else if (mode === 'change-status') {
       canvas.defaultCursor = `url(${Pencil}) 12 12, auto`
       canvas.hoverCursor = `url(${imageConstants.changeStatusCursor}) 12 12, auto`
