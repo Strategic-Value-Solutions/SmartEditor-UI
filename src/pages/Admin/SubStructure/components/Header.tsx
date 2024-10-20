@@ -9,7 +9,7 @@ const Header = ({
   viewType,
   setSearch,
   search,
-  onHandleAddSuperStructure,
+  onHandleAddSubStructure,
 }) => {
   const handleViewChange = (value) => {
     setViewType(value)
@@ -18,18 +18,18 @@ const Header = ({
   return (
     <div className='p-y-3 mt-4 flex w-full flex-row justify-between lg:gap-0 gap-2 '>
       <Input
-        placeholder='Search super structure...'
+        placeholder='Search sub structure...'
         className='lg:w-[20vw]'
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
       <div className='flex flex-row items-center justify-end gap-2'>
         <Button
-          onClick={onHandleAddSuperStructure}
+          onClick={onHandleAddSubStructure}
           className='flex h-8 items-center justify-center gap-2 p-2'
-          id='new-superStructure'
+          id='new-subStructure'
         >
-          New Super Structure
+          New Sub Structure
           <Plus size={20} />
         </Button>
         <ViewTypeButtons

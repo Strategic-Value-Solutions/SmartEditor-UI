@@ -1,44 +1,44 @@
-import TemplateCard from '../SuperStructureCard'
+import SuperStructureCard from '../SuperStructureCard'
 
 type GridViewProps = {
-  templates: any[]
-  handleDeleteButtonClick: (template: any) => void
-  handleEditButtonClick: (template: any) => void
-  handleShowTemplateEditor: (template: any) => void
+  superStructures: any[]
+  handleDeleteButtonClick: (superStructure: any) => void
+  handleEditButtonClick: (superStructure: any) => void
+  handleCardClick: (superStructure: any) => void
 }
 
 type GridProps = {
-  templates: any[]
-  handleDeleteButtonClick: (template: any) => void
-  handleEditButtonClick: (template: any) => void
-  handleShowTemplateEditor: (template: any) => void
+  superStructures: any[]
+  handleDeleteButtonClick: (superStructure: any) => void
+  handleEditButtonClick: (superStructure: any) => void
   title: string
+  handleCardClick: (superStructure: any) => void
 }
 
 const Grid = ({
-  templates,
+  superStructures,
   handleDeleteButtonClick,
   handleEditButtonClick,
   title,
-  handleShowTemplateEditor,
+  handleCardClick,
 }: GridProps) => {
   return (
     <div className='mt-4'>
       <h4 className='text-xl font-semibold'>{title}</h4>
       <div className='flex flex-row flex-wrap gap-4 py-4'>
-        {templates.length > 0 ? (
-          templates.map((template: any, index: any) => (
-            <TemplateCard
-              handleShowTemplateEditor={handleShowTemplateEditor}
-              template={template}
-              key={template.id}
+        {superStructures.length > 0 ? (
+          superStructures.map((superStructure: any, index: any) => (
+            <SuperStructureCard
+              handleCardClick={handleCardClick}
+              superStructure={superStructure}
+              key={superStructure.id}
               onConfirm={handleDeleteButtonClick}
               onEdit={handleEditButtonClick}
               index={index}
             />
           ))
         ) : (
-          <p>No templates {title.toLowerCase()}.</p>
+          <p>No superStructures {title.toLowerCase()}.</p>
         )}
       </div>
     </div>
@@ -46,19 +46,19 @@ const Grid = ({
 }
 
 const GridView = ({
-  templates,
+  superStructures,
   handleDeleteButtonClick,
   handleEditButtonClick,
-  handleShowTemplateEditor,
+  handleCardClick,
 }: GridViewProps) => {
   return (
     <>
       <Grid
-        templates={templates}
+        handleCardClick={handleCardClick}
+        superStructures={superStructures}
         handleDeleteButtonClick={handleDeleteButtonClick}
         handleEditButtonClick={handleEditButtonClick}
-        title='Templates'
-        handleShowTemplateEditor={handleShowTemplateEditor}
+        title='Super structures'
       />
     </>
   )

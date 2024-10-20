@@ -1,6 +1,7 @@
 //@ts-nocheck
-import NewSuperStructure from './components/Dialog/NewSuperStructure'
+import NewSubStructure from './components/Dialog/NewSubStructure'
 import Header from './components/Header'
+import SubStructureEditor from './components/SubStructureEditor'
 import GridView from './components/Views/GridView'
 import ListView from './components/Views/ListView'
 import Loader from '@/components/ui/Loader'
@@ -8,62 +9,66 @@ import { Button } from '@/components/ui/button'
 import ConfirmationDialog from '@/components/ui/confirmation-dialog'
 import { Separator } from '@/components/ui/separator'
 import imageConstants from '@/constants/imageConstants'
-import superStructureApi from '@/service/superStructureApi'
+import subStructureApi from '@/service/subStructureApi'
 import { RootState } from '@/store'
 import {
-  deleteSuperStructure,
-  setSuperStructureData,
-} from '@/store/slices/superStructureSlice'
+  deleteSubStructure,
+  setSubStructureData,
+} from '@/store/slices/subStructureSlice'
 import { getErrorMessage } from '@/utils'
 import { ArrowLeft } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
-const SuperStructures = () => {
-  const superStructuresData = useSelector(
-    (state: RootState) => state.superStructure.superStructureData || []
+const SubStructures = () => {
+  const subStructuresData = useSelector(
+    (state: RootState) => state?.subStructure?.subStructureData || []
   )
+  const { superStructureId } = useParams()
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [viewType, setViewType] = useState('grid')
   const [search, setSearch] = useState('')
-  const [filteredSuperStructures, setFilteredSuperStructures] = useState([])
+  const [filteredSubStructures, setFilteredSubStructures] = useState([])
   const [openDeleteModal, setOpenDeleteModal] = useState(false)
-  const [selectedSuperStructure, setSelectedSuperStructure] =
-    useState<any>(null)
-  const [showSuperStructureEditor, setShowSuperStructureEditor] =
-    useState(false)
-  const [openSuperStructureModal, setOpenSuperStructureModal] = useState(false)
+  const [selectedSubStructure, setSelectedSubStructure] = useState<any>(null)
+  const [showSubStructureEditor, setShowSubStructureEditor] = useState(false)
+  const [openSubStructureModal, setOpenSubStructureModal] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const handleEditButtonClick = (superStructure: any) => {
-    setSelectedSuperStructure(superStructure)
+  const isSubStructureTourCompleted =
+    localStorage.getItem('subStructureTourCompleted')?.toString() === 'true'
+  const handleEditButtonClick = (subStructure: any) => {
+    setSelectedSubStructure(subStructure)
     setIsEdit(true)
-    setOpenSuperStructureModal(true)
+    setOpenSubStructureModal(true)
   }
 
-  const handleDeleteButtonClick = (superStructure: any) => {
-    setSelectedSuperStructure(superStructure)
+  const handleDeleteButtonClick = (subStructure: any) => {
+    setSelectedSubStructure(subStructure)
     setOpenDeleteModal(true)
   }
 
   const handleDeleteModalClose = () => {
     setOpenDeleteModal(false)
-    setSelectedSuperStructure(null)
+    setSelectedSubStructure(null)
   }
 
   const onConfirm = async () => {
-    if (!selectedSuperStructure?.id) {
-      toast.error('Please select a superStructure to delete')
+    if (!selectedSubStructure?.id) {
+      toast.error('Please select a subStructure to delete')
       return
     }
     try {
       setLoading(true)
-      await superStructureApi.deleteSuperStructure(selectedSuperStructure.id)
-      dispatch(deleteSuperStructure(selectedSuperStructure.id))
+      await subStructureApi.deleteSubStructure(
+        superStructureId,
+        selectedSubStructure.id
+      )
+      dispatch(deleteSubStructure(selectedSubStructure.id))
     } catch (error) {
       toast.error(getErrorMessage(error))
     } finally {
@@ -72,72 +77,71 @@ const SuperStructures = () => {
     }
   }
 
-  const onHandleAddSuperStructure = () => {
-    setSelectedSuperStructure(null)
+  const onHandleAddSubStructure = () => {
+    setSelectedSubStructure(null)
     setIsEdit(false)
-    setOpenSuperStructureModal(true)
+    setOpenSubStructureModal(true)
   }
 
-  const handleCloseSuperStructureModal = () => {
-    setOpenSuperStructureModal(false)
-    setSelectedSuperStructure(null)
+  const handleCloseSubStructureModal = () => {
+    setOpenSubStructureModal(false)
+    setSelectedSubStructure(null)
     setIsEdit(false)
   }
 
   useEffect(() => {
-    // If search is empty, show all super structures
-    if (search.trim() === '') {
-      setFilteredSuperStructures(superStructuresData)
+    if (search === '') {
+      if (filteredSubStructures.length !== subStructuresData.length) {
+        setFilteredSubStructures(subStructuresData)
+      }
     } else {
-      // Filter super structures based on the search term
-      const filtered = superStructuresData.filter((superStructure: any) =>
-        superStructure.name.toLowerCase().includes(search.toLowerCase())
+      const filtered = subStructuresData.filter((subStructure: any) =>
+        subStructure.name.toLowerCase().includes(search.toLowerCase())
       )
-
-      setFilteredSuperStructures(filtered)
+      if (JSON.stringify(filtered) !== JSON.stringify(filteredSubStructures)) {
+        setFilteredSubStructures(filtered)
+      }
     }
-  }, [search, superStructuresData])
+  }, [search, subStructuresData, filteredSubStructures])
 
   useEffect(() => {
-    const fetchSuperStructures = async () => {
+    const fetchSubStructures = async () => {
       try {
         setLoading(true)
-        const response = await superStructureApi.getSuperStructures()
-        dispatch(setSuperStructureData(response))
+        const response =
+          await subStructureApi.getSubStructures(superStructureId)
+
+        dispatch(setSubStructureData(response))
       } catch (error) {
         toast.error(getErrorMessage(error))
       } finally {
         setLoading(false)
       }
     }
-    fetchSuperStructures()
+    fetchSubStructures()
   }, [dispatch])
 
   const handleBack = () => {
-    setShowSuperStructureEditor(false)
-    setSelectedSuperStructure(null)
-  }
-
-  const handleCardClick = (superStructure: any) => {
-    navigate(`/sub-structure/${superStructure.id}`)
+    setShowSubStructureEditor(false)
+    setSelectedSubStructure(null)
   }
 
   const renderMainContent = () => {
-    if (filteredSuperStructures.length === 0) {
+    if (subStructuresData.length === 0) {
       return (
         <div className='flex flex-col items-center justify-center h-[75vh]'>
           <div className='w-full md:w-1/2'>
             <img
               src={imageConstants.noData}
-              alt='No superStructures illustration'
+              alt='No sub structures illustration'
               className='mx-auto md:ml-auto lg:max-w-[200px] w-full'
             />
           </div>
           <div className='text-center md:text-left mt-6 md:mb-0 flex flex-col items-center md:w-1/2'>
-            <h3 className='text-2xl'>No Super Structures there</h3>
+            <h3 className='text-2xl'>No Sub Structures there</h3>
             <p className='text-sm text-gray-600'>
-              You haven’t created any superStructures. Start by creating your
-              first superStructure.
+              You haven’t created any sub structures. Start by creating your
+              first sub structure.
             </p>
           </div>
         </div>
@@ -145,15 +149,13 @@ const SuperStructures = () => {
     } else {
       return viewType === 'grid' ? (
         <GridView
-          handleCardClick={handleCardClick}
-          superStructures={filteredSuperStructures}
+          subStructures={subStructuresData}
           handleDeleteButtonClick={handleDeleteButtonClick}
           handleEditButtonClick={handleEditButtonClick}
         />
       ) : (
         <ListView
-          handleCardClick={handleCardClick}
-          superStructures={filteredSuperStructures}
+          subStructures={subStructuresData}
           handleDeleteButtonClick={handleDeleteButtonClick}
           handleEditButtonClick={handleEditButtonClick}
         />
@@ -166,8 +168,8 @@ const SuperStructures = () => {
   return (
     <div className='flex flex-col'>
       <div className='flex w-full justify-between'>
-        <h3 className='flex h-8 flex-col pb-1 text-2xl'>Super Structures</h3>
-        {showSuperStructureEditor && (
+        <h3 className='flex h-8 flex-col pb-1 text-2xl'>Sub Structures</h3>
+        {showSubStructureEditor && (
           <div className='mb-4'>
             <Button onClick={handleBack} className='flex items-center h-8'>
               <ArrowLeft className='mr-2' size={16} />
@@ -181,7 +183,7 @@ const SuperStructures = () => {
         <Header
           setViewType={setViewType}
           viewType={viewType}
-          onHandleAddSuperStructure={onHandleAddSuperStructure}
+          onHandleAddSubStructure={onHandleAddSubStructure}
           setSearch={setSearch}
           search={search}
         />
@@ -189,23 +191,23 @@ const SuperStructures = () => {
         <Separator className='my-4' />
         {renderMainContent()}
         <ConfirmationDialog
-          title='Delete super structure'
-          message='Are you sure you want to delete this super structure?'
+          title='Delete sub structure'
+          message='Are you sure you want to delete this sub structure?'
           open={openDeleteModal}
           onClose={handleDeleteModalClose}
           onConfirm={onConfirm}
         />
-        <NewSuperStructure
-          open={openSuperStructureModal}
-          onClose={handleCloseSuperStructureModal}
+        <NewSubStructure
+          open={openSubStructureModal}
+          onClose={handleCloseSubStructureModal}
           isEdit={isEdit}
-          setFilteredSuperStructures={setFilteredSuperStructures}
-          selectedSuperStructure={selectedSuperStructure}
-          setOpen={setOpenSuperStructureModal}
+          setFilteredSubStructures={setFilteredSubStructures}
+          selectedSubStructure={selectedSubStructure}
+          setOpen={setOpenSubStructureModal}
         />
       </>
     </div>
   )
 }
 
-export default SuperStructures
+export default SubStructures

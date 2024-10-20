@@ -47,7 +47,7 @@ const ProjectModels = () => {
         const response = await projectApi.getProjectModels(projectId)
         if (!isProjectModelTourCompleted) {
           setSteps(projectModelTour)
-          setIsOpen(true)
+          // setIsOpen(true)
           localStorage.setItem('projectModelTourCompleted', 'true')
         }
         handleSetProjectModels(response)

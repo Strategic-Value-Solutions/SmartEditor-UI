@@ -10,26 +10,23 @@ import {
 import { Pencil, Trash2 } from 'lucide-react'
 
 type ListViewProps = {
-  superStructures: any[]
-  handleDeleteButtonClick: (superStructure: any) => void
-  handleEditButtonClick: (superStructure: any) => void
-  handleCardClick: (superStructure: any) => void
+  subStructures: any[]
+  handleDeleteButtonClick: (subStructure: any) => void
+  handleEditButtonClick: (subStructure: any) => void
 }
 
 type ListProps = {
-  superStructures: any[]
-  handleDeleteButtonClick: (superStructure: any) => void
-  handleEditButtonClick: (superStructure: any) => void
-  handleCardClick: (superStructure: any) => void
+  subStructures: any[]
+  handleDeleteButtonClick: (subStructure: any) => void
+  handleEditButtonClick: (subStructure: any) => void
   title: string
 }
 
 const List = ({
-  superStructures,
+  subStructures,
   handleDeleteButtonClick,
   handleEditButtonClick,
   title,
-  handleCardClick,
 }: ListProps) => {
   return (
     <div className='mt-4'>
@@ -37,31 +34,28 @@ const List = ({
       <Table className='w-full'>
         <TableHeader>
           <TableRow>
-            <TableHead>Super Structure Name</TableHead>
+            <TableHead>Sub Structure Name</TableHead>
             <TableHead className='text-right'>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {superStructures.length > 0 ? (
-            superStructures.map((superStructure: any, index: any) => (
-              <TableRow key={superStructure.id || index}>
-                <TableCell
-                  className='cursor-pointer text-blue-500 hover:underline'
-                  onClick={() => handleCardClick(superStructure)}
-                >
-                  {superStructure.name}
+          {subStructures.length > 0 ? (
+            subStructures.map((subStructure: any, index: any) => (
+              <TableRow key={subStructure.id || index}>
+                <TableCell className='cursor-pointer text-blue-500 hover:underline'>
+                  {subStructure.name}
                 </TableCell>
                 <TableCell className='text-right'>
                   <div className='flex justify-end gap-2'>
                     <Button
                       variant='outline'
                       className='h-8 w-8 p-1 flex items-center justify-center'
-                      onClick={() => handleEditButtonClick(superStructure)}
+                      onClick={() => handleEditButtonClick(subStructure)}
                     >
                       <Pencil size={15} />
                     </Button>
                     <Button
-                      onClick={() => handleDeleteButtonClick(superStructure)}
+                      onClick={() => handleDeleteButtonClick(subStructure)}
                       variant='destructive'
                       className='h-8 w-8 p-1 flex items-center justify-center'
                     >
@@ -74,7 +68,7 @@ const List = ({
           ) : (
             <TableRow>
               <TableCell colSpan={5} className='text-center py-4 text-gray-500'>
-                No superStructures available.
+                No subStructures available.
               </TableCell>
             </TableRow>
           )}
@@ -85,19 +79,17 @@ const List = ({
 }
 
 const ListView = ({
-  superStructures,
+  subStructures,
   handleDeleteButtonClick,
   handleEditButtonClick,
-  handleCardClick,
 }: ListViewProps) => {
   return (
     <>
       <List
-        handleCardClick={handleCardClick}
-        superStructures={superStructures}
+        subStructures={subStructures}
         handleDeleteButtonClick={handleDeleteButtonClick}
         handleEditButtonClick={handleEditButtonClick}
-        title='Super Structures'
+        title='Sub Structures'
       />
     </>
   )

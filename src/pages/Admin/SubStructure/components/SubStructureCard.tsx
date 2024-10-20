@@ -1,19 +1,11 @@
 // @ts-nocheck
 import { FileTextIcon } from 'lucide-react'
 
-const SuperStructureCard = ({
-  superStructure,
-  onEdit,
-  onConfirm,
-  handleCardClick,
-}: any) => {
-  const { name } = superStructure
+const SubStructureCard = ({ subStructure, onEdit, onConfirm }: any) => {
+  const { name } = subStructure
 
   return (
-    <div
-      className='rounded-lg border bg-card text-card-foreground shadow-sm w-48 capitalize'
-      onClick={() => handleCardClick(superStructure)}
-    >
+    <div className='rounded-lg border bg-card text-card-foreground shadow-sm w-48 capitalize'>
       <div className='flex flex-col rounded-lg bg-white dark:bg-gray-700 p-2'>
         <div className='flex h-36 items-center justify-center overflow-hidden rounded-md bg-blue-200 cursor-pointer'>
           <FileTextIcon className='text-9xl text-white' size={50} />
@@ -26,4 +18,4 @@ const SuperStructureCard = ({
   )
 }
 
-export default SuperStructureCard
+export default SubStructureCard

@@ -16,8 +16,11 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import templateApi from '@/service/templateApi'
-import { addTemplate, updateTemplate } from '@/store/slices/templateSlice'
+import superStructureApi from '@/service/superStructureApi'
+import {
+  addSuperStructure,
+  updateSuperStructure,
+} from '@/store/slices/superStructureSlice'
 import { getErrorMessage } from '@/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
@@ -27,23 +30,23 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-const newTemplateSchema = z.object({
-  name: z.string().nonempty('Template name is required'),
-  description: z.string().nonempty('Description is required'),
+const newSuperStructureSchema = z.object({
+  name: z.string().nonempty('Super structure name is required'),
+  description: z.string().optional(),
 })
 
-const NewTemplate = ({
+const NewSuperStructure = ({
   isEdit = false,
-  selectedTemplate,
+  selectedSuperStructure,
   onClose,
   open,
-  setFilteredTemplates,
+  setFilteredSuperStructures,
 }: any) => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
   const form = useForm({
-    resolver: zodResolver(newTemplateSchema),
+    resolver: zodResolver(newSuperStructureSchema),
     defaultValues: {
       name: '',
       description: '',
@@ -51,31 +54,32 @@ const NewTemplate = ({
   })
 
   useEffect(() => {
-    if (isEdit && selectedTemplate) {
-      form.setValue('name', selectedTemplate.name)
-      form.setValue('description', selectedTemplate.description)
+    if (isEdit && selectedSuperStructure) {
+      form.setValue('name', selectedSuperStructure.name)
+      form.setValue('description', selectedSuperStructure.description)
     } else {
       form.reset()
     }
-  }, [isEdit, selectedTemplate, form])
+  }, [isEdit, selectedSuperStructure, form])
 
   const onSubmit = async (data) => {
     try {
-      const templateData = {
+      const superStructureData = {
         name: data.name,
         description: data.description,
       }
 
       if (isEdit) {
-        const response = await templateApi.updateTemplate(
-          selectedTemplate.id,
-          templateData
+        const response = await superStructureApi.updateSuperStructure(
+          selectedSuperStructure.id,
+          superStructureData
         )
-        dispatch(updateTemplate(response))
+        dispatch(updateSuperStructure(response))
       } else {
-        const response = await templateApi.createTemplate(templateData)
+        const response =
+          await superStructureApi.createSuperStructure(superStructureData)
 
-        dispatch(addTemplate(response))
+        dispatch(addSuperStructure(response))
       }
 
       onClose()
@@ -92,7 +96,7 @@ const NewTemplate = ({
         <DialogContent className='max-w-lg'>
           <DialogHeader>
             <DialogTitle>
-              {isEdit ? 'Edit Template' : 'Create New Template'}
+              {isEdit ? 'Edit Super Structure' : 'Create New Super Structure'}
             </DialogTitle>
           </DialogHeader>
           <DialogDescription>
@@ -107,9 +111,12 @@ const NewTemplate = ({
                   name='name'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Template name</FormLabel>
+                      <FormLabel>Super Structure name</FormLabel>
                       <FormControl>
-                        <Input placeholder='Enter Template name' {...field} />
+                        <Input
+                          placeholder='Enter super structure name'
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -132,7 +139,7 @@ const NewTemplate = ({
                   type='submit'
                   className='mt-2 flex h-8 w-fit items-center justify-center'
                 >
-                  {isEdit ? 'Update' : 'Create'} Template
+                  {isEdit ? 'Update' : 'Create'} Super Structure
                 </Button>
               </form>
             </Form>
@@ -143,4 +150,4 @@ const NewTemplate = ({
   )
 }
 
-export default NewTemplate
+export default NewSuperStructure

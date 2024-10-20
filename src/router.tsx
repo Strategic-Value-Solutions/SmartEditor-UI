@@ -1,6 +1,6 @@
-//@ts-nocheck
 import TourProviderComponent from './Tours/TourProvider'
 import { ROLES } from './constants/otherConstants'
+import SubStructure from './pages/Admin/SubStructure'
 import SuperStructure from './pages/Admin/SuperStructure'
 import Auth from './pages/Auth'
 import Editor from './pages/Editor/index'
@@ -32,20 +32,20 @@ export const paths = {
   root: {
     name: 'Landing',
     path: '/',
-    roles: [], // accessible by anyone
+    roles: [],
     component: Landing,
   },
   signup: {
     name: 'Sign Up',
     path: '/signup',
-    roles: [], // accessible by anyone
+    roles: [],
     component: Signup,
   },
   auth: {
     name: 'Authentication',
     path: '/auth',
-    isAuthenticationRoute: true, // Marked as an authentication route
-    roles: [], // accessible by anyone
+    isAuthenticationRoute: true,
+    roles: [],
     component: Auth,
   },
   editor: {
@@ -84,22 +84,28 @@ export const paths = {
     roles: [ROLES.USER],
     component: ProjectDetails,
   },
-  adminDashboard: {
-    name: 'Admin Dashboard',
+  superStructure: {
+    name: 'Super Structure',
     path: '/super-structure',
-    roles: [ROLES.ADMIN], // only admin can access
-    component: SuperStructure, // Replace with your actual admin component
+    roles: [ROLES.ADMIN],
+    component: SuperStructure,
+  },
+  subStructure: {
+    name: 'Sub Structure',
+    path: '/sub-structure/:superStructureId',
+    roles: [ROLES.ADMIN],
+    component: SubStructure,
   },
   forgotPassword: {
     name: 'Forgot Password',
     path: '/forgot-password',
-    roles: [], // accessible by anyone
+    roles: [],
     component: ForgotPassword,
   },
   resetPassword: {
     name: 'Reset Password',
     path: '/reset-password',
-    roles: [], // accessible by anyone
+    roles: [],
     component: ResetPassword,
   },
   verifyEmail: {
@@ -131,7 +137,7 @@ const Router = () => {
     <BrowserRouter>
       <TourProviderComponent>
         <Routes>
-          {/* Public Routes */}
+          {}
           {Object.values(paths)
             .filter(
               (path) =>
@@ -160,7 +166,7 @@ const Router = () => {
                 }
               />
             ))}
-          {/* Authentication Routes */}
+          {}
           {Object.values(paths)
             .filter((path) => path.isAuthenticationRoute)
             .map((path) => (
@@ -175,7 +181,7 @@ const Router = () => {
               />
             ))}
 
-          {/* User Routes */}
+          {}
           {Object.values(paths)
             .filter((path) => path.roles.includes(ROLES.USER))
             .map((path) => (
@@ -190,7 +196,7 @@ const Router = () => {
               />
             ))}
 
-          {/* Admin Routes */}
+          {}
           {Object.values(paths)
             .filter((path) => path.roles.includes(ROLES.ADMIN))
             .map((path) => (

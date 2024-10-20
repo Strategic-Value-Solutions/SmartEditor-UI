@@ -11,17 +11,17 @@ const getSuperStructure = async (query = '') => {
 }
 
 const createSuperStructure = async (data: any) => {
-  const response = await api.post('/superstructure', data)
+  const response = await api.post('/super-structure', data)
   return response.data.data
 }
 
-const updateSuperStructure = async (data: any) => {
-  const response = await api.put('/superstructure', data)
+const updateSuperStructure = async (id: string, data: any) => {
+  const response = await api.put(`/super-structure/${id}`, data)
   return response.data.data
 }
 
-const deleteSuperStructure = async (data: any) => {
-  const response = await api.delete('/superstructure', data)
+const deleteSuperStructure = async (id: string) => {
+  const response = await api.delete(`/super-structure/${id}`)
   return response.data.data
 }
 

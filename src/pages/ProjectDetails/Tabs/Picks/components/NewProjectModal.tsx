@@ -42,14 +42,12 @@ const NewProjectModal = () => {
   )
 
   useEffect(() => {
-    console.log(selectedModelId)
     // Reset attributes when a new model is selected
     if (selectedModelId) {
       const selectedModel = modelConfigurationsData.find(
         (model) => model.id === selectedModelId
       )
       if (selectedModel) {
-        console.log(selectedModel)
         const initialAttributes = selectedModel?.attributes?.map(
           (attribute) => ({
             name: attribute.name,
@@ -69,7 +67,6 @@ const NewProjectModal = () => {
       name: customModelName,
     }
 
-    console.log(data)
     try {
       const response = await projectApi.createProjectModel(projectId, data)
 
@@ -132,7 +129,7 @@ const NewProjectModal = () => {
             <label className='text-sm dark:text-gray-300'>
               Select Model Configuration
             </label>
-            {console.log(modelConfigurationsData)}
+            {}
             <Select onValueChange={(value) => setSelectedModelId(value)}>
               <SelectTrigger>
                 <SelectValue placeholder='Select a model' />
