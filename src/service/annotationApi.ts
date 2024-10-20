@@ -29,9 +29,13 @@ const saveSingleAnnotation = async (
   return response.data.data
 }
 
-const getAnnotations = async (projectId: string, projectModelId: string) => {
+const getAnnotations = async (
+  projectId: string,
+  projectModelId: string,
+  query?: string
+) => {
   const response = await api.get(
-    `/project/${projectId}/model/${projectModelId}/annotation`
+    `/project/${projectId}/model/${projectModelId}/annotation${query}`
   )
   return response.data.data
 }

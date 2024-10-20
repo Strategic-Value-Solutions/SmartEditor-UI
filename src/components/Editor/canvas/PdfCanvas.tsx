@@ -5,7 +5,7 @@ import PdfCanvasButtons from './PdfCanvasButtons'
 import { RootState } from '@/store'
 import { isFilePdf } from '@/utils'
 import { useTour } from '@reactour/tour'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Document, Page } from 'react-pdf'
 import { useSelector } from 'react-redux'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
@@ -28,6 +28,16 @@ function PdfCanvas({
     width: 0,
     height: 0,
   })
+  const getPageNumberFromQuery = () => {
+    const params = new URLSearchParams(location.search);
+    return parseInt(params.get('pageNumber'), 10) || 1; // Default to 1 if not provided
+  };
+
+  useEffect(() => {
+    const pageNumber = getPageNumberFromQuery();
+    editor.setCurrPage(pageNumber);
+  }, [location.search, editor]);
+
   const { setIsOpen, setSteps } = useTour()
   const isEditorTourCompleted =
     localStorage.getItem('editorTourCompleted')?.toString() === 'true'
@@ -47,7 +57,7 @@ function PdfCanvas({
     originalWidth,
   }: any) {
     editor.setNumPages(numPages)
-    editor.setCurrPage(1)
+    // editor.setCurrPage(1)
 
     // Set max width and height
     const maxWidth = window.innerWidth * 0.8

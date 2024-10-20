@@ -179,13 +179,22 @@ export default function Editor() {
         toast.error('Please select a pick')
         return
       }
-      const response = await annotationApi.getAnnotations(projectId, pick.id)
+      const query = `?pageNumber=${editor.currPage}`
+      const response = await annotationApi.getAnnotations(
+        projectId,
+        pick.id,
+        query
+      )
       const transformedData = transformData(response)
       editor.setAnnotationFromDB(transformedData)
       editor.setAnnotations(transformedData)
+      console.log(
+        'transformedData[editor.currPage]',
+        transformedData[editor.currPage]
+      )
       if (editor.canvas) {
         editor.canvas.clear() // Clear the canvas
-        if (transformedData[editor.currPage]) {
+        if (transformedData[editor.currPage || 1]) {
           editor.loadCanvasState(
             editor.currPage,
             transformedData[editor.currPage]
@@ -214,7 +223,13 @@ export default function Editor() {
     if (pick.id) {
       Promise.all([fetchAnnotations(), fetchComponents()])
     }
-  }, [pick.id, pick.fileUrl, editor.toggleAnnotationFetch])
+  }, [
+    pick.id,
+    pick.fileUrl,
+    editor.toggleAnnotationFetch,
+    editor.currPage,
+    editor.canvas,
+  ])
 
   useEffect(() => {
     if (pick && pickId !== pick.id) {

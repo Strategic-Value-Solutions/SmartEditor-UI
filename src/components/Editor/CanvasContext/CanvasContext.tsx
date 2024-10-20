@@ -646,8 +646,8 @@ export const CanvasProvider = ({ children }) => {
   }
 
   const loadCanvasState = async (pageNumber = currPage, data = null) => {
-    const canvasJson = annotations[pageNumber]
-
+    const canvasJson = data
+    console.log({ canvasJson })
     if (canvas) {
       const modifyObjectsBasedOnStatus = async (canvasData) => {
         if (!canvasData?.objects) return canvasData
