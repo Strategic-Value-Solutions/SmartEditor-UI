@@ -1,6 +1,7 @@
 //@ts-nocheck
 import ProjectTabs from './Tabs'
 import Analytics from './Tabs/Analytics'
+import Estimation from './Tabs/Estimation'
 import ProjectModels from './Tabs/Picks'
 import ProjectSettings from './Tabs/ProjectSettings'
 import { useState } from 'react'
@@ -23,6 +24,8 @@ const ProjectDetails = () => {
         return <ProjectSettings />
       case 'analytics':
         return <Analytics />
+      case 'estimation':
+        return <Estimation />
       default:
         return <div>Coming soon</div>
     }

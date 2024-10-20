@@ -59,6 +59,11 @@ const getProjectModels = async (projectId: any) => {
   return response.data.data
 }
 
+const getProjectComponents = async (projectId: any) => {
+  const response = await api.get(`/project/${projectId}/component`)
+  return response.data.data
+}
+
 const getPickModelComponents = async (projectId: any, projectModelId: any) => {
   const response = await api.get(
     `/project/${projectId}/model/${projectModelId}/component`
@@ -167,4 +172,5 @@ export default {
   updateSettings,
   createProjectModel,
   createProjectModelAttributes,
+  getProjectComponents,
 }
