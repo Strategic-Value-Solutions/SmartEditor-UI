@@ -51,6 +51,17 @@ const deleteSingleAnnotation = async (
   return response.data.data
 }
 
+const deleteAnnotationByPage = async (
+  projectId: string,
+  projectModelId: string,
+  pageNumber: number
+) => {
+  const response = await api.delete(
+    `/project/${projectId}/model/${projectModelId}/annotation/page/${pageNumber}`
+  )
+  return response.data.data
+}
+
 const updateSingleAnnotation = async (
   projectId: string,
   projectModelId: string,
@@ -71,4 +82,5 @@ export default {
   deleteSingleAnnotation,
   updateSingleAnnotation,
   getAnnotationById,
+  deleteAnnotationByPage,
 }

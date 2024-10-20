@@ -29,14 +29,14 @@ function PdfCanvas({
     height: 0,
   })
   const getPageNumberFromQuery = () => {
-    const params = new URLSearchParams(location.search);
-    return parseInt(params.get('pageNumber'), 10) || 1; // Default to 1 if not provided
-  };
+    const params = new URLSearchParams(location.search)
+    return parseInt(params.get('pageNumber'), 10) || 1 // Default to 1 if not provided
+  }
 
   useEffect(() => {
-    const pageNumber = getPageNumberFromQuery();
-    editor.setCurrPage(pageNumber);
-  }, [location.search, editor]);
+    const pageNumber = getPageNumberFromQuery()
+    editor.setCurrPage(pageNumber)
+  }, [location.search, editor])
 
   const { setIsOpen, setSteps } = useTour()
   const isEditorTourCompleted =
@@ -177,6 +177,7 @@ function PdfCanvas({
             >
               <TransformWrapper
                 initialScale={1}
+                doubleClick={{ disabled: !editor.allowPinchZoom }} // Disable double-click zoom when pan mode is off
                 wheel={{ disabled: !editor.allowPinchZoom }}
                 pinch={{ disabled: !editor.allowPinchZoom }}
                 panning={{ disabled: !editor.allowPinchZoom }}
@@ -232,6 +233,7 @@ function PdfCanvas({
           ) : (
             // Image Rendering
             <TransformWrapper
+              doubleClick={{ disabled: !editor.allowPinchZoom }}
               initialScale={1}
               wheel={{ disabled: !editor.allowPinchZoom }}
               pinch={{ disabled: !editor.allowPinchZoom }}

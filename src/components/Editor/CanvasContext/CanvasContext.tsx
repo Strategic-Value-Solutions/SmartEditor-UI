@@ -1147,10 +1147,26 @@ export const CanvasProvider = ({ children }) => {
     canvas.isDrawingMode = false
   }
 
-  const clearCanvas = () => {
-    canvas.clear()
-    canvas.renderAll()
-    saveCanvasState(currPage)
+  const clearCanvas = async () => {
+    try {
+      const projectId = currentProject?.id
+      const projectModelId = currentProjectModel?.id
+      const pageNumber = currPage
+      if (!projectId || !projectModelId || !pageNumber) {
+        toast.error('Project or page number not found.')
+        return
+      }
+      await annotationApi.deleteAnnotationByPage(
+        projectId,
+        projectModelId,
+        pageNumber
+      )
+      canvas.clear()
+      canvas.renderAll()
+      saveCanvasState(currPage)
+    } catch (error) {
+      toast.error(getErrorMessage(error))
+    }
   }
 
   const eraseMode = () => {
