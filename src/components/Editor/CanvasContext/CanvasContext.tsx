@@ -349,6 +349,35 @@ export const CanvasProvider = ({ children }) => {
     updateCursorStyle()
   }, [activeIcon])
 
+  const updateAnnotation = async (annotationId, updatedData) => {
+    try {
+      await annotationApi.updateSingleAnnotation(
+        currentProject?.id,
+        currentProjectModel?.id,
+        annotationId,
+        updatedData
+      )
+
+      if (canvas) {
+        const objects = canvas.getObjects()
+
+        // Loop through all objects and check their type and id
+        for (const annotation of objects) {
+          // If it's the matching annotation by its id
+          if (annotation.id === annotationId) {
+            // Update the status of the selected annotation
+            annotation.set({ ...updatedData })
+          }
+        }
+      }
+      toast.success('Annotation updated successfully')
+    } catch (error) {
+      console.log(error)
+      console.error('Failed to update annotation', error)
+      toast.error('Failed to update annotation')
+    }
+  }
+
   const changeAnnotationStatusById = async (
     annotationId,
     newStatus,
@@ -1794,6 +1823,7 @@ export const CanvasProvider = ({ children }) => {
         setSelectedAnnotation,
         changeAnnotationStatusById,
         setAnnotationFromDB,
+        updateAnnotation,
       }}
     >
       {children}
