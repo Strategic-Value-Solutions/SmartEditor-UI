@@ -25,10 +25,34 @@ const deleteTemplate = async (templateId: any) => {
   return response.data.data
 }
 
+const addTemplateAttributes = async (data: any) => {
+  const response = await api.post(`/template/attribute`, data)
+  return response.data.data
+}
+
+const updateTemplateAttributes = async (attributeId: string, data: any) => {
+  const response = await api.put(`/template/attribute/${attributeId}`, data)
+  return response.data.data
+}
+
+const deleteTemplateAttributes = async (attributeId: string) => {
+  const response = await api.delete(`/template/attribute/${attributeId}`)
+  return response.data.data
+}
+
+const getTemplateAttributes = async (query: string) => {
+  const response = await api.get(`/template/attribute${query}`)
+  return response.data.data
+}
+
 export default {
   createTemplate,
   updateTemplate,
   getTemplates,
   getTemplate,
   deleteTemplate,
+  addTemplateAttributes,
+  updateTemplateAttributes,
+  deleteTemplateAttributes,
+  getTemplateAttributes,
 }

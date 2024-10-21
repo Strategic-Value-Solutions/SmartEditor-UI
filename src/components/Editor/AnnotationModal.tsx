@@ -295,21 +295,31 @@ const AnnotationModal = ({ children }) => {
                     {postDataType === 'generate-report' && (
                       <div className='mt-4 text-sm text-gray-400 text-center'>
                         <Select
-                          className='w-full '
-                          onValueChange={(value) => setSelectedTemplate(value)}
-                          value={selectedTemplate?.name}
+                          className='w-full'
+                          onValueChange={(value) =>
+                            setSelectedTemplate(JSON.parse(value))
+                          }
+                          value={
+                            selectedTemplate
+                              ? JSON.stringify(selectedTemplate)
+                              : ''
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder='Select a template' />
                           </SelectTrigger>
                           <SelectContent>
                             {templatesData.map((template) => (
-                              <SelectItem key={template.id} value={template}>
+                              <SelectItem
+                                key={template.id}
+                                value={JSON.stringify(template)}
+                              >
                                 {template.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
+
                         <Button
                           className='mt-2 flex h-8 w-fit items-center justify-center'
                           onClick={handleShowReportGenerationModal}

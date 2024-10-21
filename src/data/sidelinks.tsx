@@ -56,11 +56,11 @@ export const sideLinks: SideLink[] = [
     icon: <Building size={18} />,
     roles: [ROLES.ADMIN],
   },
-  {
-    title: 'Sub Structure',
-    label: '',
-    href: '/sub-structure',
-    icon: <ClipboardList size={18} />,
-    roles: [ROLES.ADMIN],
-  },
+  // {
+  //   title: 'Sub Structure',
+  //   label: '',
+  //   href: '/sub-structure',
+  //   icon: <ClipboardList size={18} />,
+  //   roles: [ROLES.ADMIN],
+  // },
 ]
