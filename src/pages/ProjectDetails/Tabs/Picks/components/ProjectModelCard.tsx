@@ -46,7 +46,7 @@ const ProjectModelCard = ({
             </div>
           ) : (
             <div
-              className='mb-1 text-gray-500 flex justify-center w-full items-center cursor-pointer'
+              className='mb-1 text-gray-500 flex justify-center w-full h-full items-center cursor-pointer'
               onClick={() => handleRedirectToEditor(projectModel)}
             >
               <img
