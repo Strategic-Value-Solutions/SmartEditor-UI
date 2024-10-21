@@ -10,10 +10,11 @@ import {
 import projectAccessApi from '@/service/projectAccessApi'
 import projectApi from '@/service/projectApi'
 import projectEstimationApi from '@/service/projectEstimationApi'
-import { Trash2 } from 'lucide-react'
+import { GanttChart, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import NewEstimation from './NewEstimation'
+import App from './GanttChart'
 
 export default function Estimation() {
   const { projectId }: any = useParams()
@@ -94,7 +95,7 @@ export default function Estimation() {
   }
 
   return (
-    <div className='mx-auto p-2 space-y-2'>
+    <div className='mx-auto p-2 space-y-2 w-full'>
       <div className='flex justify-between items-center'>
         <h1 className='text-sm text-gray-700 text-primary'>
           Work Estimations can be set manually for project and this helps in
@@ -154,6 +155,8 @@ export default function Estimation() {
           ))}
         </TableBody>
       </Table>
+
+      <App />
     </div>
   )
 }

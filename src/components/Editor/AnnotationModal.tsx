@@ -1,7 +1,9 @@
 //@ts-nocheck
 import { Button } from '../ui/button'
+import { Calendar } from '../ui/calendar'
 import { FileInput } from '../ui/file-upload'
 import { Input } from '../ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { useEditor } from './CanvasContext/CanvasContext'
 import GenerateReportModal from './components/GenerateReportModal'
 import {
@@ -18,10 +20,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
+import annotationApi from '@/service/annotationApi'
 import eventTriggerApi from '@/service/eventTriggerApi'
 import projectApi from '@/service/projectApi'
 import { ReloadIcon } from '@radix-ui/react-icons'
-import { CheckCircleIcon, Loader2, Webhook } from 'lucide-react'
+import { addDays, format } from 'date-fns'
+import {
+  CalendarIcon,
+  CheckCircleIcon,
+  List,
+  Loader2,
+  Webhook,
+} from 'lucide-react'
 import PropTypes from 'prop-types'
 import { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
@@ -51,6 +62,12 @@ const AnnotationModal = ({ children }) => {
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null)
   const [file, setFile] = useState(null)
   const [projectSettings, setProjectSettings] = useState(null)
+  const [predefinedChecklists, setPredefinedChecklists] = useState([])
+  const [annotationChecklist, setAnnotationChecklist] = useState([])
+  const [timelineEstimation, setTimelineEstimation] = useState({
+    estimatedStartDate: null,
+    estimatedEndDate: null,
+  })
 
   // Handle file drop
   const { getRootProps, getInputProps } = useDropzone({
@@ -85,6 +102,28 @@ const AnnotationModal = ({ children }) => {
     }
   }
 
+  const updateEstimatedTimeline = () => {
+    if (
+      !timelineEstimation.estimatedStartDate ||
+      !timelineEstimation.estimatedEndDate
+    ) {
+      toast.error('Please enter a valid timeline')
+      return
+    }
+
+    if (editor.selectedAnnotation?.id) {
+      editor.updateAnnotation(editor.selectedAnnotation.id, {
+        estimatedStartDate: timelineEstimation.estimatedStartDate,
+        estimatedEndDate: timelineEstimation.estimatedEndDate,
+      })
+
+      // Close the modal after status is changed
+      // editor.setShowAnnotationModal(false)
+    } else {
+      console.error('No annotation selected or invalid editor state')
+    }
+  }
+
   const handlePostDataTypeChange = (newPostDataType) => {
     setPostDataType(newPostDataType)
   }
@@ -110,7 +149,9 @@ const AnnotationModal = ({ children }) => {
     try {
       await eventTriggerApi.createEventTrigger(formData)
       setEventTriggered(true)
-      getEventTriggersForAnnotation()
+      setTimeout(() => {
+        setEventTriggered(false)
+      }, 3000)
       toast.success('Event triggered successfully')
     } catch (error) {
       console.error('Failed to create event trigger:', error)
@@ -124,6 +165,44 @@ const AnnotationModal = ({ children }) => {
       setProjectSettings(response)
     } catch (error) {
       console.error('Failed to get project settings:', error)
+    }
+  }
+  const getPredefinedChecklists = async () => {
+    try {
+      const response = await annotationApi.getPredefinedChecklists()
+      setPredefinedChecklists(response)
+    } catch (error) {
+      console.error('Failed to get predefined checklists:', error)
+    }
+  }
+
+  const createAnnotationChecklist = async ({
+    id,
+    name,
+    description,
+    isCompleted,
+  }) => {
+    try {
+      const response = await annotationApi.createProjectChecklist(projectId, {
+        id,
+        name,
+        description,
+        isCompleted,
+        annotationId: editor?.selectedAnnotation?.id,
+      })
+      getAnnotationChecklist()
+    } catch (error) {
+      console.error('Failed to create annotation checklist:', error)
+    }
+  }
+
+  const getAnnotationChecklist = async () => {
+    const query = `?annotationId=${editor?.selectedAnnotation?.id}`
+    try {
+      const response = await annotationApi.getProjectChecklist(projectId, query)
+      setAnnotationChecklist(response)
+    } catch (error) {
+      console.error('Failed to get annotation checklist:', error)
     }
   }
 
@@ -161,8 +240,11 @@ const AnnotationModal = ({ children }) => {
     setStatus(editor?.selectedAnnotation?.status || 'new')
     if (editor.selectedAnnotation) {
       getEventTriggersForAnnotation()
+      getPredefinedChecklists()
+      getAnnotationChecklist()
     }
   }, [editor.selectedAnnotation])
+
   const handleShowReportGenerationModal = () => {
     if (!selectedTemplate.id) {
       toast.error('Please select a template to generate report')
@@ -177,6 +259,20 @@ const AnnotationModal = ({ children }) => {
     editor.setShowAnnotationModal(true)
     setSelectedTemplate(null)
   }
+
+  useEffect(() => {
+    const alteredPredefinedChecklists = predefinedChecklists?.filter(
+      (checklist) =>
+        !annotationChecklist.some(
+          (item) => item.description === checklist.description
+        )
+    )
+    setPredefinedChecklists(alteredPredefinedChecklists)
+  }, [annotationChecklist])
+
+  const checklistCompleted =
+    predefinedChecklists.length === 0 &&
+    !annotationChecklist.some((checklist) => checklist.completedAt === null)
 
   return (
     <div>
@@ -194,19 +290,125 @@ const AnnotationModal = ({ children }) => {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Change Annotation Status</DialogTitle>
-            <DialogDescription>
+            <DialogTitle>Annotation Details</DialogTitle>
+            {/* <DialogDescription>
               You can change the status of the selected annotation here.
-            </DialogDescription>
+            </DialogDescription> */}
           </DialogHeader>
-
+          <div className='flex flex-col justify-center border p-2 rounded-md shadow-md'>
+            <p className='py-2 text-md font-semibold flex items-center gap-2'>
+              <CalendarIcon className='h-4 w-4' />
+              Estimated Timeline
+            </p>
+            <p className='text-sm text-gray-400'>
+              This estimation helps to analyze the overall project timeline. If
+              it is not given then this component wont be added in the project
+              timeline till it is started
+            </p>
+            <div className='flex justify-center items-center gap-2 w-full mt-2'>
+              <input
+                type='date'
+                value={format(
+                  timelineEstimation.estimatedStartDate,
+                  'yyyy-MM-dd'
+                )}
+                defaultValue={format(new Date(), 'yyyy-MM-dd')}
+                onChange={(e) =>
+                  setTimelineEstimation({
+                    ...timelineEstimation,
+                    estimatedStartDate: new Date(e.target.value),
+                  })
+                }
+                min={format(new Date(), 'yyyy-MM-dd')}
+                className='border p-2 rounded-md w-1/2'
+              />
+              <input
+                type='date'
+                defaultValue={format(new Date(), 'yyyy-MM-dd')}
+                value={format(
+                  timelineEstimation.estimatedEndDate,
+                  'yyyy-MM-dd'
+                )}
+                onChange={(e) =>
+                  setTimelineEstimation({
+                    ...timelineEstimation,
+                    estimatedEndDate: new Date(e.target.value),
+                  })
+                }
+                min={format(new Date(), 'yyyy-MM-dd')}
+                className='border p-2 rounded-md w-1/2'
+              />
+              <Button onClick={updateEstimatedTimeline} className='p-2'>
+                Set
+              </Button>
+            </div>
+          </div>
           {/* Dropdown for Changing Status */}
           <div className='flex flex-col justify-center border p-2 rounded-md shadow-md'>
+            <div className='flex flex-col gap-4'>
+              <p className='text-md font-semibold flex items-center gap-2'>
+                <List className='h-4 w-4' /> Inspection Checklist
+              </p>
+              {annotationChecklist.map((checklist) => (
+                <div key={checklist.id} className='flex items-center gap-2'>
+                  <div
+                    className={`h-5 w-5 flex justify-start items-center cursor-pointer text-blue-600 transition duration-150 ease-in-out ${checklist.completedAt ? 'text-green-500' : 'text-gray-400'}`}
+                    onClick={() =>
+                      createAnnotationChecklist({
+                        ...checklist,
+                        isCompleted: !checklist.completedAt,
+                      })
+                    }
+                  >
+                    {checklist.completedAt ? (
+                      <CheckCircleIcon />
+                    ) : (
+                      <CheckCircleIcon className='text-gray-400' />
+                    )}
+                  </div>
+                  <label
+                    htmlFor={checklist.id}
+                    className='ml-3 block text-sm text-gray-700'
+                  >
+                    {checklist.name}
+                  </label>
+                </div>
+              ))}
+              {predefinedChecklists.map((checklist) => (
+                <div key={checklist.id} className='flex items-center gap-2'>
+                  <div
+                    className={`h-5 w-5 flex justify-start items-center cursor-pointer text-blue-600 transition duration-150 ease-in-out ${checklist.completedAt ? 'text-green-500' : 'text-gray-400'}`}
+                    onClick={() =>
+                      createAnnotationChecklist({
+                        ...checklist,
+                        isCompleted: !checklist.completedAt,
+                      })
+                    }
+                  >
+                    {checklist.completedAt ? (
+                      <CheckCircleIcon />
+                    ) : (
+                      <CheckCircleIcon className='text-gray-400' />
+                    )}
+                  </div>
+                  <label
+                    htmlFor={checklist.id}
+                    className='ml-3 block text-sm text-gray-700'
+                  >
+                    {checklist.name}
+                  </label>
+                </div>
+              ))}
+            </div>
+            <p className='text-sm text-gray-400 mt-3'>
+              {!checklistCompleted
+                ? 'You need to completed all the checklist to mark the annotation as completed.'
+                : 'All checklists are completed. You can change the status of the annotation to completed.'}
+            </p>
             <div className='text-sm font-semibold flex justify-between items-center gap-2 py-2'>
               <p>Status</p>
               <p className='font-normal'>{status}</p>
             </div>
-
             <Select
               value={status}
               onValueChange={handleStatusChange}
@@ -218,7 +420,9 @@ const AnnotationModal = ({ children }) => {
               <SelectContent>
                 <SelectItem value='Pending'>Pending</SelectItem>
                 <SelectItem value='Working'>Working</SelectItem>
-                <SelectItem value='Completed'>Completed</SelectItem>
+                {checklistCompleted && (
+                  <SelectItem value='Completed'>Completed</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -237,7 +441,8 @@ const AnnotationModal = ({ children }) => {
                     </div>
 
                     <div className='text-sm text-gray-500 text-center mt-3'>
-                      For failed events, we will retry continuously until
+                      You can trigger another event in next 3 seconds. For
+                      failed events, we will retry continuously until
                       information is successfully sent.
                     </div>
                   </div>

@@ -75,6 +75,21 @@ const updateSingleAnnotation = async (
   return response.data.data
 }
 
+const getPredefinedChecklists = async () => {
+  const response = await api.get(`/project/checklist`)
+  return response.data.data
+}
+
+const getProjectChecklist = async (projectId: string, query?: string) => {
+  const response = await api.get(`/project/${projectId}/checklist${query}`)
+  return response.data.data
+}
+
+const createProjectChecklist = async (projectId: string, checklist: any) => {
+  const response = await api.post(`/project/${projectId}/checklist`, checklist)
+  return response.data.data
+}
+
 export default {
   saveAnnotations,
   getAnnotations,
@@ -83,4 +98,7 @@ export default {
   updateSingleAnnotation,
   getAnnotationById,
   deleteAnnotationByPage,
+  getPredefinedChecklists,
+  createProjectChecklist,
+  getProjectChecklist,
 }
